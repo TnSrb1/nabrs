@@ -61,6 +61,10 @@ Everything else — the web app, the Telegram bot, the workers, the database lay
 
 ## Architecture
 
+<img src="docs/assets/architecture-animated.svg" alt="Animated architecture diagram: sources, ingest, PostgreSQL, routing, AI and delivery workers, the web cabinet, the Telegram bot and the subscriber, with data flows highlighted in turn" width="100%">
+
+<sub>Animated: each data flow is highlighted in turn. Text version below.</sub>
+
 ```mermaid
 flowchart LR
     S[(Procurement<br/>sources)] --> I[ingest]

@@ -70,6 +70,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import dataclasses
 import hashlib
 import json
 import logging
@@ -87,6 +88,11 @@ from src.dedup.linker import link_cross_source
 from src.domain.actuality import no_deadline_is_fresh
 from src.domain.repoll import REPOLL_MAX_PER_PASS, select_due
 from src.domain.source_silence import is_silent, silence_hours
+from src.domain.tender_changes import (
+    CORRECTION_KEY,
+    CORRECTIONS_SEEN_KEY,
+    build_change,
+)
 from src.domain.tz import deadline_before_published
 from src.log_secrets import install_secret_log_filter
 from src.parsers.base import (
@@ -393,8 +399,8 @@ _SOURCE_MARK_OK_SQL = text("""
 # the last check: ``tenders_raw`` has no trigger, so the mark does not wake
 # the matching and requires no migration.
 _REPOLL_CANDIDATES_SQL = text("""
-    SELECT tn.source_uid, tn.deadline_at, tn.published_at, tn.first_seen_at,
-           tn.status, tr.fetched_at AS checked_at
+    SELECT tn.id AS tender_id, tn.source_uid, tn.deadline_at, tn.published_at,
+           tn.first_seen_at, tn.status, tr.fetched_at AS checked_at
     FROM tenders_normalized tn
     JOIN tenders_raw tr
       ON tr.source_key = tn.source_key AND tr.source_uid = tn.source_uid
@@ -420,6 +426,28 @@ _REPOLL_TOUCH_RAW_SQL = text("""
     UPDATE tenders_raw
     SET fetched_at = :now
     WHERE source_key = :source_key AND source_uid = :source_uid
+    """)
+# Recheck of documents of delivered open tenders (AI analysis, step 3).
+# Candidate: an open source tender DELIVERED to at least one subscriber
+# (delivery_outbox.status='sent'), last rechecked long ago (or never).
+# The oldest check goes first: if the budget is smaller than the queue, every one gets its turn.
+_DOCS_RECHECK_CANDIDATES_SQL = text("""
+    SELECT tn.id AS tender_id, tn.source_uid, tn.documents
+    FROM tenders_normalized tn
+    LEFT JOIN tender_docs_check dc ON dc.tender_id = tn.id
+    WHERE tn.source_key = :source_key
+      AND tn.deadline_at >= CAST(:now AS timestamptz)
+      AND (dc.checked_at IS NULL
+           OR dc.checked_at < CAST(:now AS timestamptz) - interval '1 day')
+      AND EXISTS (SELECT 1 FROM delivery_outbox o
+                  WHERE o.tender_id = tn.id AND o.status = 'sent')
+    ORDER BY dc.checked_at NULLS FIRST, tn.id
+    LIMIT :limit
+    """)
+_DOCS_CHECK_MARK_SQL = text("""
+    INSERT INTO tender_docs_check (tender_id, checked_at)
+    VALUES (:tender_id, :now)
+    ON CONFLICT (tender_id) DO UPDATE SET checked_at = EXCLUDED.checked_at
     """)
 # The source registry (SRC-0a, R1): what to load — the table decides, not the import.
 _ENABLED_SOURCES_SQL = text("""
@@ -602,6 +630,15 @@ _NORM_UPDATE_CONTENT_SQL = text("""
 _LINK_SAVEPOINT_SQL = text("SAVEPOINT dedup_link")
 _LINK_ROLLBACK_SQL = text("ROLLBACK TO SAVEPOINT dedup_link")
 _LINK_RELEASE_SQL = text("RELEASE SAVEPOINT dedup_link")
+# Tender change journal (0058): under SAVEPOINT — a failure to write the diff (the table is still
+# absent in prod until the migration is applied) must not drop the tender save.
+_CHANGE_SAVEPOINT_SQL = text("SAVEPOINT tender_change")
+_CHANGE_ROLLBACK_SQL = text("ROLLBACK TO SAVEPOINT tender_change")
+_CHANGE_RELEASE_SQL = text("RELEASE SAVEPOINT tender_change")
+_CHANGE_INSERT_SQL = text("""
+    INSERT INTO tender_changes (tender_id, kind, diff)
+    VALUES (:tender_id, :kind, CAST(:diff AS jsonb))
+    """)
 # Lightweight touch: only last_seen_at (see the TRIGGER DECISION in the docstring).
 _NORM_TOUCH_SQL = text("""
     UPDATE tenders_normalized
@@ -707,10 +744,24 @@ def _quantize_money(value: Any) -> Decimal | None:
     return value.quantize(_MONEY_QUANT, rounding=ROUND_HALF_UP)
 
 
+# Keys of the document-list record that are NOT part of the fingerprint: ``extracted``/
+# ``chars`` — the result of download/extraction, not the file content. A network failure
+# of a single file flips them ok↔error, and without this exception every such failure would
+# cause an extra content UPDATE (last_changed_at, NOTIFY, re-matching, AI cache reset).
+# Blacklist, not whitelist: sources have different document schemas (jnportal —
+# name/sha256/…, bih — title/url/kind, ukck — name/url/type/size), and a whitelist
+# dropped their keys entirely (a change of url was invisible to the fingerprint).
+_DOC_FINGERPRINT_VOLATILE_KEYS = frozenset({"extracted", "chars"})
+
+
 def _fingerprint_fields(fields: dict[str, Any]) -> str:
     """The canonical fingerprint of the set of content fields (for comparing versions)."""
     canon = {
         **{k: fields.get(k) for k in _CONTENT_FIELDS},
+        "documents": [
+            {k: v for k, v in d.items() if k not in _DOC_FINGERPRINT_VOLATILE_KEYS}
+            for d in (fields.get("documents") or [])
+        ],
         "amount_original": _num(fields.get("amount_original")),
         "amount_eur": _num(fields.get("amount_eur")),
         "published_at": _dt(fields.get("published_at")),
@@ -755,6 +806,8 @@ def _normalized_to_fields(n: NormalizedTender) -> dict[str, Any]:
     }
 
 
+DOCS_RECHECK_MAX_PER_PASS = 20
+
 #: Statuses at which the tender is no longer actual (a mirror of the activity filter
 #: ``STAGE_A_SQL``/``PREVIEW_WHERE_A`` in :mod:`src.workers.matching`).
 _TERMINAL_STATUSES = frozenset({"closed", "awarded", "cancelled"})
@@ -771,6 +824,15 @@ class _RepollAdapter(Protocol):
     def repoll_cards(
         self, tender_ids: list[str]
     ) -> AsyncIterator[tuple[str, dict[str, Any]]]: ...
+
+
+@runtime_checkable
+class _DocsRecheckAdapter(Protocol):
+    """Adapter with document recheck (jnportal has ``recheck_documents``)."""
+
+    def recheck_documents(
+        self, targets: list[tuple[str, Any]]
+    ) -> AsyncIterator[tuple[str, Any, dict[str, Any]]]: ...
 
 
 def repoll_decision(row: Any, card: dict[str, Any]) -> tuple[Any, Any, bool]:
@@ -801,6 +863,30 @@ def repoll_enabled() -> bool:
     """
     raw = (os.getenv("INGEST_JNPORTAL_REPOLL") or "").strip().lower()
     return raw in {"1", "true", "yes", "on"}
+
+
+def docs_recheck_enabled() -> bool:
+    """``INGEST_DOCS_RECHECK`` → recheck of documents of delivered tenders (DEFAULT OFF).
+
+    The owner enables it in the ``environment:`` of the ingest service (``deploy/``, RED): until the flag
+    is set, nothing changes in prod.
+    """
+    raw = (os.getenv("INGEST_DOCS_RECHECK") or "").strip().lower()
+    return raw in {"1", "true", "yes", "on"}
+
+
+def docs_recheck_max_per_pass() -> int:
+    """``INGEST_DOCS_RECHECK_MAX_PER_PASS`` → ceiling of tenders per pass (default 20).
+
+    Request budget = 2 per tender when documents are unchanged (card + list) and
+    up to 2 + ``_MAX_FILES`` (12) when they changed; all of them go through the rate gate (≤1 rps).
+    """
+    raw = (os.getenv("INGEST_DOCS_RECHECK_MAX_PER_PASS") or "").strip()
+    try:
+        value = int(raw)
+    except ValueError:
+        return DOCS_RECHECK_MAX_PER_PASS
+    return value if value > 0 else DOCS_RECHECK_MAX_PER_PASS
 
 
 def repoll_max_per_pass() -> int:
@@ -1139,6 +1225,10 @@ class IngestWorker:
         )
         if not result.failed:
             await self._maybe_collect_plans(adapter, source_key)
+        # Document recheck — after repoll, through the same gate and by the same
+        # rule: a broken pass has already used the portal's budget.
+        if not result.failed and repoll_reason is None:
+            repoll_reason = await self._maybe_recheck_documents(adapter, source_key)
         pass_failed = result.failed or repoll_reason is not None
         fail_reason = result.fail_reason if result.failed else repoll_reason
         stage = "fetch_batch" if result.failed else "repoll"
@@ -1280,6 +1370,142 @@ class IngestWorker:
                 "ingest[alsu]: the collection of notices failed — %s", _format_fail_reason(exc)
             )
 
+    async def _maybe_recheck_documents(
+        self, adapter: SourceAdapter, source_key: str
+    ) -> str | None:
+        """Recheck of documents of delivered tenders — with the flag, and for an adapter that has it.
+
+        Returns as :meth:`_maybe_repoll`: ``None`` — it passed (or is disabled), otherwise
+        the reason for the failure (exception type / HTTP code, without a URL with a token).
+        """
+        if not docs_recheck_enabled() or not isinstance(adapter, _DocsRecheckAdapter):
+            return None
+        try:
+            checked, changed = await self._recheck_documents(adapter, source_key)
+        except Exception as exc:  # noqa: BLE001 — the failure is visible as a broken pass
+            reason = _format_fail_reason(exc)
+            logger.warning(
+                "ingest[%s]: document recheck failed — %s", source_key, reason
+            )
+            return reason
+        logger.info(
+            "ingest[%s]: document recheck — checked %d, changed %d",
+            source_key,
+            checked,
+            changed,
+        )
+        return None
+
+    async def _recheck_documents(
+        self, adapter: _DocsRecheckAdapter, source_key: str
+    ) -> tuple[int, int]:
+        """Select candidates, recheck them, write the changed ones. (checked, changed).
+
+        ‼️ The DB is not held open for the duration of the network calls: the selection is a short transaction,
+        each write is its own.
+        """
+        now = self._clock()
+        async with self._session_factory() as session:
+            rows = (
+                (
+                    await session.execute(
+                        _DOCS_RECHECK_CANDIDATES_SQL,
+                        {
+                            "source_key": source_key,
+                            "now": now,
+                            "limit": docs_recheck_max_per_pass(),
+                        },
+                    )
+                )
+                .mappings()
+                .all()
+            )
+        if not rows:
+            return 0, 0
+        by_uid = {str(r["source_uid"]): dict(r) for r in rows}
+        targets = [(uid, r["documents"]) for uid, r in by_uid.items()]
+        checked = changed = 0
+        async for uid, docs, card in adapter.recheck_documents(targets):
+            checked += 1
+            if await self._apply_documents_recheck(
+                adapter, source_key, uid, by_uid[uid]["tender_id"], docs, now, card
+            ):
+                changed += 1
+        return checked, changed
+
+    async def _apply_documents_recheck(
+        self,
+        adapter: Any,
+        source_key: str,
+        uid: str,
+        tender_id: Any,
+        docs: Any,
+        now: datetime,
+        card: dict[str, Any] | None = None,
+    ) -> bool:
+        """Write the result of the recheck of one tender. Returns: was the list updated?
+
+        ‼️ Deadline and status are NOT taken from the saved ``_enrich`` (it holds the deadline at the moment
+        of intake: a repeated poll only moves ``tenders_normalized.deadline_at``, and does not touch raw).
+        The rule is the same as for a repeated poll (:func:`repoll_decision`):
+        the fresh value from the card, and if there is none — the current one from ``tenders_normalized``.
+        A rollback or zeroing of the deadline by a recheck is excluded.
+
+        The check marker ALWAYS moves (including on "no changes"): otherwise a tender without a
+        list would occupy the first places of every pass. Changed documents go through the SAME ``_process_raw``
+        as a regular intake: raw hash → content UPDATE
+        → ``last_changed_at`` → NOTIFY → diff into ``tender_changes``.
+        """
+        updated = False
+        async with self._session_factory() as session:
+            if docs is not None and (docs.index or docs.text):
+                stored = (
+                    await session.execute(
+                        _RAW_PAYLOAD_LOOKUP_SQL,
+                        {"source_key": source_key, "source_uid": uid},
+                    )
+                ).first()
+                current = (
+                    await session.execute(
+                        _NORM_LOOKUP_SQL,
+                        {"source_key": source_key, "source_uid": uid},
+                    )
+                ).first()
+                if stored is not None and current is not None:
+                    deadline, status, _ = repoll_decision(
+                        {
+                            "deadline_at": current.deadline_at,
+                            "published_at": current.published_at,
+                            "status": current.status,
+                        },
+                        card or {},
+                    )
+                    payload = dict(stored.raw_payload or {})
+                    enrich = dict(payload.get("_enrich") or {})
+                    if docs.text:
+                        enrich["documents_text"] = docs.text
+                    else:
+                        enrich.pop("documents_text", None)
+                    enrich["documents_index"] = docs.index
+                    payload["_enrich"] = enrich
+                    outcome, _ = await self._process_raw(
+                        session,
+                        adapter,
+                        RawTender(
+                            source_key=source_key,
+                            payload=payload,
+                            country_code="RS",
+                            fetched_at=now,
+                        ),
+                        keep={"deadline_at": deadline, "status": status},
+                    )
+                    updated = outcome == "updated"
+            await session.execute(
+                _DOCS_CHECK_MARK_SQL, {"tender_id": str(tender_id), "now": now}
+            )
+            await session.commit()
+        return updated
+
     async def _maybe_collect_plans(
         self, adapter: SourceAdapter, source_key: str
     ) -> None:
@@ -1390,6 +1616,16 @@ class IngestWorker:
                         "now": now,
                     },
                 )
+                if deadline != row["deadline_at"] and row.get("tender_id"):
+                    await self._record_change(
+                        session,
+                        row["tender_id"],
+                        "deadline",
+                        build_change(
+                            {"deadline_at": row["deadline_at"]},
+                            {"deadline_at": deadline},
+                        ),
+                    )
                 logger.info(
                     "repoll[%s] %s: deadline %s → %s, status %s → %s",
                     source_key,
@@ -1734,10 +1970,20 @@ class IngestWorker:
             return False
         stored = dict(row.raw_payload or {})
         stored.pop("_enrich", None)
+        seen_corrections = stored.pop(CORRECTIONS_SEEN_KEY, None) or []
+        correction = list_record.get(CORRECTION_KEY)
+        if correction is not None:
+            # Fix: "not changed" = its Id has already been accepted (otherwise it, living in the window
+            # of the poll, would re-download the card on EVERY pass).
+            return correction.get("notice_id") in seen_corrections
         return compute_raw_hash(stored) == compute_raw_hash(list_record)
 
     async def _process_raw(
-        self, session: Any, adapter: SourceAdapter, raw: RawTender
+        self,
+        session: Any,
+        adapter: SourceAdapter,
+        raw: RawTender,
+        keep: dict[str, Any] | None = None,
     ) -> tuple[str, NormalizedTender | None]:
         """Upsert of one tender into raw+normalized. Returns ``(outcome, normalized)``.
 
@@ -1756,7 +2002,6 @@ class IngestWorker:
             return "skipped", None
 
         payload = raw.payload or {}
-        raw_hash = compute_raw_hash(payload)
         fetched_at = raw.fetched_at or self._clock()
 
         raw_row = (
@@ -1765,6 +2010,43 @@ class IngestWorker:
             )
         ).first()
 
+        # Correction (F14, DocumentTypeId 9) is NOT a new tender, but a signal that "the card
+        # and the documents changed". Its list record (its own Id/PublishDate/type) must NOT
+        # overwrite the saved record of the notice — otherwise
+        # published_at would shift, and the next pass with the original record would roll it back.
+        # Known tender: we keep the saved list part, we take a fresh
+        # ``_enrich``. Unknown (we did not see the notice — outside the window, before
+        # the source started): the card by TenderId still returns the current
+        # state in full, so we accept it as a regular new tender.
+        correction = payload.get(CORRECTION_KEY)
+        note: str | None = None
+        if correction is not None:
+            payload = {k: v for k, v in payload.items() if k != CORRECTION_KEY}
+            raw = dataclasses.replace(raw, payload=payload)
+            note = (correction or {}).get("note")
+            notice_id = (correction or {}).get("notice_id")
+            if raw_row is None:
+                payload[CORRECTIONS_SEEN_KEY] = [notice_id]
+                raw = dataclasses.replace(raw, payload=payload)
+            else:
+                stored = (
+                    await session.execute(
+                        _RAW_PAYLOAD_LOOKUP_SQL,
+                        {"source_key": source_key, "source_uid": source_uid},
+                    )
+                ).first()
+                base = dict(stored.raw_payload or {}) if stored else {}
+                if not payload.get("_enrich"):
+                    # enrichment failed — nothing to update with, we leave the saved one untouched
+                    return "skipped", None
+                base["_enrich"] = payload["_enrich"]
+                base[CORRECTIONS_SEEN_KEY] = sorted(
+                    {*(base.get(CORRECTIONS_SEEN_KEY) or []), notice_id}, key=str
+                )
+                payload = base
+                raw = dataclasses.replace(raw, payload=payload)
+        raw_hash = compute_raw_hash(payload)
+
         # the payload has not changed since last time → we touch nothing (notify is silent)
         if raw_row is not None and raw_row.raw_hash == raw_hash:
             return "skipped", None
@@ -1772,6 +2054,10 @@ class IngestWorker:
         # normalize is a pure function (no network/DB), so it can be called BEFORE
         # the raw write: an exception rolls back the pass over the tender, the same as before.
         normalized = adapter.normalize(raw)
+        if keep:
+            # document recheck: deadline/status are decided outside (see
+            # _apply_documents_recheck), the saved raw does not know them
+            normalized = dataclasses.replace(normalized, **keep)
         if (
             raw_row is None
             and getattr(adapter, "insert_only_actual", True)
@@ -1795,7 +2081,7 @@ class IngestWorker:
             tenders_raw_id = str(raw_row.id)
 
         outcome = await self._write_normalized(
-            session, normalized, source_key, source_uid, tenders_raw_id
+            session, normalized, source_key, source_uid, tenders_raw_id, note=note
         )
         if outcome in ("inserted", "updated"):
             await self._link_cross_source(session, adapter, normalized, payload)
@@ -1843,6 +2129,33 @@ class IngestWorker:
         except Exception:  # noqa: BLE001 — no adapter → customer_name is enough
             return []
 
+    async def _record_change(
+        self, session: Any, tender_id: Any, kind: str, diff: dict[str, Any] | None
+    ) -> bool:
+        """Write the diff into ``tender_changes`` (an empty diff is not written).
+
+        Under SAVEPOINT: the journal is secondary, the tender matters more. A write failure is logged
+        by the error class (without text: it may contain tender data).
+        """
+        if not diff:
+            return False
+        await session.execute(_CHANGE_SAVEPOINT_SQL)
+        try:
+            await session.execute(
+                _CHANGE_INSERT_SQL,
+                {
+                    "tender_id": str(tender_id),
+                    "kind": kind,
+                    "diff": _canonical_json(diff),
+                },
+            )
+        except Exception as exc:  # noqa: BLE001 — the journal must not drop the tender
+            await session.execute(_CHANGE_ROLLBACK_SQL)
+            logger.warning("changes: diff write skipped (%s)", type(exc).__name__)
+            return False
+        await session.execute(_CHANGE_RELEASE_SQL)
+        return True
+
     async def _write_normalized(
         self,
         session: Any,
@@ -1850,6 +2163,7 @@ class IngestWorker:
         source_key: str,
         source_uid: str,
         tenders_raw_id: str,
+        note: str | None = None,
     ) -> str:
         """Upsert ``tenders_normalized``: INSERT / content-UPDATE / touch."""
         now = self._clock()
@@ -1901,6 +2215,12 @@ class IngestWorker:
                 "id": norm_row.id,
                 "now": now,
             },
+        )
+        await self._record_change(
+            session,
+            norm_row.id,
+            "content",
+            build_change(_row_to_fields(norm_row), fields, note=note),
         )
         return "updated"
 

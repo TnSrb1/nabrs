@@ -67,6 +67,55 @@ class L2Output(BaseModel):
     focus_answers: list[FocusAnswer] = Field(default_factory=list)
 
 
+# Kinds of requirements in the step-wise analysis journal (stepwise). Outside the set → "other".
+REQUIREMENT_KINDS: tuple[str, ...] = (
+    "deadline",
+    "guarantee",
+    "license",
+    "experience",
+    "staff",
+    "equipment",
+    "penalty",
+    "criterion",
+    "other",
+)
+
+
+class RequirementItem(BaseModel):
+    """One requirement of the journal: what, verbatim quote, from which document/chunk."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    kind: str = "other"
+    text: str
+    quote: str = ""
+    doc: str = ""
+    chunk: int = 0
+
+
+class StepwiseMeta(BaseModel):
+    """Coverage of the step-wise analysis: how many chunks were analysed and what the critic dropped."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    chunks_total: int = 0
+    chunks_done: int = 0
+    chunks_failed: int = 0
+    docs: int = 0
+    dropped_by_critic: int = 0
+    unreadable_docs: int = 0
+    journal_truncated: int = 0
+    steps_cost_usd: float = 0.0
+
+
+class ExtractOutput(BaseModel):
+    """Output of the "extract requirements" step (cheap) — raw requirements of the chunk."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    requirements: list[RequirementItem] = Field(default_factory=list)
+
+
 class L3Output(BaseModel):
     """Output of level 3 — deep analysis on demand (ARCHITECTURE §14.4).
 
@@ -88,6 +137,9 @@ class L3Output(BaseModel):
     work_breakdown: list[str] = Field(default_factory=list)
     participation_checklist: list[str] = Field(default_factory=list)
     focus_answers: list[FocusAnswer] = Field(default_factory=list)
+    # Requirements journal by documents — filled by the CODE of step-wise mode, not by the model.
+    requirements: list[RequirementItem] = Field(default_factory=list)
+    stepwise: StepwiseMeta | None = None
 
 
 class BidVerdictOutput(BaseModel):
@@ -136,6 +188,9 @@ class ChecklistOutput(BaseModel):
     deadlines: list[ChecklistDeadline] = Field(default_factory=list)
     disqualification_risks: list[str] = Field(default_factory=list)
     summary: str | None = None
+    # Requirements journal by documents — filled by the CODE of step-wise mode, not by the model.
+    requirements: list[RequirementItem] = Field(default_factory=list)
+    stepwise: StepwiseMeta | None = None
 
 
 class DraftSection(BaseModel):
@@ -199,6 +254,7 @@ _SCHEMA_BY_LEVEL: dict[str, type[BaseModel]] = {
     "checklist": ChecklistOutput,
     "draft": DraftOutput,
     "translate": TranslationOutput,
+    "extract": ExtractOutput,
 }
 
 

@@ -1068,7 +1068,10 @@ LIVE_CHANNELS_SQL = text("""
            -- кабинета. NULL в uc.locale = «наследовать users.locale», а не
            -- «язык неизвестен» — поэтому COALESCE (зеркало
            -- delivery._LOAD_JOBS_SQL). На предикат «живой» НЕ влияет.
-           COALESCE(uc.locale, u.locale) AS locale
+           COALESCE(uc.locale, u.locale) AS locale,
+           -- Язык кабинета как есть: письмо читает его (i18n.md: письмо
+           -- ``u.locale``, Telegram ``COALESCE(uc.locale, u.locale)``).
+           u.locale                      AS user_locale
     FROM user_channels uc
     JOIN users u ON u.id = uc.user_id
     WHERE u.tenant_id = CAST(:tenant_id AS uuid)
@@ -1090,6 +1093,8 @@ class ChannelState:
     # other consumers of the predicate (the cabinet, channel_dead_notify), and they
     # construct ChannelState without it. It does not affect :attr:`is_live`.
     locale: str | None = None
+    # users.locale without a channel override — the language of the EMAIL.
+    user_locale: str | None = None
 
     @property
     def is_live(self) -> bool:
@@ -1116,6 +1121,7 @@ async def channel_states(
             # getattr: the fake rows in the consumers' tests are set up without the
             # locale column — the extension of the selection does not break them.
             locale=getattr(row, "locale", None),
+            user_locale=getattr(row, "user_locale", None),
         )
         for row in result
     }

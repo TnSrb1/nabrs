@@ -25,6 +25,7 @@ from typing import Any
 from sqlalchemy import text
 
 from src.ai import AiClient, AiRetryableError, AnalysisRequest
+from src.ai.stepwise import analyze_tender, step_recorder
 from src.ai.profile_context import format_profile_context
 from src.ai.track_record import build_track_record_context
 from src.ai.usage import (
@@ -35,6 +36,7 @@ from src.ai.usage import (
     record_error_spend,
 )
 from src.bots.i18n import bot_t
+from src.bots.requirements_render import render_requirements
 from src.bots.status_service import resolve_tenant_id
 from src.domain.access import is_frozen
 from src.domain.tiers import effective_tier
@@ -64,7 +66,7 @@ _LOAD_LATEST_PROFILE_SQL = text("""
     """)
 
 _LOAD_TENDER_SQL = text("""
-    SELECT tn.title, tn.description, c.name AS country_name
+    SELECT tn.title, tn.description, tn.documents, c.name AS country_name
     FROM tenders_normalized tn
     JOIN tenants t ON t.id = :tenant_id
     LEFT JOIN countries c ON c.code = t.country_code
@@ -225,7 +227,12 @@ async def run_compliance_checklist(
         extra_context=profile_context,
     )
     try:
-        result = await client.analyze(request)
+        result = await analyze_tender(
+            client,
+            request,
+            record_spend=step_recorder(session, tenant_id=tenant_id, level="checklist"),
+            documents=getattr(tender_row, "documents", None),
+        )
     except AiRetryableError:
         logger.warning("chk: model busy tender=%s profile=%s", tender_id, profile_id)
         return ChecklistResult(status="model_busy")
@@ -348,6 +355,11 @@ def _render_checklist(title: str, output: dict, locale: str | None = None) -> st
         for r in risks:
             lines.append(f"  • {html.escape(str(r))}")
         parts.append("\n".join(lines))
+
+    # Requirements journal of the step-wise analysis (stepwise): short list + "on the site".
+    req_block = render_requirements(output, locale)
+    if req_block:
+        parts.append(req_block)
 
     if summary_text:
         parts.append(f"💡 {html.escape(str(summary_text))}")

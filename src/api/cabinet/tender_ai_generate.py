@@ -21,6 +21,7 @@ from typing import Any
 from sqlalchemy import text
 
 from src.ai import AiClient, AiRetryableError, AnalysisRequest
+from src.ai.stepwise import STEPWISE_LEVELS, analyze_tender, step_recorder
 from src.ai.profile_context import format_profile_context
 from src.ai.track_record import build_track_record_context
 from src.ai.usage import (
@@ -81,7 +82,7 @@ _LOAD_TENANT_TIER_SQL = text("""
 
 # The tender + the tenant’s country (as in the bot services, but tenant_id = tid from the web session).
 _LOAD_TENDER_SQL = text("""
-    SELECT tn.title, tn.description, c.name AS country_name
+    SELECT tn.title, tn.description, tn.documents, c.name AS country_name
     FROM tenders_normalized tn
     JOIN tenants t ON t.id = CAST(:tid AS uuid)
     LEFT JOIN countries c ON c.code = t.country_code
@@ -118,6 +119,7 @@ class _GenContext:
     country_name: str
     target_language: str
     profile_context: str
+    documents: Any = None  # file list (tn.documents) — for Scout
 
 
 _DEFAULT_AI_CLIENT: AiClient | None = None
@@ -218,8 +220,37 @@ async def generate_artifact(
         extra_context=ctx.profile_context,
         model_tier=model_tier,
     )
+
+    # Step-wise mode (deep/checklist, decided by Scout): the generation advisory lock is released
+    # by the commit of the step's write to ai_usage → after each step we take it again.
+    async def _relock() -> None:
+        # The lock was not taken — a parallel click is already running its own paid analysis: this one
+        # is stopped (already paid steps are recorded), otherwise the analysis is paid twice.
+        if not await _try_generation_lock(
+            db, tid=tid, tender_id=tender_id, profile_id=profile_id, level=level
+        ):
+            raise _GenerationLockLost
+
     try:
-        result = await client.analyze(request)
+        if level in STEPWISE_LEVELS:
+            result = await analyze_tender(
+                client,
+                request,
+                record_spend=step_recorder(
+                    db, tenant_id=tid, level=level, after_commit=_relock
+                ),
+                documents=ctx.documents,
+            )
+        else:
+            result = await client.analyze(request)
+    except _GenerationLockLost:
+        logger.info(
+            "web-ai: lock taken by a parallel request tender=%s profile=%s level=%s",
+            tender_id,
+            profile_id,
+            level,
+        )
+        return STATUS_IN_PROGRESS
     except AiRetryableError:
         logger.warning(
             "web-ai: model busy tender=%s profile=%s level=%s",
@@ -263,6 +294,10 @@ async def generate_artifact(
 # --------------------------------------------------------------------------- #
 # Internal
 # --------------------------------------------------------------------------- #
+
+
+class _GenerationLockLost(Exception):
+    """advisory lock of generation taken by another request in the middle of a step-wise analysis."""
 
 
 async def _try_generation_lock(
@@ -373,6 +408,7 @@ async def _prepare_generation(
             ),
             target_language="ru",
             profile_context="",
+            documents=getattr(tender_row, "documents", None),
         )
 
     # The track record under the same tenant GUC (set_tenant(tid) was called FIRST above) —
@@ -398,5 +434,6 @@ async def _prepare_generation(
             ai_extra_context=getattr(profile_row, "ai_extra_context", None),
             track_record=track_record,
         ),
+        documents=getattr(tender_row, "documents", None),
     )
     return STATUS_OK, ctx

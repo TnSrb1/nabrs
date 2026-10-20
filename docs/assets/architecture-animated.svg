@@ -1,0 +1,167 @@
+<svg viewBox="0 0 1200 830" role="img" aria-label="Animated TenderSRB architecture with six colored flows: tender data, AI requests, notifications, user requests, payments (implemented, not live) and operations. Each flow is highlighted in turn." xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Roboto,Arial,sans-serif">
+<defs>
+  <marker id="m-tender" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#34e39b"/></marker>
+  <marker id="m-ai" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b18cff"/></marker>
+  <marker id="m-note" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#38e1ff"/></marker>
+  <marker id="m-user" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5aa0f2"/></marker>
+  <marker id="m-pay" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ffd166"/></marker>
+  <marker id="m-ops" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ff8fa3"/></marker>
+</defs>
+<style>
+@keyframes a-tender{0%{opacity:1}13.333%{opacity:1}14.286%{opacity:0.08}84.762%{opacity:0.08}85.714%{opacity:1}100%{opacity:1}}
+.f-tender{animation:a-tender 42s linear infinite}
+@keyframes a-ai{0%{opacity:0.08}13.333%{opacity:0.08}14.286%{opacity:1}27.619%{opacity:1}28.571%{opacity:0.08}84.762%{opacity:0.08}85.714%{opacity:1}99.048%{opacity:1}100%{opacity:0.08}}
+.f-ai{animation:a-ai 42s linear infinite}
+@keyframes a-note{0%{opacity:0.08}27.619%{opacity:0.08}28.571%{opacity:1}41.905%{opacity:1}42.857%{opacity:0.08}84.762%{opacity:0.08}85.714%{opacity:1}99.048%{opacity:1}100%{opacity:0.08}}
+.f-note{animation:a-note 42s linear infinite}
+@keyframes a-user{0%{opacity:0.08}41.905%{opacity:0.08}42.857%{opacity:1}56.19%{opacity:1}57.143%{opacity:0.08}84.762%{opacity:0.08}85.714%{opacity:1}99.048%{opacity:1}100%{opacity:0.08}}
+.f-user{animation:a-user 42s linear infinite}
+@keyframes a-pay{0%{opacity:0.08}56.19%{opacity:0.08}57.143%{opacity:1}70.476%{opacity:1}71.429%{opacity:0.08}84.762%{opacity:0.08}85.714%{opacity:1}99.048%{opacity:1}100%{opacity:0.08}}
+.f-pay{animation:a-pay 42s linear infinite}
+@keyframes a-ops{0%{opacity:0.08}70.476%{opacity:0.08}71.429%{opacity:1}99.048%{opacity:1}100%{opacity:0.08}}
+.f-ops{animation:a-ops 42s linear infinite}
+@keyframes c-tender{0%{opacity:1}13.333%{opacity:1}14.286%{opacity:0}99.048%{opacity:0}100%{opacity:1}}
+.c-tender{animation:c-tender 42s linear infinite}
+@keyframes c-ai{0%{opacity:0}13.333%{opacity:0}14.286%{opacity:1}27.619%{opacity:1}28.571%{opacity:0}100%{opacity:0}}
+.c-ai{animation:c-ai 42s linear infinite}
+@keyframes c-note{0%{opacity:0}27.619%{opacity:0}28.571%{opacity:1}41.905%{opacity:1}42.857%{opacity:0}100%{opacity:0}}
+.c-note{animation:c-note 42s linear infinite}
+@keyframes c-user{0%{opacity:0}41.905%{opacity:0}42.857%{opacity:1}56.19%{opacity:1}57.143%{opacity:0}100%{opacity:0}}
+.c-user{animation:c-user 42s linear infinite}
+@keyframes c-pay{0%{opacity:0}56.19%{opacity:0}57.143%{opacity:1}70.476%{opacity:1}71.429%{opacity:0}100%{opacity:0}}
+.c-pay{animation:c-pay 42s linear infinite}
+@keyframes c-ops{0%{opacity:0}70.476%{opacity:0}71.429%{opacity:1}84.762%{opacity:1}85.714%{opacity:0}100%{opacity:0}}
+.c-ops{animation:c-ops 42s linear infinite}
+@keyframes c-all{0%{opacity:0}84.762%{opacity:0}85.714%{opacity:1}99.048%{opacity:1}100%{opacity:0}}
+.c-all{animation:c-all 42s linear infinite}
+.cap{opacity:0}
+@media (prefers-reduced-motion:reduce){.flow,.lbl,.dot{animation:none}}
+</style>
+<rect width="1200" height="830" fill="#0b1830"/>
+<!-- server container -->
+<rect x="200" y="30" width="790" height="590" rx="16" fill="#0f1d36" stroke="#2b3d63" stroke-width="2" stroke-dasharray="8 6"/>
+<text x="218" y="58" font-size="14" font-weight="700" fill="#74d3c4" letter-spacing="1.5">VPS · DOCKER COMPOSE · 20 SERVICES</text>
+
+<g id="boxes" font-size="13" fill="#c4d0e8" text-anchor="middle">
+  <!-- external -->
+  <rect x="20" y="100" width="160" height="90" rx="12" fill="#1a2440" stroke="#8fa3c9" stroke-width="2"/>
+  <text x="100" y="122" font-size="15" font-weight="700" fill="#eef2fb">Public sources</text><text x="100" y="142" font-size="12">state portals (RS, BiH)</text><text x="100" y="160" font-size="12">+ TED, EU, World Bank</text><text x="100" y="178" font-size="12">polled for new tenders</text>
+  <rect x="20" y="250" width="160" height="90" rx="12" fill="#1a2440" stroke="#8fa3c9" stroke-width="2"/>
+  <text x="100" y="278" font-size="15" font-weight="700" fill="#eef2fb">Claude API</text><text x="100" y="300">cheaper model</text><text x="100" y="320">stronger model</text>
+  <rect x="1020" y="250" width="160" height="130" rx="12" fill="#1a2440" stroke="#8fa3c9" stroke-width="2"/>
+  <text x="1100" y="280" font-size="15" font-weight="700" fill="#eef2fb">Subscriber</text><text x="1100" y="306">Telegram app</text><text x="1100" y="328">email inbox</text><text x="1100" y="350">web browser</text>
+  <rect x="1020" y="470" width="160" height="80" rx="12" fill="#1a2440" stroke="#8fa3c9" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="1100" y="498" font-size="15" font-weight="700" fill="#eef2fb">Stripe</text><text x="1100" y="520">checkout</text><text x="1100" y="539" font-size="12">implemented, not live</text>
+  <rect x="230" y="660" width="150" height="70" rx="12" fill="#1a2440" stroke="#8fa3c9" stroke-width="2"/>
+  <text x="305" y="688" font-size="15" font-weight="700" fill="#eef2fb">GitHub main</text><text x="305" y="710">tests, deploy</text>
+  <rect x="700" y="660" width="150" height="70" rx="12" fill="#1a2440" stroke="#8fa3c9" stroke-width="2"/>
+  <text x="775" y="688" font-size="15" font-weight="700" fill="#eef2fb">Admin bot</text><text x="775" y="710">alerts, reports</text>
+  <!-- inside -->
+  <rect x="230" y="90" width="150" height="80" rx="12" fill="#161e30" stroke="#34e39b" stroke-width="2"/>
+  <text x="305" y="118" font-size="15" font-weight="700" fill="#eef2fb">Ingest worker</text><text x="305" y="140">fetch, normalize</text><text x="305" y="158">polite rate limit</text>
+  <rect x="440" y="90" width="200" height="240" rx="14" fill="#161e30" stroke="#74d3c4" stroke-width="2.5"/>
+  <text x="540" y="122" font-size="16" font-weight="700" fill="#eef2fb">PostgreSQL 16</text><text x="540" y="142">+ pgvector (next step)</text>
+  <text x="540" y="182">tenders</text><text x="540" y="206">company profiles</text><text x="540" y="230">row-level security</text><text x="540" y="254">delivery outbox</text><text x="540" y="278">AI analyses</text><text x="540" y="302">58 migrations</text>
+  <rect x="700" y="90" width="150" height="80" rx="12" fill="#161e30" stroke="#34e39b" stroke-width="2"/>
+  <text x="775" y="112" font-size="15" font-weight="700" fill="#eef2fb">Routing worker</text><text x="775" y="131" font-size="12">A: CPV, region, budget,</text><text x="775" y="147" font-size="12">deadline, procedure</text><text x="775" y="163" font-size="12">B: keyword rules</text>
+  <rect x="230" y="250" width="150" height="80" rx="12" fill="#161e30" stroke="#b18cff" stroke-width="2"/>
+  <text x="305" y="278" font-size="15" font-weight="700" fill="#eef2fb">AI worker</text><text x="305" y="300">card translation</text><text x="305" y="318">spec analysis on button</text>
+  <rect x="700" y="250" width="150" height="80" rx="12" fill="#161e30" stroke="#38e1ff" stroke-width="2"/>
+  <text x="775" y="278" font-size="15" font-weight="700" fill="#eef2fb">Delivery worker</text><text x="775" y="300">Telegram, email</text><text x="775" y="318">no duplicates, no losses</text>
+  <rect x="440" y="400" width="200" height="80" rx="12" fill="#161e30" stroke="#5aa0f2" stroke-width="2"/>
+  <text x="540" y="428" font-size="15" font-weight="700" fill="#eef2fb">Web cabinet + API</text><text x="540" y="450">FastAPI, HTMX</text><text x="540" y="468">feed, funnel, templates</text>
+  <rect x="700" y="400" width="140" height="80" rx="12" fill="#161e30" stroke="#5aa0f2" stroke-width="2"/>
+  <text x="770" y="428" font-size="15" font-weight="700" fill="#eef2fb">Telegram bot</text><text x="770" y="450">aiogram 3</text><text x="770" y="468">commands, buttons</text>
+  <rect x="870" y="400" width="100" height="80" rx="12" fill="#161e30" stroke="#5aa0f2" stroke-width="2"/>
+  <text x="920" y="428" font-size="15" font-weight="700" fill="#eef2fb">Caddy 2</text><text x="920" y="450">HTTPS</text><text x="920" y="468">proxy</text>
+  <rect x="230" y="530" width="150" height="60" rx="12" fill="#161e30" stroke="#ff8fa3" stroke-width="2"/>
+  <text x="305" y="556" font-size="15" font-weight="700" fill="#eef2fb">Deploy</text><text x="305" y="576">one command, check</text>
+  <rect x="440" y="530" width="200" height="60" rx="12" fill="#161e30" stroke="#8fa3c9" stroke-width="2"/>
+  <text x="540" y="556" font-size="15" font-weight="700" fill="#eef2fb">Redis 7</text><text x="540" y="576">queues, cache, limits</text>
+  <rect x="700" y="530" width="150" height="60" rx="12" fill="#161e30" stroke="#ff8fa3" stroke-width="2"/>
+  <text x="775" y="556" font-size="15" font-weight="700" fill="#eef2fb">Monitoring</text><text x="775" y="576">daily report, backups</text>
+</g>
+
+<g id="lines" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <g class="flow f-tender" stroke="#34e39b" marker-end="url(#m-tender)">
+    <path id="g1" d="M180 145 H226"/><path id="g2" d="M380 130 H436"/><path id="g3" d="M640 115 H696"/>
+    <path id="g4" d="M700 150 H644"/><path id="g5" d="M440 275 H384"/><path id="g6" d="M380 305 H436"/><path id="g7" d="M640 290 H696"/>
+  </g>
+  <g class="flow f-ai" stroke="#b18cff" marker-end="url(#m-ai)">
+    <path id="p1" d="M230 275 H184"/><path id="p2" d="M180 305 H226"/>
+  </g>
+  <g class="flow f-note" stroke="#38e1ff" marker-end="url(#m-note)">
+    <path id="c1" d="M850 290 H1016"/>
+  </g>
+  <g class="flow f-user" stroke="#5aa0f2" marker-end="url(#m-user)">
+    <path id="b1" d="M1040 380 V440 H974"/><path id="b2" d="M870 440 H844"/><path id="b3" d="M920 480 V505 H540 V484"/>
+    <path id="b4" d="M540 400 V334"/><path id="b5" d="M770 400 V350 H600 V334"/>
+  </g>
+  <g class="flow f-pay" stroke="#ffd166" stroke-dasharray="7 6" marker-end="url(#m-pay)">
+    <path id="y1" d="M1100 380 V466"/><path id="y2" d="M1020 512 H945 V484"/>
+  </g>
+  <g class="flow f-ops" stroke="#ff8fa3" marker-end="url(#m-ops)">
+    <path id="o1" d="M305 660 V594"/><path id="o2" d="M775 590 V656"/>
+  </g>
+</g>
+
+<g font-size="11.5" fill="#9db0d2" text-anchor="middle">
+  <text class="lbl f-tender" x="203" y="137">tenders</text>
+  <text class="lbl f-tender" x="670" y="106">notify</text>
+  <text class="lbl f-tender" x="670" y="166">outbox</text>
+  <text class="lbl f-ai" x="205" y="266">prompt</text>
+  <text class="lbl f-ai" x="205" y="322">JSON</text>
+  <text class="lbl f-note" x="935" y="281">matched tenders only</text>
+  <text class="lbl f-pay" x="982" y="503">webhook</text>
+  <text class="lbl f-ops" x="330" y="630">deploy</text>
+  <text class="lbl f-ops" x="800" y="630">alerts</text>
+</g>
+<g id="dots">
+<circle class="dot f-tender" r="5.5" fill="#34e39b"><animateMotion dur="1.20s" begin="-0.00s" repeatCount="indefinite"><mpath href="#g1"/></animateMotion></circle>
+<circle class="dot f-tender" r="5.5" fill="#34e39b"><animateMotion dur="1.20s" begin="-0.60s" repeatCount="indefinite"><mpath href="#g1"/></animateMotion></circle>
+<circle class="dot f-tender" r="5.5" fill="#34e39b"><animateMotion dur="1.20s" begin="-0.25s" repeatCount="indefinite"><mpath href="#g2"/></animateMotion></circle>
+<circle class="dot f-tender" r="5.5" fill="#34e39b"><animateMotion dur="1.20s" begin="-0.85s" repeatCount="indefinite"><mpath href="#g2"/></animateMotion></circle>
+<circle class="dot f-tender" r="5.5" fill="#34e39b"><animateMotion dur="1.20s" begin="-0.50s" repeatCount="indefinite"><mpath href="#g3"/></animateMotion></circle>
+<circle class="dot f-tender" r="5.5" fill="#34e39b"><animateMotion dur="1.20s" begin="-1.10s" repeatCount="indefinite"><mpath href="#g3"/></animateMotion></circle>
+<circle class="dot f-tender" r="5.5" fill="#34e39b"><animateMotion dur="1.20s" begin="-0.75s" repeatCount="indefinite"><mpath href="#g4"/></animateMotion></circle>
+<circle class="dot f-tender" r="5.5" fill="#34e39b"><animateMotion dur="1.20s" begin="-1.35s" repeatCount="indefinite"><mpath href="#g4"/></animateMotion></circle>
+<circle class="dot f-tender" r="5.5" fill="#34e39b"><animateMotion dur="1.20s" begin="-1.00s" repeatCount="indefinite"><mpath href="#g5"/></animateMotion></circle>
+<circle class="dot f-tender" r="5.5" fill="#34e39b"><animateMotion dur="1.20s" begin="-1.60s" repeatCount="indefinite"><mpath href="#g5"/></animateMotion></circle>
+<circle class="dot f-tender" r="5.5" fill="#34e39b"><animateMotion dur="1.20s" begin="-1.25s" repeatCount="indefinite"><mpath href="#g6"/></animateMotion></circle>
+<circle class="dot f-tender" r="5.5" fill="#34e39b"><animateMotion dur="1.20s" begin="-1.85s" repeatCount="indefinite"><mpath href="#g6"/></animateMotion></circle>
+<circle class="dot f-tender" r="5.5" fill="#34e39b"><animateMotion dur="1.20s" begin="-1.50s" repeatCount="indefinite"><mpath href="#g7"/></animateMotion></circle>
+<circle class="dot f-tender" r="5.5" fill="#34e39b"><animateMotion dur="1.20s" begin="-2.10s" repeatCount="indefinite"><mpath href="#g7"/></animateMotion></circle>
+<circle class="dot f-ai" r="5.5" fill="#b18cff"><animateMotion dur="1.20s" begin="-0.00s" repeatCount="indefinite"><mpath href="#p1"/></animateMotion></circle>
+<circle class="dot f-ai" r="5.5" fill="#b18cff"><animateMotion dur="1.20s" begin="-0.60s" repeatCount="indefinite"><mpath href="#p1"/></animateMotion></circle>
+<circle class="dot f-ai" r="5.5" fill="#b18cff"><animateMotion dur="1.20s" begin="-0.25s" repeatCount="indefinite"><mpath href="#p2"/></animateMotion></circle>
+<circle class="dot f-ai" r="5.5" fill="#b18cff"><animateMotion dur="1.20s" begin="-0.85s" repeatCount="indefinite"><mpath href="#p2"/></animateMotion></circle>
+<circle class="dot f-note" r="5.5" fill="#38e1ff"><animateMotion dur="1.84s" begin="-0.00s" repeatCount="indefinite"><mpath href="#c1"/></animateMotion></circle>
+<circle class="dot f-note" r="5.5" fill="#38e1ff"><animateMotion dur="1.84s" begin="-0.92s" repeatCount="indefinite"><mpath href="#c1"/></animateMotion></circle>
+<circle class="dot f-user" r="5.5" fill="#5aa0f2"><animateMotion dur="1.40s" begin="-0.00s" repeatCount="indefinite"><mpath href="#b1"/></animateMotion></circle>
+<circle class="dot f-user" r="5.5" fill="#5aa0f2"><animateMotion dur="1.40s" begin="-0.70s" repeatCount="indefinite"><mpath href="#b1"/></animateMotion></circle>
+<circle class="dot f-user" r="5.5" fill="#5aa0f2"><animateMotion dur="1.20s" begin="-0.25s" repeatCount="indefinite"><mpath href="#b2"/></animateMotion></circle>
+<circle class="dot f-user" r="5.5" fill="#5aa0f2"><animateMotion dur="1.20s" begin="-0.85s" repeatCount="indefinite"><mpath href="#b2"/></animateMotion></circle>
+<circle class="dot f-user" r="5.5" fill="#5aa0f2"><animateMotion dur="4.73s" begin="-0.50s" repeatCount="indefinite"><mpath href="#b3"/></animateMotion></circle>
+<circle class="dot f-user" r="5.5" fill="#5aa0f2"><animateMotion dur="4.73s" begin="-2.87s" repeatCount="indefinite"><mpath href="#b3"/></animateMotion></circle>
+<circle class="dot f-user" r="5.5" fill="#5aa0f2"><animateMotion dur="1.20s" begin="-0.75s" repeatCount="indefinite"><mpath href="#b4"/></animateMotion></circle>
+<circle class="dot f-user" r="5.5" fill="#5aa0f2"><animateMotion dur="1.20s" begin="-1.35s" repeatCount="indefinite"><mpath href="#b4"/></animateMotion></circle>
+<circle class="dot f-user" r="5.5" fill="#5aa0f2"><animateMotion dur="2.62s" begin="-1.00s" repeatCount="indefinite"><mpath href="#b5"/></animateMotion></circle>
+<circle class="dot f-user" r="5.5" fill="#5aa0f2"><animateMotion dur="2.62s" begin="-2.31s" repeatCount="indefinite"><mpath href="#b5"/></animateMotion></circle>
+<circle class="dot f-pay" r="5.5" fill="#ffd166"><animateMotion dur="1.20s" begin="-0.00s" repeatCount="indefinite"><mpath href="#y1"/></animateMotion></circle>
+<circle class="dot f-pay" r="5.5" fill="#ffd166"><animateMotion dur="1.20s" begin="-0.60s" repeatCount="indefinite"><mpath href="#y1"/></animateMotion></circle>
+<circle class="dot f-pay" r="5.5" fill="#ffd166"><animateMotion dur="1.20s" begin="-0.25s" repeatCount="indefinite"><mpath href="#y2"/></animateMotion></circle>
+<circle class="dot f-pay" r="5.5" fill="#ffd166"><animateMotion dur="1.20s" begin="-0.85s" repeatCount="indefinite"><mpath href="#y2"/></animateMotion></circle>
+<circle class="dot f-ops" r="5.5" fill="#ff8fa3"><animateMotion dur="1.20s" begin="-0.00s" repeatCount="indefinite"><mpath href="#o1"/></animateMotion></circle>
+<circle class="dot f-ops" r="5.5" fill="#ff8fa3"><animateMotion dur="1.20s" begin="-0.60s" repeatCount="indefinite"><mpath href="#o1"/></animateMotion></circle>
+<circle class="dot f-ops" r="5.5" fill="#ff8fa3"><animateMotion dur="1.20s" begin="-0.25s" repeatCount="indefinite"><mpath href="#o2"/></animateMotion></circle>
+<circle class="dot f-ops" r="5.5" fill="#ff8fa3"><animateMotion dur="1.20s" begin="-0.85s" repeatCount="indefinite"><mpath href="#o2"/></animateMotion></circle>
+</g>
+<g font-size="13" fill="#c4d0e8"><circle cx="60" cy="780" r="6" fill="#34e39b"/><text x="74" y="785">Tender data</text><circle cx="215" cy="780" r="6" fill="#b18cff"/><text x="229" y="785">AI requests</text><circle cx="365" cy="780" r="6" fill="#38e1ff"/><text x="379" y="785">Notifications</text><circle cx="530" cy="780" r="6" fill="#5aa0f2"/><text x="544" y="785">User requests</text><circle cx="700" cy="780" r="6" fill="#ffd166"/><text x="714" y="785">Payments</text><circle cx="835" cy="780" r="6" fill="#ff8fa3"/><text x="849" y="785">Operations</text></g>
+<text class="cap c-tender" x="600" y="815" font-size="14" fill="#eef2fb" text-anchor="middle">Tender data: sources → ingest → database → routing → outbox → AI and delivery. Each stage is its own service.</text>
+<text class="cap c-ai" x="600" y="815" font-size="14" fill="#eef2fb" text-anchor="middle">AI requests: card translation and specification analysis on button. Limit checked before each call, usage recorded after.</text>
+<text class="cap c-note" x="600" y="815" font-size="14" fill="#eef2fb" text-anchor="middle">Notifications: only matched tenders go to Telegram and email, with no duplicates and no losses.</text>
+<text class="cap c-user" x="600" y="815" font-size="14" fill="#eef2fb" text-anchor="middle">User requests: browser and Telegram commands come through Caddy to the cabinet and the bot, under row-level security.</text>
+<text class="cap c-pay" x="600" y="815" font-size="14" fill="#eef2fb" text-anchor="middle">Payments: Stripe checkout and webhook are implemented, but not live.</text>
+<text class="cap c-ops" x="600" y="815" font-size="14" fill="#eef2fb" text-anchor="middle">Operations: deploy of main with a check, plus a daily flow report, service alerts and backups.</text>
+<text class="cap c-all" x="600" y="815" font-size="14" fill="#eef2fb" text-anchor="middle">All flows together.</text>
+</svg>

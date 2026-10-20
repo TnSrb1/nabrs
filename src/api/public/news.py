@@ -36,6 +36,93 @@ class NewsItem:
 
 NEWS: tuple[NewsItem, ...] = (
     NewsItem(
+        slug="bih-tenderi",
+        published=date(2026, 10, 20),
+        title={
+            "sr": "Bosna i Hercegovina: novi izvor e-Nabavke",
+            "en": "Bosnia and Herzegovina: new source e-Nabavke",
+            "ru": "Босния и Герцеговина: новая площадка e-Nabavke",
+        },
+        body={
+            "sr": (
+                "Dodali smo nacionalni portal javnih nabavki Bosne i Hercegovine, e-Nabavke BiH (www.src-ejn.example.invalid). Od 19.10. u bazi je 1.987 otvorenih tendera iz BiH, a novi se dodaju pri svakom ciklu provere izvora.",
+                "Da biste ih primali, dodajte izvor „e-Nabavke BiH“ u šablon. Izvor se ne dodaje u postojeće šablone sam: uključite ga u podešavanjima šablona ili jednim klikom na početnoj strani kabineta, gde nudimo izvore koji nedostaju u vašim šablonima.",
+            ),
+            "en": (
+                "We added the national public procurement portal of Bosnia and Herzegovina, e-Nabavke BiH (www.src-ejn.example.invalid). As of 19.10., the database holds 1,987 open tenders from BiH, and new ones are added in every source check cycle.",
+                "To receive them, add the “e-Nabavke BiH” source to your template. It is not added to existing templates by itself: turn it on in the template settings, or with one click on your cabinet home page, where we offer sources missing from your templates.",
+            ),
+            "ru": (
+                "Мы подключили национальный портал госзакупок Боснии и Герцеговины: e-Nabavke BiH (www.src-ejn.example.invalid). На 19.10 в базе 1 987 открытых тендеров из Боснии и Герцеговины, новые добавляются в каждом цикле проверки площадки.",
+                "Чтобы получать их, добавьте площадку «e-Nabavke BiH» в шаблон. В уже созданные шаблоны она сама не попадает: включите её в настройках шаблона или одним нажатием на главной странице кабинета, где мы предлагаем площадки, которых нет в ваших шаблонах.",
+            ),
+        },
+        link="/app",
+        link_label={
+            "sr": "Otvori kabinet",
+            "en": "Open your cabinet",
+            "ru": "Открыть кабинет",
+        },
+    ),
+    NewsItem(
+        slug="ai-cita-sve-dokumente",
+        published=date(2026, 10, 20),
+        title={
+            "sr": "AI čita svu dokumentaciju tendera",
+            "en": "AI now reads all tender documents",
+            "ru": "AI читает всю документацию тендера",
+        },
+        body={
+            "sr": (
+                "AI analiza sada čita i dokumente u formatima Word 97–2003 (.doc), OpenDocument (.odt), RTF i ZIP arhive, uz PDF, DOCX i XLSX, koje je čitala i ranije. Merenje od 19.10. pokazalo je da je na portalu jnportal kod 18% tendera tehnička specifikacija bila samo u takvim datotekama; sada je model vidi.",
+                "Duplirani fajlovi u partijama (lotovima) više ne potiskuju jedinstvene dokumente. Skenirani dokumenti bez tekstualnog sloja su označeni; prepoznavanje teksta (OCR) se ne radi.",
+            ),
+            "en": (
+                "AI analysis now reads documents in Word 97–2003 (.doc), OpenDocument (.odt), RTF and ZIP archives, in addition to the PDF, DOCX and XLSX files it already read. A check on 19.10. showed that on the jnportal portal, the technical specification for 18% of tenders was only in such files; the model now sees it.",
+                "Duplicate files in lots no longer push out unique documents. Scanned documents without a text layer are marked; text recognition (OCR) is not performed.",
+            ),
+            "ru": (
+                "Разбор AI теперь читает документы в форматах Word 97–2003 (.doc), OpenDocument (.odt), RTF и ZIP-архивы, помимо PDF, DOCX и XLSX, которые читались и раньше. Замер от 19.10 показал: на портале jnportal у 18% тендеров техническое задание было только в таких файлах, и теперь модель его видит.",
+                "Дубли файлов в партиях (лотах) больше не вытесняют уникальные документы. Сканы без текстового слоя помечаются; распознавание текста (OCR) не выполняется.",
+            ),
+        },
+        link="/app/feed",
+        link_label={
+            "sr": "Otvori poklapanja",
+            "en": "Open my matches",
+            "ru": "Открыть совпадения",
+        },
+    ),
+    NewsItem(
+        slug="otvoreni-kod",
+        published=date(2026, 10, 20),
+        title={
+            "sr": "Otvoreni kod: snimak izvornog koda na GitHub-u",
+            "en": "Open source: a snapshot of the source code on GitHub",
+            "ru": "Открытый код: снимок исходного кода на GitHub",
+        },
+        body={
+            "sr": (
+                "Objavili smo snimak izvornog koda servisa TenderSRB na GitHub-u (github.com/TnSrb1/nabrs): veb sajt i kabinet, bot, radnici obrade i testovi.",
+                "Konektori ka portalima javnih nabavki nisu deo objave. Ovo je snimak koda na dan objave.",
+            ),
+            "en": (
+                "We published a snapshot of the TenderSRB source code on GitHub (github.com/TnSrb1/nabrs): the website and cabinet, the bot, the workers and the tests.",
+                "The connectors to procurement portals are not part of the publication. This is a snapshot of the code as of the publication date.",
+            ),
+            "ru": (
+                "Мы опубликовали снимок исходного кода TenderSRB на GitHub (github.com/TnSrb1/nabrs): сайт и кабинет, бота, воркеры и тесты.",
+                "Коннекторы к порталам госзакупок в публикацию не входят. Это снимок кода на дату публикации.",
+            ),
+        },
+        link="https://github.com/TnSrb1/nabrs",
+        link_label={
+            "sr": "Kod na GitHub-u",
+            "en": "Code on GitHub",
+            "ru": "Код на GitHub",
+        },
+    ),
+    NewsItem(
         slug="kabinet-treci-kanal",
         published=date(2026, 10, 19),
         title={

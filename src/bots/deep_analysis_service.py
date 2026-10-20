@@ -39,6 +39,7 @@ from typing import Any
 from sqlalchemy import text
 
 from src.ai import AiClient, AiRetryableError, AnalysisRequest
+from src.ai.stepwise import analyze_tender, step_recorder
 from src.ai.usage import (
     _TIER_LIMITS,
     cache_lookup,
@@ -47,6 +48,7 @@ from src.ai.usage import (
     record_error_spend,
 )
 from src.bots.i18n import bot_t
+from src.bots.requirements_render import render_requirements
 from src.bots.tg_html import split_tg_html
 from src.bots.status_service import resolve_tenant_id
 from src.domain.access import is_frozen
@@ -59,7 +61,7 @@ _TG_MAX_CHARS = 4096
 
 # SQL queries for loading the tender and the tenant data.
 _LOAD_TENDER_SQL = text("""
-    SELECT tn.title, tn.description, c.name AS country_name
+    SELECT tn.title, tn.description, tn.documents, c.name AS country_name
     FROM tenders_normalized tn
     JOIN tenants t ON t.id = :tenant_id
     LEFT JOIN countries c ON c.code = t.country_code
@@ -205,7 +207,13 @@ async def run_deep_analysis(
         target_language="ru",  # at MVP shared — the profile language is not available without profile_id
     )
     try:
-        result = await client.analyze(request)
+        # Step-wise or as before — Scout decides; steps are written to ai_usage as they run.
+        result = await analyze_tender(
+            client,
+            request,
+            record_spend=step_recorder(session, tenant_id=tenant_id, level="deep"),
+            documents=getattr(tender_row, "documents", None),
+        )
     except AiRetryableError:
         logger.warning("deep: model busy tender=%s", tender_id)
         return DeepAnalysisResult(status="model_busy")
@@ -356,5 +364,10 @@ def _render_l3_chunks(title: str, output: dict, locale: str | None = None) -> li
                 fa_parts.append(f"  ❓ {html.escape(q)}\n  💬 {html.escape(a or '—')}")
         if fa_parts:
             parts.append(f"🔍 <b>{t('da_focus')}</b>\n" + "\n\n".join(fa_parts))
+
+    # Requirements journal of the step-wise analysis (stepwise): short list + "on the site".
+    req_block = render_requirements(output, locale)
+    if req_block:
+        parts.append(req_block)
 
     return _paginate_l3(parts)

@@ -36,6 +36,11 @@ class DescriptionBlock:
     text: str
 
 
+# Display cap for the description. jnportal stores the full document text (up to 300k,
+# for stepwise AI analysis); pages must stay as light as when 50k was the storage cap.
+DESCRIPTION_DISPLAY_MAX_CHARS = 50_000
+
+
 def split_description_blocks(description: str | None) -> list[DescriptionBlock]:
     """Splits the raw description text by the marker ``### file name``.
 
@@ -44,6 +49,7 @@ def split_description_blocks(description: str | None) -> list[DescriptionBlock]:
     """
     if not description:
         return []
+    description = description[:DESCRIPTION_DISPLAY_MAX_CHARS]
     description = "\n".join(
         ln for ln in description.split("\n") if not _EXTRACT_MARKER_RE.match(ln)
     )

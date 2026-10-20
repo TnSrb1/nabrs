@@ -105,3 +105,15 @@ async def test_error_without_spend_records_nothing():
     s = _Session()
     await record_error_spend(s, tenant_id="T1", level="quick", exc=AiError("сбой"))
     assert s.calls == [] and s.commits == 0
+
+
+@pytest.mark.asyncio
+async def test_invalid_json_answer_carries_spend():
+    from src.ai.client import AiResponseError
+
+    c = _client(_resp(text="это не JSON"))
+    with pytest.raises(AiResponseError) as ei:
+        await c.analyze(_REQ)
+    assert ei.value.spend is not None
+    assert ei.value.spend.tokens == 1100
+    assert ei.value.spend.cost_usd > 0

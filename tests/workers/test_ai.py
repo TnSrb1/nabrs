@@ -529,6 +529,7 @@ async def test_unique_race_on_insert_finalizes_with_existing():
             _FakeResult([SimpleNamespace(count=0)]),  # usage count (pro=400)
             _FakeResult([]),  # cache lookup (before the call) → miss
             IntegrityError("dup", None, Exception()),  # INSERT → conflict
+            _FakeResult([]),  # update of a stale row: nothing to do (it is not stale)
             _FakeResult([SimpleNamespace(id="winner-1")]),  # the repeated cache lookup
         ]
     )

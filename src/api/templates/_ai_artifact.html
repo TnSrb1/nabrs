@@ -70,7 +70,32 @@
 </div>
 {% endif %}
 {% if output.summary %}<p class="mt-4 text-sm text-slate-600">💡 {{ output.summary }}</p>{% endif %}
+{{ requirements_block(output) }}
 {{ ai_disclaimer() }}
+{% endmacro %}
+
+{% macro requirements_block(output) %}
+{# Requirements journal of the step-wise analysis (stepwise): each requirement — with a link to
+   document and a verbatim fragment. The code writes it, not the model; the regular analysis has no such block. #}
+{% if output.requirements %}
+{% set _n = output.requirements | length %}
+<details class="mt-4"{% if _n <= 15 %} open{% endif %}>
+  <summary class="font-medium cursor-pointer">{{ t.art_req_title }} <span class="chip">{{ _n }}</span></summary>
+  {% if output.stepwise and output.stepwise.chunks_done < output.stepwise.chunks_total %}
+  <p class="text-xs text-amber-700 mt-2">⚠️ {{ t.art_req_partial.format(done=output.stepwise.chunks_done, total=output.stepwise.chunks_total) }}</p>
+  {% endif %}
+  <ul class="text-sm space-y-2 mt-2">
+    {% for r in output.requirements %}
+    {% set _k = 'art_req_kind_' ~ r.kind %}
+    <li>
+      <span class="chip">{{ t[_k] if _k in t else t.art_req_kind_other }}</span>
+      <span>{{ r.text }}</span>
+      <span class="block text-xs text-slate-500">{{ t.art_req_doc }}: <span class="font-medium">{{ r.doc or '—' }}</span>{% if r.quote %} — «{{ r.quote }}»{% endif %}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</details>
+{% endif %}
 {% endmacro %}
 
 {% macro ai_disclaimer() %}
@@ -183,6 +208,7 @@
     </ol>
   </div>
   {% endif %}
+{{ requirements_block(output) }}
 {{ ai_disclaimer() }}
 {% endmacro %}
 

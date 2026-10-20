@@ -34,6 +34,7 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
+from src.db.session import restore_tenant
 from src.domain.tiers import AUTO_ANALYSIS_LEVELS, effective_tier, normalize_tier
 
 logger = logging.getLogger(__name__)
@@ -133,20 +134,47 @@ TRIAL_AUTO_DEMO_LIMIT = 10
 # in one text() query — with profile_id=None asyncpg does not bind the parameter
 # (the log parameters contain only 2 values instead of 3).
 # Decision: two separate queries by the profile_id is None branch.
+#
+# ‼️ An analysis created BEFORE ``tenders_normalized.last_changed_at`` is stale:
+# documents/deadline changed, but money for a new analysis is spent only by a click
+# of the subscriber (there is no automatic recalculation). ``last_changed_at IS NULL`` = the tender has not changed.
 _CACHE_LOOKUP_NULL_SQL = text("""
-    SELECT id FROM tender_ai_analyses
-    WHERE tender_id = :tender_id
-      AND level = :level
-      AND profile_id IS NULL
+    SELECT a.id FROM tender_ai_analyses a
+    JOIN tenders_normalized t ON t.id = a.tender_id
+    WHERE a.tender_id = :tender_id
+      AND a.level = :level
+      AND a.profile_id IS NULL
+      AND (t.last_changed_at IS NULL OR a.created_at >= t.last_changed_at)
+    ORDER BY a.created_at DESC
     LIMIT 1
     """)
 
 _CACHE_LOOKUP_PROFILE_SQL = text("""
-    SELECT id FROM tender_ai_analyses
-    WHERE tender_id = :tender_id
-      AND level = :level
-      AND profile_id = :profile_id
+    SELECT a.id FROM tender_ai_analyses a
+    JOIN tenders_normalized t ON t.id = a.tender_id
+    WHERE a.tender_id = :tender_id
+      AND a.level = :level
+      AND a.profile_id = :profile_id
+      AND (t.last_changed_at IS NULL OR a.created_at >= t.last_changed_at)
+    ORDER BY a.created_at DESC
     LIMIT 1
+    """)
+
+# Updating a STALE row in place: UNIQUE(tender, profile, level) does not allow
+# inserting a second one, and the id may be referenced by delivery_outbox.ai_analysis_id.
+_REFRESH_STALE_ANALYSIS_SQL = text("""
+    UPDATE tender_ai_analyses a
+    SET model = :model, output = CAST(:output AS jsonb),
+        tokens_input = :ti, tokens_output = :to, tokens_cached = :tc,
+        cost_usd = :cost, created_at = now()
+    FROM tenders_normalized t
+    WHERE t.id = a.tender_id
+      AND a.tender_id = :tender_id
+      AND a.level = :level
+      AND a.profile_id IS NOT DISTINCT FROM CAST(:profile_id AS uuid)
+      AND t.last_changed_at IS NOT NULL
+      AND a.created_at < t.last_changed_at
+    RETURNING a.id
     """)
 
 _USAGE_COUNT_SQL = text("""
@@ -539,37 +567,43 @@ async def finalize_with_insert(
     cache_lookup; returns the found UUID (the work is not lost).
     Returns ``None`` on an unresolvable conflict (an edge case).
     """
+    params = {
+        "tender_id": tender_id,
+        "profile_id": profile_id,
+        "level": level,
+        "model": result.model,
+        "output": json.dumps(result.output, ensure_ascii=False),
+        "ti": result.tokens_input,
+        "to": result.tokens_output,
+        "tc": result.tokens_cached,
+        "cost": result.cost_usd,
+    }
     try:
-        inserted = (
-            await session.execute(
-                _INSERT_ANALYSIS_SQL,
-                {
-                    "tender_id": tender_id,
-                    "profile_id": profile_id,
-                    "level": level,
-                    "model": result.model,
-                    "output": json.dumps(result.output, ensure_ascii=False),
-                    "ti": result.tokens_input,
-                    "to": result.tokens_output,
-                    "tc": result.tokens_cached,
-                    "cost": result.cost_usd,
-                },
-            )
-        ).first()
+        inserted = (await session.execute(_INSERT_ANALYSIS_SQL, params)).first()
         analysis_id = str(inserted.id)
     except IntegrityError:
         await session.rollback()
-        existing = await cache_lookup(session, tender_id, profile_id, level)
-        if existing is None:
-            logger.error(
-                "ai: UNIQUE conflict without a found cache tender=%s level=%s",
-                tender_id,
-                level,
+        # rollback removes the transactional tenant GUC (SET LOCAL): under the role
+        # tendersrb_app (FORCE RLS) the next query without it fails.
+        await restore_tenant(session)
+        # A conflict = either a race (a fresh row already exists), or a STALE row
+        # after a tender change: we update it in place and count the spend.
+        refreshed = (await session.execute(_REFRESH_STALE_ANALYSIS_SQL, params)).first()
+        if refreshed is None:
+            existing = await cache_lookup(session, tender_id, profile_id, level)
+            if existing is None:
+                logger.error(
+                    "ai: UNIQUE conflict without a found cache tender=%s level=%s",
+                    tender_id,
+                    level,
+                )
+                return None
+            await session.commit()
+            logger.info(
+                "ai: UNIQUE race → using the existing analysis=%s", existing
             )
-            return None
-        await session.commit()
-        logger.info("ai: UNIQUE race → using the existing analysis=%s", existing)
-        return existing
+            return existing
+        analysis_id = str(refreshed.id)
 
     await session.execute(
         _UPSERT_USAGE_SQL,

@@ -383,13 +383,14 @@ def test_unread_badge_and_banner_for_authed_user():
     assert "data-news-banner" not in r.text
     assert "data-news-new" in r.text
     assert 'id="vesti"' in r.text
-    # The preview — 3 newest (NEWS_PREVIEW_LIMIT): the news of 17.10 — the first two.
-    assert "Kabinet je treći kanal za tendere" in r.text
-    assert 'href="/novosti/kabinet-treci-kanal"' in r.text
-    assert "Tačni rokovi za narednih 7 dana" in r.text
-    assert 'href="/novosti/rokovi-tacno"' in r.text
-    assert "Novi izvor: Svetska banka (Zapadni Balkan)" in r.text
-    assert 'href="/novosti/svetska-banka"' in r.text
+    # Preview — 3 newest (NEWS_PREVIEW_LIMIT): news of 20.10 — the first three.
+    assert "Bosna i Hercegovina: novi izvor e-Nabavke" in r.text
+    assert 'href="/novosti/bih-tenderi"' in r.text
+    assert "AI čita svu dokumentaciju tendera" in r.text
+    assert 'href="/novosti/ai-cita-sve-dokumente"' in r.text
+    assert "Otvoreni kod: snimak izvornog koda na GitHub-u" in r.text
+    assert 'href="/novosti/otvoreni-kod"' in r.text
+    assert 'href="/novosti/kabinet-treci-kanal"' not in r.text
     assert 'href="/novosti/kalendar-rokova"' not in r.text
     assert 'href="/novosti/prethodna-obavestenja"' not in r.text
 
@@ -397,7 +398,7 @@ def test_unread_badge_and_banner_for_authed_user():
 def test_banner_localized_ru():
     r = _client(authed=True, locale="ru").get("/app")
     assert "Новое в TenderSRB:" not in r.text  # the top banner is removed
-    assert "Кабинет: третий канал получения тендеров" in r.text
+    assert "Босния и Герцеговина: новая площадка e-Nabavke" in r.text
     assert "data-news-new>Новое</span>" in r.text
 
 
@@ -410,8 +411,8 @@ def test_badge_disappears_after_viewing_novosti():
     c = _client(authed=True, locale="sr")
     assert "data-news-badge" in c.get("/app?lang=sr").text
     seen = c.get("/novosti")
-    assert "news_seen=2026-10-19" in seen.headers["set-cookie"]
-    c.cookies.set("news_seen", "2026-10-19")
+    assert "news_seen=2026-10-20" in seen.headers["set-cookie"]
+    c.cookies.set("news_seen", "2026-10-20")
     after = c.get("/app?lang=sr")
     assert "data-news-badge" not in after.text
     assert "data-news-new" not in after.text
@@ -421,7 +422,7 @@ def test_dismiss_form_sets_cookie_and_redirects_back():
     r = _client(authed=True).post("/novosti/procitano", data={"return_to": "/app"})
     assert r.status_code == 303
     assert r.headers["location"] == "/app"
-    assert "news_seen=2026-10-19" in r.headers["set-cookie"]
+    assert "news_seen=2026-10-20" in r.headers["set-cookie"]
 
 
 @pytest.mark.parametrize("bad", ["//evil.example", "https://evil.example", "\\\\x"])

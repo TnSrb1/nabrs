@@ -488,3 +488,43 @@ async def test_precheck_gate_pro():
         s, tid=_TID, tender_id=_TENDER, profile_id=_PROFILE, level="bid"
     )
     assert status == gen.STATUS_GATE_PRO
+
+
+@pytest.mark.asyncio
+async def test_stepwise_stops_when_lock_lost_after_step(monkeypatch):
+    # Step-wise analysis: the commit of the step's write releases the advisory lock. If after it the lock
+    # was taken by a parallel request — this analysis is stopped (otherwise we pay twice).
+    monkeypatch.setenv("AI_STEPWISE", "on")
+
+    class _LosingLock(_Session):
+        def __init__(self, results):
+            super().__init__(results)
+            self.lock_calls = 0
+
+        async def execute(self, statement, params=None):
+            if "pg_try_advisory_xact_lock" in str(statement):
+                self.lock_calls += 1
+                self.executed.append((str(statement), params))
+                return _Result(rows=[SimpleNamespace(locked=self.lock_calls == 1)])
+            return await super().execute(statement, params)
+
+    class _StepAi(_FakeAi):
+        async def analyze(self, request):
+            self.calls += 1
+            res = _ai_result()
+            res.output = {"requirements": []}
+            return res
+
+    big = SimpleNamespace(
+        title="Т", description="я" * 70_000, country_name="Србија", documents=None
+    )
+    s = _LosingLock(
+        [_tenant(), _Result(rows=[]), _usage(), _Result(rows=[big]), _profile()]
+    )
+    ai = _StepAi(result=_ai_result())
+    status = await gen.generate_artifact(
+        s, tid=_TID, tender_id=_TENDER, profile_id=_PROFILE, level="deep", ai_client=ai
+    )
+    assert status == gen.STATUS_IN_PROGRESS
+    assert ai.calls == 1  # after the first step — stop, the other chunks were not called
+    assert s.lock_calls == 2  # taken at the start + an attempt after the step's commit

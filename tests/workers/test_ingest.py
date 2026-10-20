@@ -797,6 +797,96 @@ def test_fingerprint_stable_across_passes_no_false_update():
     assert fp1 == fp2
 
 
+def _doc_entry(**over):
+    entry = {
+        "name": "Tehnicka.pdf",
+        "ext": ".pdf",
+        "size": 1234,
+        "sha256": "ab" * 32,
+        "doc_status": "Активан",
+        "version": "2026-07-14T02:04",
+        "extracted": "ok",
+        "chars": 900,
+    }
+    entry.update(over)
+    return entry
+
+
+def test_documents_fingerprint_ignores_extraction_status():
+    """Extraction status with the same bytes (sha256/size) does not change the fingerprint.
+
+    Otherwise a failure of extraction ok↔error gave a content UPDATE (last_changed_at, NOTIFY,
+    re-matching, AI cache reset) for an unchanged file. A network download failure
+    (``size``/``sha256`` → None) is NOT covered by this test — see TESTING, "What is NOT verified".
+    """
+    ok = replace(_norm("42"), documents=[_doc_entry()])
+    err = replace(_norm("42"), documents=[_doc_entry(extracted="error", chars=0)])
+    assert _fingerprint_fields(_normalized_to_fields(ok)) == _fingerprint_fields(
+        _normalized_to_fields(err)
+    )
+
+
+def test_documents_fingerprint_changes_with_sha256():
+    """A different file under the same name is a content change (UPDATE)."""
+    a = replace(_norm("42"), documents=[_doc_entry()])
+    b = replace(_norm("42"), documents=[_doc_entry(sha256="cd" * 32)])
+    assert _fingerprint_fields(_normalized_to_fields(a)) != _fingerprint_fields(
+        _normalized_to_fields(b)
+    )
+
+
+def _fp_with_documents(documents):
+    return _fingerprint_fields(
+        _normalized_to_fields(replace(_norm("42"), documents=documents))
+    )
+
+
+def test_documents_fingerprint_bih_url_change_changes_fingerprint():
+    """bih_enabavke: document ``{title,url,kind}`` — a change of ``url`` is visible to the fingerprint.
+
+    The whitelist ``name/size/sha256/...`` dropped all three keys of this source (1987 rows in prod) →
+    a change of the document address gave no content UPDATE.
+    """
+    a = _fp_with_documents(
+        [{"title": "Specifikacija", "url": "https://x/a.pdf", "kind": "spec"}]
+    )
+    b = _fp_with_documents(
+        [{"title": "Specifikacija", "url": "https://x/b.pdf", "kind": "spec"}]
+    )
+    assert a != b
+
+
+def test_documents_fingerprint_ukck_url_change_changes_fingerprint():
+    """ukck_nabavke: document ``{name,url,type,size}`` — a change of ``url`` is visible to the fingerprint.
+
+    The whitelist dropped ``url`` — a change of the document address gave no UPDATE.
+    """
+    a = _fp_with_documents(
+        [{"name": "Ponuda.pdf", "url": "https://x/a", "type": "pdf", "size": 10}]
+    )
+    b = _fp_with_documents(
+        [{"name": "Ponuda.pdf", "url": "https://x/b", "type": "pdf", "size": 10}]
+    )
+    assert a != b
+
+
+def test_documents_fingerprint_ignores_only_volatile_extracted_and_chars():
+    """jnportal: a difference only in ``extracted``/``chars`` — the same fingerprint.
+
+    The same file (identical sha256/size): the extraction result is not content.
+    """
+    ok = _fp_with_documents([_doc_entry(extracted="ok", chars=900)])
+    err = _fp_with_documents([_doc_entry(extracted="error", chars=0)])
+    assert ok == err
+
+
+def test_documents_fingerprint_sha256_still_changes_with_volatile_fields_equal():
+    """The same jnportal document: when sha256 changes the fingerprint is different (even with the same extracted/chars)."""
+    a = _fp_with_documents([_doc_entry(extracted="ok", chars=900)])
+    b = _fp_with_documents([_doc_entry(sha256="cd" * 32, extracted="ok", chars=900)])
+    assert a != b
+
+
 # --------------------------------------------------------------------------- #
 #  contract_type: passed through into fields / the fingerprint / INSERT / UPDATE (NEXT №1)
 # --------------------------------------------------------------------------- #

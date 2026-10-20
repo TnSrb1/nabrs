@@ -99,6 +99,17 @@ async def commit_keep_tenant(session: AsyncSession) -> None:
         await session.execute(_SET_TENANT_SQL, {"tid": tenant_id})
 
 
+async def restore_tenant(session: AsyncSession) -> None:
+    """Restore the remembered tenant after ``rollback()`` (SET LOCAL dies with it).
+
+    A session without a remembered tenant — no-op.
+    """
+    info = getattr(session, "info", None)
+    tenant_id = info.get(_TENANT_INFO_KEY) if isinstance(info, dict) else None
+    if isinstance(tenant_id, str):
+        await session.execute(_SET_TENANT_SQL, {"tid": tenant_id})
+
+
 @asynccontextmanager
 async def session_scope() -> AsyncIterator[AsyncSession]:
     """An async context manager that yields an ``AsyncSession``.

@@ -64,6 +64,7 @@ LEVEL_TIER: dict[str, str] = {
     "bid": "balanced",  # on-demand bid/no-bid verdict (VG-08)
     "checklist": "balanced",  # on-demand document checklist (VG-09)
     "draft": "balanced",  # on-demand bid draft (VG-10); the model is overridden by the tenant’s plan
+    "extract": "cheap",  # step of the step-by-step analysis: extract requirements from the chunk (stepwise)
     "translate": "cheap",  # translation of a tender card sr→ru (VG-26) — text transfer, not analysis
 }
 
@@ -148,6 +149,7 @@ class AnalysisRequest:
     extra_context: str | None = None
     focus_questions: Sequence[str] = field(default_factory=tuple)
     model_tier: str | None = None  # tier override for choosing the slug (VG-10 draft)
+    step_label: str | None = None  # extract: "document — chunk i of n" (stepwise)
 
 
 @dataclass(frozen=True)
@@ -368,6 +370,7 @@ class AiClient:
             "checklist",
             "draft",
             "translate",
+            "extract",
         ):
             raise AiError(f"unsupported level: {request.level!r}")
 
@@ -404,7 +407,10 @@ class AiClient:
             parsed = json.loads(_strip_json(raw_text))
             output = schemas.validate_output(request.level, parsed)
         except Exception as exc:  # noqa: BLE001 — any parsing failure is terminal
-            raise AiResponseError(f"invalid model answer: {exc}") from exc
+            raise AiResponseError(
+                f"invalid model answer: {exc}",
+                spend=_spend_of(response, slug),
+            ) from exc
 
         ti, to, cached = _usage_tokens(response)
         served = _served_model(response, slug)
@@ -487,6 +493,19 @@ class AiClient:
                         request.title,
                         request.description,
                         request.extra_context,  # contains the profile parameters
+                    ),
+                }
+            ]
+        elif request.level == "extract":
+            system_text = prompts.build_extract_system(request.target_language)
+            user_blocks = [
+                {
+                    "type": "text",
+                    "text": prompts.build_extract_user(
+                        request.title,
+                        request.step_label,
+                        request.description,
+                        request.extra_context,  # summary of what has been found so far
                     ),
                 }
             ]

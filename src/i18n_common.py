@@ -220,6 +220,14 @@ COMMON: dict[str, dict[str, str]] = {
         # --- new-win alert (src.workers.award_watch_notifier) ---
         "aw_new_win": "nova pobeda",
         "aw_customer": "Naručilac",
+        "tc_title": "Tender je izmenjen",
+        "tc_deadline": "Rok za podnošenje ponuda: {old} → {new}",
+        "tc_amount": "Vrednost: {old} → {new}",
+        "tc_files_changed": "Izmenjeni fajlovi: {names}",
+        "tc_files_added": "Dodati fajlovi: {names}",
+        "tc_files_removed": "Uklonjeni fajlovi: {names}",
+        "tc_note": "Napomena naručioca: {text}",
+        "tc_ai_stale": "Prethodna AI analiza je zastarela — zatražite novu na kartici.",
     },
     "ru": {
         "status_new": "🆕 Новый",
@@ -347,6 +355,14 @@ COMMON: dict[str, dict[str, str]] = {
         ),
         "aw_new_win": "новая победа",
         "aw_customer": "Заказчик",
+        "tc_title": "Тендер изменён",
+        "tc_deadline": "Срок подачи: {old} → {new}",
+        "tc_amount": "Сумма: {old} → {new}",
+        "tc_files_changed": "Изменены файлы: {names}",
+        "tc_files_added": "Добавлены файлы: {names}",
+        "tc_files_removed": "Удалены файлы: {names}",
+        "tc_note": "Комментарий заказчика: {text}",
+        "tc_ai_stale": "Прежний AI-разбор устарел — закажите новый на карточке.",
     },
     "en": {
         "status_new": "🆕 New",
@@ -474,6 +490,14 @@ COMMON: dict[str, dict[str, str]] = {
         ),
         "aw_new_win": "new win",
         "aw_customer": "Customer",
+        "tc_title": "Tender updated",
+        "tc_deadline": "Bid deadline: {old} → {new}",
+        "tc_amount": "Amount: {old} → {new}",
+        "tc_files_changed": "Changed files: {names}",
+        "tc_files_added": "Added files: {names}",
+        "tc_files_removed": "Removed files: {names}",
+        "tc_note": "Customer's note: {text}",
+        "tc_ai_stale": "The previous AI analysis is out of date — request a new one on the card.",
     },
 }
 
@@ -525,6 +549,14 @@ NOTIFY_LABEL_KEYS: tuple[str, ...] = (
     "sub_expired_renew",
     "aw_new_win",
     "aw_customer",
+    "tc_title",
+    "tc_deadline",
+    "tc_amount",
+    "tc_files_changed",
+    "tc_files_added",
+    "tc_files_removed",
+    "tc_note",
+    "tc_ai_stale",
 )
 
 
