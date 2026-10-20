@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+{# “Analitika” — the report builder (R4). Context: page — AnalitikaPageView.
+   The classes — ONLY those that exist in app.css (there is no build; the SRI is fixed); the form —
+   an ordinary GET without JS (CSP script-src 'self'). <summary> — the first child of <details>.
+   The texts — only from the t catalog (sr / ru / en). #}
+{% block title %}{{ t.an_title }}{% endblock %}
+{% block content %}
+{% set s = page.spec %}
+
+{% if page.status == 'gate_business' %}
+<section class="card mb-6">
+  <h1 class="text-xl font-semibold mb-1">{{ t.an_h }}</h1>
+  {% set empty_state_title = t.an_gate_title %}
+  {% set empty_state_hint = t.an_gate_hint %}
+  {% set empty_state_cta_href = "/plans" %}
+  {% set empty_state_cta_label = t.see_plans %}
+  {% set empty_state_secondary_href = none %}
+  {% set empty_state_secondary_label = none %}
+  {% include "_empty_state.html" %}
+</section>
+
+{% elif page.status == 'frozen' %}
+<section class="card mb-6">
+  <h1 class="text-xl font-semibold mb-1">{{ t.an_h }}</h1>
+  <div class="empty-state">
+    <p class="empty-state__title">{{ t.frozen_title }}</p>
+    <p class="empty-state__hint">{{ t.an_frozen_hint }}</p>
+    <div class="empty-state__actions">
+      {% with access_mode='cta' %}{% include "_access_badge.html" %}{% endwith %}
+      <a href="/plans" class="btn-ghost">{{ t.see_plans }}</a>
+    </div>
+  </div>
+</section>
+
+{% else %}
+<section class="card mb-6">
+  <h1 class="text-xl font-semibold mb-1">{{ t.an_h }}</h1>
+  <p class="text-sm text-slate-500">{{ t.an_intro }}</p>
+</section>
+
+<section class="card mb-6" data-testid="an-presets">
+  <h2 class="text-lg font-semibold mb-3">{{ t.an_presets }}</h2>
+  <div class="flex flex-wrap items-center gap-2">
+    {% for p in page.presets %}
+    <a href="{{ p.href }}" class="btn-secondary{% if p.active %} is-active{% endif %}" data-an-preset{% if p.active %} aria-current="true"{% endif %}>{{ t[p.key] }}</a>
+    {% endfor %}
+  </div>
+  <p class="mt-2 text-xs text-slate-500" role="status" data-an-busy hidden>{{ t.an_busy }}</p>
+  {% if page.profiles %}<p class="mt-2 text-xs text-slate-500">{{ t.an_presets_note }}</p>{% endif %}
+</section>
+
+<section class="card mb-6">
+  <form method="get" action="/app/analitika#an-result" class="pf" data-an-form aria-label="{{ t.an_title }}">
+    {% if s.sort %}<input type="hidden" name="sort" value="{{ s.sort }}"><input type="hidden" name="dir" value="{{ s.sort_dir }}">{% endif %}
+    <div class="pf__grid">
+      <div>
+        <label for="an-subject" class="field__label">{{ t.an_subject }}</label>
+        <select id="an-subject" name="subject" class="field-control">
+          {% for key in ('tenders', 'awards') %}
+          <option value="{{ key }}"{% if s.subject == key %} selected{% endif %}>{{ t['an_subject_' ~ key] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="an-g1" class="field__label">{{ t.an_group1 }}</label>
+        <select id="an-g1" name="g1" class="field-control">
+          {% for key in page.dims %}
+          <option value="{{ key }}"{% if s.group1 == key %} selected{% endif %}>{{ t['an_dim_' ~ key] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="an-g2" class="field__label">{{ t.an_group2 }}</label>
+        <select id="an-g2" name="g2" class="field-control">
+          <option value="">{{ t.an_group_none }}</option>
+          {% for key in page.dims %}
+          <option value="{{ key }}"{% if s.group2 == key %} selected{% endif %}>{{ t['an_dim_' ~ key] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="an-m" class="field__label">{{ t.an_measure }}</label>
+        <select id="an-m" name="m" class="field-control">
+          {% for key in page.measures %}
+          <option value="{{ key }}"{% if s.measure == key %} selected{% endif %}>{{ t['an_m_' ~ key] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <details class="pf__more"{% if not page.ran %} open{% endif %}>
+      <summary class="form-section__summary">{{ t.an_filters }}</summary>
+      <div class="pf__grid">
+        <div>
+          <label for="an-from" class="field__label">{{ t.an_from }}</label>
+          <input id="an-from" type="date" name="from" value="{{ s.date_from.isoformat() if s.date_from else '' }}" class="field-control">
+        </div>
+        <div>
+          <label for="an-to" class="field__label">{{ t.an_to }}</label>
+          <input id="an-to" type="date" name="to" value="{{ s.date_to.isoformat() if s.date_to else '' }}" class="field-control">
+        </div>
+        <div>
+          <label class="field__label" for="cpvIncludeSearch">{{ t.an_cpv }}</label>
+          <div class="border rounded p-3 bg-white" id="cpvIncludeWidget" data-field="cpv" data-cpv-no-submit data-cpv-src="{{ static_url('cpv_codes.json') }}"
+               data-cpv-i18n='{{ {"nothing_found": t.cpv_nothing_found, "nothing_selected": t.cpv_nothing_selected, "browse_root": t.cpv_browse_root, "add": t.cpv_add, "remove": t.cpv_remove}|tojson }}'>
+            <div class="flex gap-2 mb-2">
+              <input type="text" id="cpvIncludeSearch" placeholder="{{ t.pf_cpv_search_ph }}" aria-label="{{ t.pf_cpv_search_inc_aria }}" class="field-control flex-1">
+              <button type="button" data-cpv-clear="include" class="btn-ghost text-xs">{{ t.pf_clear }}</button>
+            </div>
+            <div id="cpvIncludeResults" class="max-h-48 overflow-y-auto border rounded bg-slate-50 text-sm hidden"></div>
+            <div id="cpvIncludeList" class="max-h-40 overflow-y-auto border rounded bg-white mt-2 text-sm"></div>
+            <textarea name="cpv" id="cpvIncludeHidden" class="hidden">{% for p in s.cpv %}eu_cpv:{{ p }}*
+{% endfor %}</textarea>
+          </div>
+          <p class="field__hint mt-1">{{ t.an_cpv_hint }}</p>
+        </div>
+        <div>
+          <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+            <input type="checkbox" name="exp" value="12"{% if s.expiring_months %} checked{% endif %}>
+            {{ t.an_expiring }}
+          </label>
+        </div>
+        <div>
+          <label for="an-region" class="field__label">{{ t.an_region }}</label>
+          <select id="an-region" name="region" class="field-control">
+            <option value="">{{ t.an_region_all }}</option>
+            {% for code, label in page.regions %}
+            <option value="{{ code }}"{% if s.region == code %} selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="an-customer" class="field__label">{{ t.an_customer_q }}</label>
+          <input id="an-customer" type="text" name="customer" value="{{ s.customer_q }}" maxlength="120" class="field-control">
+        </div>
+        <div>
+          <label for="an-winner" class="field__label">{{ t.an_winner_q }}</label>
+          <input id="an-winner" type="text" name="winner" value="{{ s.winner_q }}" maxlength="120" class="field-control">
+        </div>
+        <div>
+          <label for="an-amin" class="field__label">{{ t.an_amin }}</label>
+          <input id="an-amin" type="number" name="amin" min="0" step="any" inputmode="decimal" value="{{ s.amount_min if s.amount_min is not none else '' }}" class="field-control">
+        </div>
+        <div>
+          <label for="an-amax" class="field__label">{{ t.an_amax }}</label>
+          <input id="an-amax" type="number" name="amax" min="0" step="any" inputmode="decimal" value="{{ s.amount_max if s.amount_max is not none else '' }}" class="field-control">
+        </div>
+        {% if page.profiles %}
+        <div>
+          <label for="an-profile" class="field__label">{{ t.an_profile }}</label>
+          <select id="an-profile" name="profile" class="field-control">
+            <option value="">{{ t.an_profile_none }}</option>
+            {% for p in page.profiles %}
+            <option value="{{ p.id }}"{% if s.profile_id == p.id %} selected{% endif %}>{{ p.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+      </div>
+      <p class="mt-2 text-xs text-slate-500">{{ t.an_amount_filter_note }}{% if page.profiles %} {{ t.an_profile_note }}{% endif %}</p>
+    </details>
+
+    <div class="mt-4 flex flex-wrap items-center gap-3">
+      <button type="submit" class="btn-primary" data-an-run>{{ t.an_run }}</button>
+      <span class="text-sm text-slate-500" data-an-busy hidden>{{ t.an_busy }}</span>
+      <a href="/app/analitika" class="btn-ghost">{{ t.an_reset }}</a>
+    </div>
+  </form>
+</section>
+
+{% if not page.ran %}
+<section class="card mb-6">
+  <p class="text-sm text-slate-500">{{ t.an_start_hint }}</p>
+</section>
+
+{% elif page.timed_out %}
+<section class="card mb-6" id="an-result" tabindex="-1">
+  {% set empty_state_title = t.an_timeout_title %}
+  {% set empty_state_hint = t.an_timeout_hint %}
+  {% set empty_state_cta_href = none %}
+  {% set empty_state_cta_label = none %}
+  {% set empty_state_secondary_href = none %}
+  {% set empty_state_secondary_label = none %}
+  {% include "_empty_state.html" %}
+</section>
+
+{% elif not page.rows %}
+<section class="card mb-6" id="an-result" tabindex="-1">
+  {% set empty_state_title = t.an_empty_title %}
+  {% set empty_state_hint = t.an_empty_hint %}
+  {% set empty_state_cta_href = none %}
+  {% set empty_state_cta_label = none %}
+  {% set empty_state_secondary_href = none %}
+  {% set empty_state_secondary_label = none %}
+  {% include "_empty_state.html" %}
+</section>
+
+{% else %}
+{% set awards = s.subject == 'awards' %}
+{% set hd = page.heads %}
+<section class="card mb-6" id="an-result" tabindex="-1" data-testid="an-result">
+  <div class="flex flex-wrap items-center gap-3 mb-3">
+    <h2 class="text-lg font-semibold">{{ t['an_subject_' ~ s.subject] }}</h2>
+    <a href="{{ page.export_href }}" class="btn-secondary" data-testid="an-export">⬇ {{ t.an_export }}</a>
+  </div>
+  <p class="text-sm text-slate-600 mb-1">
+    {% if page.first_date_fmt %}{{ t.an_period }} <span class="font-medium text-slate-800">{{ page.first_date_fmt }} — {{ page.last_date_fmt }}</span> · {% endif %}{{ t.an_shown.format(shown=page.rows | length, total=page.total_groups) }}
+  </p>
+  <p class="text-xs text-slate-500 mb-3">{{ t.an_amount_note.format(n=page.total.with_amount, total=page.total.n) }}{% if awards %} {{ t.an_awards_note }}{% endif %}</p>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-left text-slate-500 border-b border-slate-300">
+          <th class="px-3 py-2 font-medium" scope="col" aria-sort="{{ hd['g1'].aria_sort }}"><a href="{{ hd['g1'].href }}" class="hover:underline hover:text-slate-900" data-testid="an-sort-g1">{{ t['an_dim_' ~ s.group1] }}{% if hd['g1'].arrow %}<span aria-hidden="true"> {{ hd['g1'].arrow }}</span>{% endif %}</a></th>
+          {% if s.group2 %}<th class="px-3 py-2 font-medium" scope="col" aria-sort="{{ hd['g2'].aria_sort }}"><a href="{{ hd['g2'].href }}" class="hover:underline hover:text-slate-900" data-testid="an-sort-g2">{{ t['an_dim_' ~ s.group2] }}{% if hd['g2'].arrow %}<span aria-hidden="true"> {{ hd['g2'].arrow }}</span>{% endif %}</a></th>{% endif %}
+          <th class="px-3 py-2 font-medium text-right" scope="col" aria-sort="{{ hd['count'].aria_sort }}"><a href="{{ hd['count'].href }}" class="hover:underline hover:text-slate-900" data-testid="an-sort-count">{{ t.an_m_count }}{% if hd['count'].arrow %}<span aria-hidden="true"> {{ hd['count'].arrow }}</span>{% endif %}</a></th>
+          <th class="px-3 py-2 font-medium text-right" scope="col" aria-sort="{{ hd['with_amount'].aria_sort }}"><a href="{{ hd['with_amount'].href }}" class="hover:underline hover:text-slate-900" data-testid="an-sort-with_amount">{{ t.an_with_amount }}{% if hd['with_amount'].arrow %}<span aria-hidden="true"> {{ hd['with_amount'].arrow }}</span>{% endif %}</a></th>
+          <th class="px-3 py-2 font-medium text-right" scope="col" aria-sort="{{ hd['sum'].aria_sort }}"><a href="{{ hd['sum'].href }}" class="hover:underline hover:text-slate-900" data-testid="an-sort-sum">{{ t.an_m_sum }}{% if hd['sum'].arrow %}<span aria-hidden="true"> {{ hd['sum'].arrow }}</span>{% endif %}</a></th>
+          <th class="px-3 py-2 font-medium text-right" scope="col" aria-sort="{{ hd['avg'].aria_sort }}"><a href="{{ hd['avg'].href }}" class="hover:underline hover:text-slate-900" data-testid="an-sort-avg">{{ t.an_m_avg }}{% if hd['avg'].arrow %}<span aria-hidden="true"> {{ hd['avg'].arrow }}</span>{% endif %}</a></th>
+          <th class="px-3 py-2 font-medium text-right" scope="col" aria-sort="{{ hd['median'].aria_sort }}"><a href="{{ hd['median'].href }}" class="hover:underline hover:text-slate-900" data-testid="an-sort-median">{{ t.an_m_median }}{% if hd['median'].arrow %}<span aria-hidden="true"> {{ hd['median'].arrow }}</span>{% endif %}</a></th>
+          <th class="px-3 py-2 font-medium text-right" scope="col" aria-sort="{{ hd['customers'].aria_sort }}"><a href="{{ hd['customers'].href }}" class="hover:underline hover:text-slate-900" data-testid="an-sort-customers">{{ t.an_m_customers }}{% if hd['customers'].arrow %}<span aria-hidden="true"> {{ hd['customers'].arrow }}</span>{% endif %}</a></th>
+          {% if awards %}<th class="px-3 py-2 font-medium text-right" scope="col" aria-sort="{{ hd['winners'].aria_sort }}"><a href="{{ hd['winners'].href }}" class="hover:underline hover:text-slate-900" data-testid="an-sort-winners">{{ t.an_m_winners }}{% if hd['winners'].arrow %}<span aria-hidden="true"> {{ hd['winners'].arrow }}</span>{% endif %}</a></th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in page.rows %}
+        <tr class="border-b border-slate-300">
+          <td class="px-3 py-2 text-slate-800">{{ r.g1 }}</td>
+          {% if s.group2 %}<td class="px-3 py-2 text-slate-800">{{ r.g2 }}</td>{% endif %}
+          <td class="px-3 py-2 text-right text-slate-700">{{ r.n }}</td>
+          <td class="px-3 py-2 text-right text-slate-700">{{ r.with_amount }}</td>
+          <td class="px-3 py-2 text-right text-slate-700">{{ r.sum_fmt or '—' }}</td>
+          <td class="px-3 py-2 text-right text-slate-700">{{ r.avg_fmt or '—' }}</td>
+          <td class="px-3 py-2 text-right text-slate-700">{{ r.median_fmt or '—' }}</td>
+          <td class="px-3 py-2 text-right text-slate-700">{{ r.customers }}</td>
+          {% if awards %}<td class="px-3 py-2 text-right text-slate-700">{{ r.winners }}</td>{% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        {% set tt = page.total %}
+        <tr class="font-semibold" data-testid="an-total">
+          <td class="px-3 py-2 text-slate-800"{% if s.group2 %} colspan="2"{% endif %}>{{ t.an_total }}</td>
+          <td class="px-3 py-2 text-right text-slate-800">{{ tt.n }}</td>
+          <td class="px-3 py-2 text-right text-slate-800">{{ tt.with_amount }}</td>
+          <td class="px-3 py-2 text-right text-slate-800">{{ tt.sum_fmt or '—' }}</td>
+          <td class="px-3 py-2 text-right text-slate-800">{{ tt.avg_fmt or '—' }}</td>
+          <td class="px-3 py-2 text-right text-slate-800">{{ tt.median_fmt or '—' }}</td>
+          <td class="px-3 py-2 text-right text-slate-800">{{ tt.customers }}</td>
+          {% if awards %}<td class="px-3 py-2 text-right text-slate-800">{{ tt.winners }}</td>{% endif %}
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  <p class="mt-3 text-xs text-slate-500 italic">{{ t.an_export_hint }}</p>
+</section>
+{% endif %}
+{% endif %}
+{% endblock %}
+{% block scripts %}
+{% if page.status == 'success' %}
+<script src="{{ static_url('js/cpv_widget.js') }}" integrity="sha384-WOAow7u6q3ph0ePJjyt4nhb2ar5qyKIQf8fWnD9ZaFre41/Xblypho7gU9kYi9bT" crossorigin="anonymous"></script>
+<script src="{{ static_url('js/analitika_busy.js') }}" integrity="sha384-6B6pv9Dfov8/HPpq5CSEIdnxT24ZtOKvWYzla63OA84C/2jK6a2KcfrSq/NAfpIH" crossorigin="anonymous" defer></script>
+{% endif %}
+{% endblock %}

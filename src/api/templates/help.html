@@ -1,0 +1,136 @@
+{% extends "public_base.html" %}
+{# web-ux-4: the help center — a quick start, the AI functions, the bot, the plans, the FAQ.
+   Only presentation + i18n (HELP in i18n.py). We do not touch the logic / the DB / the AI. #}
+{% block title %}{{ t.title }} — {{ ui.brand }}{% endblock %}
+{% block meta_description %}{{ t.subtitle }}{% endblock %}
+{% block og_title %}{{ t.title }}{% endblock %}
+{% block og_description %}{{ t.subtitle }}{% endblock %}
+{% block content %}
+<section class="mx-auto max-w-5xl px-4 pt-16 pb-12">
+  <h1 class="text-3xl font-bold tracking-tight text-slate-900">{{ t.title }}</h1>
+  <p class="mt-3 text-slate-600 max-w-2xl">{{ t.subtitle }}</p>
+  <nav class="help-nav mt-6" aria-label="{{ t.title }}">
+    {% for s in t.sections %}
+    <a href="#{{ s.id }}" class="help-chip">{% if s.icon %}<span aria-hidden="true">{{ s.icon }}</span>{% endif %}{{ s.title }}</a>
+    {% endfor %}
+  </nav>
+</section>
+
+{% for s in t.sections %}
+<section id="{{ s.id }}" class="mx-auto max-w-5xl px-4 py-8 border-t">
+  <div class="help-section__head">
+    {% if s.icon %}<span class="help-section__icon" aria-hidden="true">{{ s.icon }}</span>{% endif %}
+    <h2 class="help-section__title">{{ s.title }}</h2>
+  </div>
+
+  {% for p in s.body %}
+  <p class="mt-3 text-slate-700 max-w-3xl">{{ p }}</p>
+  {% endfor %}
+
+  {# Sources: the list of enabled ones — from the sources table (sources_view), not a literal #}
+  {% if s.sources_list and sources_view and sources_view.items %}
+  <p class="mt-6 font-semibold text-slate-900">{{ s.sources_heading }}</p>
+  <ul class="mt-3 space-y-2 max-w-3xl">
+    {% for src in sources_view.items %}
+    <li class="card"><span class="font-semibold text-slate-900">{{ src.name }}</span>{% if src.country_codes %} <span class="text-slate-600">— {{ src.countries(lang) }}</span>{% endif %}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% if s.sources_more %}
+  <p class="mt-3 text-sm"><a href="/izvori" class="underline">{{ s.sources_more }}</a></p>
+  {% endif %}
+
+  {# Quick start: numbered steps #}
+  {% if s.steps %}
+  <div class="help-steps mt-6">
+    {% for step in s.steps %}
+    <div class="help-step card">
+      <span class="help-step__num" aria-hidden="true">{{ loop.index }}</span>
+      <div>
+        <div class="help-step__title">{{ step.title }}</div>
+        <p class="help-step__text">{{ step.text }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {# AI features: cards (what it does / how to call it / plan) #}
+  {% if s.features %}
+  <div class="help-feature-grid mt-6">
+    {% for f in s.features %}
+    <div class="help-feature card">
+      <div class="help-feature__head">
+        <span class="help-feature__name">{{ f.name }}</span>
+        {% if f.tier %}<span class="badge badge-muted">{{ f.tier }}</span>{% endif %}
+      </div>
+      <p class="help-feature__what">{{ f.what }}</p>
+      <p class="help-feature__how">{{ f.how }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {# Telegram bot: commands #}
+  {% if s.commands %}
+  <ul class="mt-6 space-y-2">
+    {% for cmd, desc in s.commands %}
+    <li class="help-cmd"><code>{{ cmd }}</code><span class="text-slate-600">{{ desc }}</span></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {# Guides: "heading + explanation" blocks (how to read a card, bid/no-bid) #}
+  {% if s.blocks %}
+  <div class="mt-6 space-y-3 max-w-3xl">
+    {% for b in s.blocks %}
+    <div class="card">
+      <div class="font-semibold text-slate-900">{{ b.h }}</div>
+      <p class="mt-3 text-slate-700">{{ b.text }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {# Glossary: term + definition #}
+  {% if s.glossary %}
+  <dl class="mt-6 space-y-3 max-w-3xl">
+    {% for g in s.glossary %}
+    <div class="card">
+      <dt class="font-semibold text-slate-900">{{ g.term }}</dt>
+      <dd class="mt-3 text-slate-700">{{ g.desc }}</dd>
+    </div>
+    {% endfor %}
+  </dl>
+  {% endif %}
+
+  {# FAQ: accordion #}
+  {% if s.faq_items %}
+  <div class="mt-6">
+    {% for item in s.faq_items %}
+    <details class="faq-item">
+      <summary class="faq-item__q">{{ item.q }}</summary>
+      <div class="faq-item__a">{% if item.link_phrase and item.link_phrase in item.a %}{% set _parts = item.a.split(item.link_phrase, 1) %}{{ _parts[0] }}<a href="#pisite-nam" class="underline">{{ item.link_phrase }}</a>{{ _parts[1] }}{% else %}{{ item.a }}{% endif %}</div>
+    </details>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if s.cta %}
+  <div class="mt-6">
+    <a href="{{ s.cta.href }}" class="btn-primary"{% if s.cta.href.startswith('http') %} target="_blank" rel="noopener"{% endif %}>{{ s.cta.label }}</a>
+  </div>
+  {% endif %}
+</section>
+{% endfor %}
+
+{# Contact: the same form as /kontakt and the cabinet hub (partial). The #pisite-nam anchor is from the FAQ. #}
+<section id="pisite-nam" class="mx-auto max-w-5xl px-4 py-8 border-t" style="scroll-margin-top: calc(var(--header-h, 4rem) + .5rem)">
+  <h2 class="help-section__title">{{ contact_ui(lang).block_title }}</h2>
+  <p class="mt-3 text-slate-700 max-w-3xl">{{ contact_ui(lang).intro }}</p>
+  <div class="max-w-3xl">
+    {% with form_source="help", mailto=true %}{% include "_contact_form.html" %}{% endwith %}
+    {% include "_tg_channel.html" %}
+  </div>
+</section>
+{% endblock %}

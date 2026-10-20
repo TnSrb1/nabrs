@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ t.res_title }}{% endblock %}
+{% block content %}
+{# The result screen after the template is created (step 5, owner 22.09.2026). Before it the POST
+   ended with a redirect to /app, and the client read the silent cabinet as
+   “nothing happened”. The figure and the examples — from one preview_service:
+   both count one A+B predicate, they cannot diverge. #}
+<div class="max-w-2xl">
+  <h1 class="text-xl font-semibold mb-1">{{ t.res_title }}</h1>
+  <p class="text-sm text-slate-500 mb-4">{{ t.res_lede.format(name=profile.name or t.cf_unnamed) }}</p>
+
+  {# ‼️ The #531 branch: the template is created, but there is nowhere to deliver. The refusal must be
+     VISIBLE — a common partial with a direct link to connecting a channel. #}
+  {% include "_delivery_warning.html" %}
+
+  <section class="form-section">
+    <div class="preview-live" role="status">
+      {%- if count %}
+      <p class="preview-live__count">≈ {{ plural(lang, "tenders_30d", count) }}</p>
+      <p class="preview-live__hint">{{ t.res_count_hint }}</p>
+      {%- else %}
+      {# Zero — a separate text with a way out, not an empty screen. #}
+      <p class="preview-live__count preview-live__count--zero">{{ t.pf_preview_zero }}</p>
+      <p class="preview-live__hint">{{ t.pf_preview_zero_hint }}</p>
+      {%- endif %}
+    </div>
+
+    {# Examples — the same markup as under the form’s live counter. #}
+    {% include "_preview_examples.html" %}
+
+    <div class="form-actions">
+      <a href="/app" class="btn-primary">{{ t.res_to_app }}</a>
+      <a href="/profiles/{{ profile.id }}/edit" class="btn-ghost">{{ t.res_edit }}</a>
+    </div>
+  </section>
+
+  {% include "_open_now.html" %}
+</div>
+{% endblock %}

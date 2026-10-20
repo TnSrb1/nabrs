@@ -1,0 +1,35 @@
+{# The tenant’s access in one partial for 4 states: trial / active / Free /
+   expired (frozen). The data — `nav_access` (src/api/nav_access.py, the same gates that
+   close the pages); the catalog — `t`.
+
+   `access_mode` (set by {% set %} before the include):
+   - by default — the status badge for the header (“Pro · 12 d”, “Probni · 21 d”,
+     “Free”, “Pauzirano”). The label is TEXT, the color — the semantic badge-*
+     (≤7 days — badge-urgent, expired — badge-error); we do not touch the palette;
+   - `cta` — when frozen ONE button “Produži besplatno” (POST
+     /cabinet/trial/request kind=extension, the same path as the banner in
+     base.html); when a request has already been submitted — a caption instead of the button. Not frozen —
+     empty. #}
+{% if access_mode == 'cta' %}
+{% if access_frozen %}
+{% if extension_pending %}
+<p class="font-medium" data-extension-pending>{{ t.sub_ended_pending }}</p>
+{% else %}
+<form method="post" action="/cabinet/trial/request" class="mt-2" data-extension-form>
+  <input type="hidden" name="kind" value="extension">
+  <button type="submit" class="btn-primary">{{ t.access_extend_btn }}</button>
+</form>
+{% endif %}
+{% endif %}
+{% elif nav_access %}
+{% set _d = nav_access.days %}
+{% if nav_access.state == 'frozen' %}
+<span class="badge badge-error" data-access-state="frozen">{{ t.nav_badge_frozen }}</span>
+{% elif nav_access.state == 'trial' %}
+<span class="badge {{ 'badge-urgent' if _d is not none and _d <= 7 else 'badge-success' }}" data-access-state="trial">{{ t.nav_badge_trial.format(days=_d) if _d is not none else t.subp_plan_trial }}</span>
+{% elif nav_access.state == 'free' %}
+<span class="badge badge-muted" data-access-state="free">{{ t.nav_badge_free }}</span>
+{% else %}
+<span class="badge {{ 'badge-urgent' if _d is not none and _d <= 7 else 'badge-success' }}" data-access-state="active">{{ t.nav_badge_plan.format(plan=nav_access.plan_key | capitalize, days=_d) if _d is not none else t.nav_badge_plan_open.format(plan=nav_access.plan_key | capitalize) }}</span>
+{% endif %}
+{% endif %}

@@ -1,0 +1,70 @@
+{# The expected re-procurements of the customer (web-ai-4, VG-07). Context: reprocurement —
+   ReprocurementForecastView. Pure SQL over the award data (no AI / limits); the gate —
+   Pro+ and the freeze. The body — ru (the cabinet language). The render by reprocurement.status. The classes
+   are reused from _customer_analytics.html (no new Tailwind classes → the
+   SRI does not change). #}
+<section id="reprocurement-forecast" class="card mb-6">
+  <h2 class="text-lg font-semibold mb-3">{{ t.repro_h }}</h2>
+  {% if reprocurement is none %}
+  {# safeguard: the forecast was not computed (edge case) — the section is not shown #}
+  {% elif reprocurement.status == 'success' %}
+  <p class="text-sm text-slate-600 mb-3">
+    {{ t.repro_lede_1 }} <span class="font-medium text-slate-800">{{ reprocurement.customer_name }}</span>{% if reprocurement.customer_pib %} <span class="text-slate-500">· PIB {{ reprocurement.customer_pib }}</span>{% endif %}{{ t.repro_lede_2.format(n=reprocurement.horizon_months) }}
+  </p>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-left text-slate-500 border-b border-slate-300">
+          <th class="px-3 py-2 font-medium">#</th>
+          <th class="px-3 py-2 font-medium">{{ t.th_subject }}</th>
+          <th class="px-3 py-2 font-medium">{{ t.th_winner }}</th>
+          <th class="px-3 py-2 font-medium">{{ t.th_expires }}</th>
+          <th class="px-3 py-2 font-medium text-right">{{ t.th_sum }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for it in reprocurement.items %}
+        <tr class="border-b border-slate-300 last:border-b-0">
+          <td class="px-3 py-2 text-slate-400">{{ it.rank }}</td>
+          <td class="px-3 py-2 text-slate-800">{{ it.lot_title }}</td>
+          <td class="px-3 py-2 text-slate-700">{{ it.winner_name }}</td>
+          <td class="px-3 py-2 text-slate-700">{{ it.expiry_fmt }} <span class="text-slate-500">(~{{ it.months_until_expiry }} {{ t.unit_months_short }})</span></td>
+          <td class="px-3 py-2 text-right text-slate-700">{{ it.sum_rsd_fmt or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <p class="mt-3 text-xs text-slate-500 italic">{{ t.repro_note }}</p>
+
+  {% elif reprocurement.status == 'gate_pro' %}
+  {% set empty_state_title = t.gate_pro_title %}
+  {% set empty_state_hint = t.repro_gate_hint %}
+  {% set empty_state_cta_href = "/plans" %}
+  {% set empty_state_cta_label = t.see_plans %}
+  {% set empty_state_secondary_href = none %}
+  {% set empty_state_secondary_label = none %}
+  {% include "_empty_state.html" %}
+
+  {% elif reprocurement.status == 'frozen' %}
+  {% set empty_state_title = t.frozen_title %}
+  {% set empty_state_hint = t.repro_frozen_hint %}
+  {% set empty_state_cta_href = "/plans" %}
+  {% set empty_state_cta_label = t.renew_plan %}
+  {% set empty_state_secondary_href = none %}
+  {% set empty_state_secondary_label = none %}
+  {% include "_empty_state.html" %}
+
+  {% else %}
+  {# no_data | no_customer | no_tender — no contracts with a known term #}
+  {% set empty_state_title = t.repro_nodata_title %}
+  {% set empty_state_hint = t.repro_nodata_hint %}
+  {% set empty_state_cta_href = none %}
+  {% set empty_state_cta_label = none %}
+  {% set empty_state_secondary_href = none %}
+  {% set empty_state_secondary_label = none %}
+  {% include "_empty_state.html" %}
+  {% endif %}
+</section>

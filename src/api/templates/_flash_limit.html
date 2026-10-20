@@ -1,0 +1,40 @@
+{# The flash “limit exhausted” — a temporary banner over the screen (a CSS animation).
+
+   The owner’s requirement of 15.08.2026: when the AI is attempted, the limit refusal
+   must FLASH large and bright, offer a plan with a bigger limit and go away
+   by itself after a few seconds.
+
+   ‼️ The flash carries NO state: it disappears after ~6 s, and the cause of the refusal
+   remains as a permanent line in the slot (_ai_slot.html). It is shown only in
+   the response to the client’s ACTION (they pressed the AI / translation button), and not on every opening
+   of the card — otherwise it is an irritant, not a message.
+   ‼️ The hiding is CSS only (@keyframes limit-flash-out): with the CSP
+   `script-src 'self'` inline handlers silently do not run.
+
+   ‼️ The “demo quota” branch is deliberately NOT here: the demo quota (10 analyzes) exists
+   only for the AUTO analysis of the stream, which the client does not press — its refusal is visible
+   as a permanent banner in the slot (mode='auto_skipped'), not as a flash. The flash
+   happens only on the button levels and the translation, where the monthly limit of the
+   plan applies. A “on trial” branch would be code that looks working but is not
+   reached by any path (checked by rendering the route).
+
+   Context: flash = {level, used, limit, upsell_name, upsell_limit,
+   upsell_price} (see routes_tender_ai._flash_for_level). #}
+<div class="limit-flash" role="status" aria-live="polite">
+  <p class="limit-flash__title">{{ t.flash_limit_title }}</p>
+  <p class="limit-flash__body">
+    {{ t.flash_limit_body.format(level=t['ai_level_name_' ~ flash.level], used=flash.used, limit=flash.limit) }}
+  </p>
+  {% if flash.upsell_name %}
+  <p class="limit-flash__body">
+    {{ t.flash_upsell.format(plan=flash.upsell_name|capitalize, limit=flash.upsell_limit, price=flash.upsell_price) }}
+  </p>
+  <div class="limit-flash__actions">
+    <a href="/plans" class="btn-primary">{{ t.flash_cta }}</a>
+  </div>
+  {% else %}
+  {# There is no upsell (the client is on the top plan or the level is unlimited) — staying silent
+     is still not allowed: we show when the limit will renew. #}
+  <p class="limit-flash__body">{{ t.flash_renews }}</p>
+  {% endif %}
+</div>

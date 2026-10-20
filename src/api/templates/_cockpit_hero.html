@@ -1,0 +1,47 @@
+{% from "_hint_tip.html" import tip with context %}
+{# The hero strip of the cockpit “My week” — the first screen of the dashboard (v2, owner 13.10).
+   Three tiles, each — an answer to one question: what is burning this week, what
+   came in new, what I have in work. The subscription term is REMOVED from here (it stands as a header badge,
+   and at ≤7 days — as the _dash_sub_strip.html strip); the channel badges too: their
+   meaning is carried by the single alert banner (_dash_alert.html).
+
+   Progressive enhancement: EACH figure is rendered by the server in the final form.
+   `data-count-to` — only a hint for cockpit.js (the GSAP counter); without JS and
+   with prefers-reduced-motion the page already shows the ready numbers. #}
+<section class="ck-hero" data-cockpit="hero" aria-labelledby="cockpit-title">
+  <div class="ck-hero__head">
+    <h1 class="ck-hero__title" id="cockpit-title">{{ t.hero_title }}</h1>
+    <p class="ck-hero__sub">{{ t.hero_sub }} {{ tip(t.hero_sub_tip, label=t.tip_what) }}</p>
+  </div>
+
+  <div class="ck-hero__grid">
+    {# 1. Nearest deadlines (≤7 d.): the same set as the ROKOVI agenda. #}
+    <a href="#rokovi" class="ck-tile{% if urgent_count %} is-urgent{% endif %}" data-cockpit-card>
+      <p class="ck-tile__value" data-count-to="{{ urgent_count }}">{{ urgent_count }}</p>
+      <p class="ck-tile__label">{{ t.hero_tile_urgent }}</p>
+    </a>
+
+    {# 2. Came in over the week: the same number that used to stand as the “pulse” line.
+       Zero without an explanation the client reads as a breakage, therefore the zero tile
+       is not a link but a block with an explanation and a link “how it works” (interactive content
+       inside <a> is invalid, therefore the link lives in the <div> tile). #}
+    {% if flow_pulse %}
+    <a href="/app/feed" class="ck-tile" data-cockpit-card data-pulse>
+      <p class="ck-tile__value" data-count-to="{{ flow_pulse }}">{{ flow_pulse }}</p>
+      <p class="ck-tile__label">{{ t.hero_tile_new }}</p>
+    </a>
+    {% else %}
+    <div class="ck-tile ck-tile--explain" data-cockpit-card data-pulse>
+      <p class="ck-tile__value" data-count-to="0">0</p>
+      <p class="ck-tile__label">{{ t.hero_tile_new }}</p>
+      <p class="ck-tile__hint">{{ t.dash_pulse_zero.format(days=pulse_window_days) }} <a href="/help#start">{{ t.stats_how_it_works }}</a></p>
+    </div>
+    {% endif %}
+
+    {# 3. In progress: the tender_user_status funnel (the same as the bot’s). #}
+    <a href="/app/my" class="ck-tile" data-cockpit-card>
+      <p class="ck-tile__value" data-count-to="{{ work_summary.total }}">{{ work_summary.total }}</p>
+      <p class="ck-tile__label">{{ t.hero_tile_work }}</p>
+    </a>
+  </div>
+</section>

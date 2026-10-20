@@ -1,0 +1,83 @@
+{# The body of the customer profile: metrics + concentration + dynamics + the top winners.
+   Common for the section on the tender page (_customer_analytics.html) and the page of the
+   cabinet /cabinet/narucilac (narucilac.html) — previously these ~80 lines were a copy of each
+   other, and the next metric would inevitably have got into only one of them.
+
+   Context: a — CustomerAnalyticsView with status='success' (the calling template
+   sets {% set a = ... %} before the include). The classes — only those that exist in
+   app.css (there is no Tailwind build; the SRI is fixed). #}
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+  <div class="metric">
+    <div class="metric__value">{{ a.total_awards }}</div>
+    <div class="metric__label">{{ t.cpb_awards }}</div>
+  </div>
+  <div class="metric">
+    <div class="metric__value">{{ a.distinct_winners }}</div>
+    <div class="metric__label">{{ t.cpb_winners }}</div>
+  </div>
+  {% if a.concentration_pct is not none %}
+  <div class="metric">
+    <div class="metric__value">{{ a.concentration_pct }}%{% if a.cr3_pct is not none and a.distinct_winners > 1 %} <small>/ {{ a.cr3_pct }}%</small>{% endif %}</div>
+    <div class="metric__label">{{ t.cpb_concentration }}{% if a.cr3_pct is not none and a.distinct_winners > 1 %} {{ t.cpb_concentration_top3 }}{% endif %}</div>
+  </div>
+  {% endif %}
+  {% if a.with_amount > 0 %}
+  <div class="metric">
+    <div class="metric__value">{{ a.total_rsd_fmt }}<small> RSD</small></div>
+    <div class="metric__label">{{ t.cpb_sum_by.format(n=a.with_amount, eur=a.total_eur_fmt) }}</div>
+  </div>
+  {% endif %}
+</div>
+
+{% if a.concentration_pct is not none and a.distinct_winners > 1 %}
+<div class="mb-3">
+  <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
+    <span>{{ t.cpb_top1_share }}</span>
+    <span class="font-medium text-slate-700">{{ a.concentration_pct }}%</span>
+  </div>
+  <div class="bar-track"><div class="bar-fill{% if a.is_monopolized %} bar-fill--hot{% endif %}" style="width: {{ a.concentration_pct }}%"></div></div>
+</div>
+{% endif %}
+
+{% if a.is_monopolized %}
+<p class="mb-3"><span class="badge badge-urgent">{{ t.cpb_monopoly }}</span></p>
+{% endif %}
+
+{% if a.trend and a.trend|length > 1 %}
+<p class="font-medium mb-2">{{ t.cpb_trend }}</p>
+<div class="mb-4 space-y-1">
+  {% for y in a.trend %}
+  <div class="flex items-center gap-3 text-sm">
+    <span class="shrink-0 text-slate-500" style="min-width:3rem">{{ y.year }}</span>
+    <div class="flex-1 bar-track"><div class="bar-fill" style="width: {{ y.bar_pct }}%"></div></div>
+    <span class="shrink-0 text-right text-slate-700" style="min-width:7rem">{{ y.awards }} {{ t.unit_decisions_short }}{% if y.distinct_winners %} · {{ y.distinct_winners }} {{ t.unit_wins_short }}{% endif %}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if a.top_winners %}
+<p class="font-medium mb-2">{{ t.cpb_top_winners }}</p>
+<div class="overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="text-left text-slate-500 border-b border-slate-300">
+        <th class="px-3 py-2 font-medium">#</th>
+        <th class="px-3 py-2 font-medium">{{ t.th_winner }}</th>
+        <th class="px-3 py-2 font-medium text-right">{{ t.th_wins }}</th>
+        <th class="px-3 py-2 font-medium text-right">{{ t.th_sum }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for w in a.top_winners %}
+      <tr class="border-b border-slate-300 last:border-b-0">
+        <td class="px-3 py-2 text-slate-400">{{ w.rank }}</td>
+        <td class="px-3 py-2 text-slate-800">{{ w.name }}</td>
+        <td class="px-3 py-2 text-right text-slate-700">{{ w.wins }}</td>
+        <td class="px-3 py-2 text-right text-slate-700">{{ w.sum_rsd_fmt or '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}

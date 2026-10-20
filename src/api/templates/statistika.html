@@ -1,0 +1,150 @@
+{% extends "public_base.html" %}
+{# Public statistics (R3 ANALYTICS_PRODUCT, owner 10.10.2026). Aggregates only:
+   the figures — src/api/public/stats_page (a 1 h cache), the chrome — the catalog STATS. The winners
+   are not shown (they may be sole proprietors — personal data). No JS. #}
+{% block head_extra %}<style>@media (max-width: 639px) { [data-stats-bar] { min-width: 1.5rem !important; width: 1% !important; } table[data-stats-months] :is(th, td), table[data-stats-cpv] :is(th, td), table[data-stats-proc] :is(th, td), table[data-stats-awards] :is(th, td), table[data-stats-customers] :is(th, td) { padding-left: .5rem !important; padding-right: .5rem !important; } }</style>{% endblock %}
+{% block title %}{{ t.title }} — {{ ui.brand }}{% endblock %}
+{% block meta_description %}{{ t.subtitle }}{% endblock %}
+{% block og_title %}{{ t.title }} — {{ ui.brand }}{% endblock %}
+{% block og_description %}{{ t.subtitle }}{% endblock %}
+{% macro bar_row(label, value, pct, extra='') %}
+<tr class="border-b border-slate-200 last:border-b-0">
+  <th scope="row" class="text-left font-medium text-slate-700 px-4 py-2">{{ label }}</th>
+  <td data-stats-bar class="px-4 py-2" style="min-width: 8rem; width: 40%"><div class="bar-track" aria-hidden="true"><div class="bar-fill" style="width: {{ pct }}%"></div></div></td>
+  <td class="text-right text-slate-900 px-4 py-2" style="font-variant-numeric: tabular-nums">{{ value }}</td>
+  {% if extra %}<td class="text-right text-slate-600 px-4 py-2" style="font-variant-numeric: tabular-nums">{{ extra }}</td>{% endif %}
+</tr>
+{% endmacro %}
+{% block content %}
+<section class="mx-auto max-w-5xl px-4 pt-14 pb-6">
+  <h1 class="text-3xl font-bold tracking-tight text-slate-900">{{ t.title }}</h1>
+  <p class="mt-3 text-slate-600 max-w-2xl">{{ t.subtitle }}</p>
+  {% if stats %}
+  <p class="mt-3 text-sm text-slate-600" data-stats-period>{{ t.period.format(start=stats.period_start | d_local, as_of=stats.as_of | d_local) }}</p>
+  <p class="mt-1 text-sm font-semibold text-slate-900">{{ t.total.format(n=stats.tenders_total) }}</p>
+  {% endif %}
+</section>
+
+{% if stats %}
+<section class="mx-auto max-w-5xl px-4 pb-12">
+  <h2 class="text-xl font-semibold text-slate-900 mb-2">{{ t.months_heading }}</h2>
+  <div class="overflow-x-auto rounded-lg border border-slate-200" tabindex="0" role="region" aria-label="{{ t.months_heading }}">
+    <table class="w-full text-sm" data-stats-months>
+      <thead>
+        <tr class="border-b border-slate-200 bg-slate-50">
+          <th scope="col" class="text-left font-semibold text-slate-500 px-4 py-2">{{ t.col_month }}</th>
+          <td class="px-4 py-2" aria-hidden="true"></td>
+          <th scope="col" class="text-right font-semibold text-slate-500 px-4 py-2">{{ t.col_tenders }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in stats.tender_months %}{{ bar_row(r.key ~ (' (' ~ t.partial ~ ')' if r.key == stats.current_month else ''), r.count, r.pct) }}{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="mt-2 text-xs text-slate-500">{{ t.months_note }}</p>
+</section>
+
+<section class="mx-auto max-w-5xl px-4 pb-12">
+  <h2 class="text-xl font-semibold text-slate-900 mb-2">{{ t.cpv_heading }}</h2>
+  <div class="overflow-x-auto rounded-lg border border-slate-200" tabindex="0" role="region" aria-label="{{ t.cpv_heading }}">
+    <table class="w-full text-sm" data-stats-cpv>
+      <thead>
+        <tr class="border-b border-slate-200 bg-slate-50">
+          <th scope="col" class="text-left font-semibold text-slate-500 px-4 py-2">{{ t.col_cpv }}</th>
+          <td class="px-4 py-2" aria-hidden="true"></td>
+          <th scope="col" class="text-right font-semibold text-slate-500 px-4 py-2">{{ t.col_tenders }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in stats.cpv_top %}{{ bar_row(r.key ~ ' · ' ~ cpv_names.get(r.key, r.key), r.count, r.pct) }}{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="mx-auto max-w-5xl px-4 pb-12">
+  <h2 class="text-xl font-semibold text-slate-900 mb-2">{{ t.proc_heading }}</h2>
+  <div class="overflow-x-auto rounded-lg border border-slate-200" tabindex="0" role="region" aria-label="{{ t.proc_heading }}">
+    <table class="w-full text-sm" data-stats-proc>
+      <thead>
+        <tr class="border-b border-slate-200 bg-slate-50">
+          <th scope="col" class="text-left font-semibold text-slate-500 px-4 py-2">{{ t.col_proc }}</th>
+          <td class="px-4 py-2" aria-hidden="true"></td>
+          <th scope="col" class="text-right font-semibold text-slate-500 px-4 py-2">{{ t.col_tenders }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in stats.procedures %}{{ bar_row(proc_label(r.key), r.count, r.pct) }}{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="mx-auto max-w-5xl px-4 pb-12">
+  <h2 class="text-xl font-semibold text-slate-900 mb-2">{{ t.awards_heading }}</h2>
+  {% if stats.award_months %}
+  <p class="mb-2 text-sm text-slate-700" data-stats-awards-total>{{ t.awards_total.format(n=stats.awards_total, sum=fmt_eur(stats.awards_sum_eur)) }} · {{ t.known_of.format(n=stats.awards_known, m=stats.awards_total) }}</p>
+  <div class="overflow-x-auto rounded-lg border border-slate-200" tabindex="0" role="region" aria-label="{{ t.awards_heading }}">
+    <table class="w-full text-sm" data-stats-awards>
+      <thead>
+        <tr class="border-b border-slate-200 bg-slate-50">
+          <th scope="col" class="text-left font-semibold text-slate-500 px-4 py-2">{{ t.col_month }}</th>
+          <td class="px-4 py-2" aria-hidden="true"></td>
+          <th scope="col" class="text-right font-semibold text-slate-500 px-4 py-2">{{ t.col_decisions }}</th>
+          <th scope="col" class="text-right font-semibold text-slate-500 px-4 py-2">{{ t.col_sum }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in stats.award_months %}{{ bar_row(m.label ~ (' (' ~ t.partial ~ ')' if m.label == stats.current_month else ''), m.count, m.pct, fmt_eur(m.sum_eur) ~ ' (' ~ t.known_of.format(n=m.known, m=m.count) ~ ')') }}{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="mt-2 text-xs text-slate-500">{{ t.awards_note }}</p>
+  <p class="mt-1 text-xs text-slate-500" data-stats-awards-lag>{{ t.awards_lag_note }}</p>
+  {% else %}
+  <p class="text-sm text-slate-600">{{ t.no_awards }}</p>
+  {% endif %}
+</section>
+
+{% if stats.top_customers %}
+<section class="mx-auto max-w-5xl px-4 pb-12">
+  <h2 class="text-xl font-semibold text-slate-900 mb-2">{{ t.customers_heading }}</h2>
+  <div class="overflow-x-auto rounded-lg border border-slate-200" tabindex="0" role="region" aria-label="{{ t.customers_heading }}">
+    <table class="w-full text-sm" data-stats-customers>
+      <thead>
+        <tr class="border-b border-slate-200 bg-slate-50">
+          <th scope="col" class="text-left font-semibold text-slate-500 px-4 py-2">{{ t.col_customer }}</th>
+          <th scope="col" class="text-right font-semibold text-slate-500 px-4 py-2">{{ t.col_decisions }}</th>
+          <th scope="col" class="text-right font-semibold text-slate-500 px-4 py-2">{{ t.col_sum }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in stats.top_customers %}
+        <tr class="border-b border-slate-200 last:border-b-0">
+          <th scope="row" class="text-left font-medium text-slate-700 px-4 py-2">{{ c.name }}</th>
+          <td class="text-right text-slate-900 px-4 py-2" style="font-variant-numeric: tabular-nums">{{ c.count }}</td>
+          <td class="text-right text-slate-900 px-4 py-2" style="font-variant-numeric: tabular-nums">{{ fmt_eur(c.sum_eur) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="mt-2 text-xs text-slate-500">{{ t.customers_note }}</p>
+</section>
+{% endif %}
+{% else %}
+<section class="mx-auto max-w-5xl px-4 pb-12">
+  {% set empty_state_title = t.empty %}
+  {% include "_empty_state.html" %}
+</section>
+{% endif %}
+
+<section class="mx-auto max-w-5xl px-4 pb-14">
+  <div class="card" data-stats-cta>
+    <h2 class="text-xl font-semibold text-slate-900">{{ t.cta_title }}</h2>
+    <p class="mt-2 text-slate-600">{{ t.cta_text }}</p>
+    <p class="mt-4">{% if authed %}<a href="/app" class="btn-primary">{{ t.cta_cabinet }}</a>{% else %}<a href="/signup" class="btn-primary">{{ t.cta_button }}</a>{% endif %}</p>
+  </div>
+</section>
+{% endblock %}

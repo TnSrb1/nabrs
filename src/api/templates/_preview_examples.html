@@ -1,0 +1,28 @@
+{# The examples under the counter: the live counter of the form (_preview_count.html) and the screen
+   “Template created” (profile_created.html) — ONE markup for both places.
+   examples — preview_service.PreviewExample: the same pass over the same rows
+   as the figure, therefore an example cannot fall outside the counter.
+   The matched word — <mark> by title_parts (decided by matching.include_term_span,
+   the same rule as the matching); Jinja escapes the pieces, there is no ready HTML.
+   The link is the public /tender/{id}: /app/tenders/{id} without profile_id gives
+   “not found”, and an unsaved profile form does not have one. A new tab — so that
+   a click does not take away the half-filled form. #}
+{% if examples %}
+<div class="preview-live__examples">
+<p class="preview-live__examples-title">{{ t.res_examples_title }}</p>
+<ul class="recap">
+  {% for ex in examples %}
+  <li class="recap__row">
+    <a href="/tender/{{ ex.id }}" target="_blank" rel="noopener" class="preview-examples__link underline hover:text-slate-900">
+      {%- for text, hit in ex.title_parts %}{% if hit %}<mark>{{ text }}</mark>{% else %}{{ text }}{% endif %}{% endfor -%}
+      {%- if not ex.title_parts %}{{ t.cf_unnamed }}{% endif -%}
+    </a>
+    <span class="recap__key">
+      {%- if ex.customer_name %}{{ ex.customer_name }}{% endif -%}
+      {%- if ex.deadline_at %}{% if ex.customer_name %} · {% endif %}{{ t.res_deadline }} {{ ex.deadline_at | d_local }}{% endif -%}
+    </span>
+  </li>
+  {% endfor %}
+</ul>
+</div>
+{% endif %}

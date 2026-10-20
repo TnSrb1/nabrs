@@ -1,0 +1,32 @@
+{% from "_hint_tip.html" import tip with context %}
+{% from "_agenda_list.html" import agenda_list %}
+{# ROKOVI — the SINGLE agenda of the dashboard (v2, owner 13.10). It replaced three copies of the same
+   rows (the calendar’s agenda, “Do now”, the teaser tab “nearest”
+   deadlines"): the set is feed_service.build_calendar_events (+ `urgent_events` for
+   the 7-day window), therefore it cannot diverge from the mini-calendar grid.
+   The 7 / 30-day tabs are ordinary links `?agenda=` (a whitelist on the server): without JS and
+   without a second instance of the list in the markup (one tender = one row on the page).
+   The collapsing of the long tail — the macro `agenda_list` (the display limit agenda_preview_limit);
+   on it is held the link “the month cell ↔ the agenda item” (cockpit_calendar.js). #}
+<section class="card dash-rokovi" id="rokovi" data-cockpit="todo" aria-labelledby="rokovi-title">
+  <div class="dash-head">
+    <h2 class="ck-section__title" id="rokovi-title">{{ t.rokovi_title }} {{ tip(t.todo_tip, label=t.tip_what) }}</h2>
+    <a href="/app/my" class="text-sm text-brand font-medium hover:underline shrink-0">{{ t.todo_my_tenders }}</a>
+  </div>
+  <nav class="ck-teaser__tabs" aria-label="{{ t.rokovi_tabs_label }}">
+    <a href="/app#rokovi" class="ck-teaser__tab"{% if agenda_days != 30 %} aria-current="true"{% endif %}>{{ t.rokovi_tab_7 }}</a>
+    <a href="/app?agenda=30#rokovi" class="ck-teaser__tab"{% if agenda_days == 30 %} aria-current="true"{% endif %}>{{ t.rokovi_tab_30 }}</a>
+  </nav>
+  {% if agenda_events %}
+  {{ agenda_list(agenda_events, lang, t, agenda_preview_limit, marker="agenda") }}
+  {% else %}
+  <div class="empty-state">
+    {% if agenda_days == 30 %}
+    <p class="empty-state__title">{{ t.cal_empty_title }}</p>
+    <p class="empty-state__hint">{{ t.cal_empty_hint }}</p>
+    {% else %}
+    <p class="empty-state__title">{{ t.rokovi_empty_7 }}</p>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>

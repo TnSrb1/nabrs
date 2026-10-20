@@ -1,0 +1,109 @@
+[project]
+name = "tendersrb"
+version = "0.1.0"
+description = "Tender Bot Serbia — monitoring and AI analysis of Serbian public tenders"
+requires-python = ">=3.12"
+dependencies = [
+    # Upper bound up to the next minor: the gap 0.136→0.141 removed the private
+    # get_flat_dependant and broke CI with an ImportError (tests/api/test_admin_login.py,
+    # gh run 35713059581). Production is already on 0.141.1 (docker exec deploy-api-1) —
+    # the bound must include it, therefore not a pin to one version, but the next minor.
+    "fastapi<0.142.0",
+    "uvicorn[standard]",
+    "jinja2",
+    "python-multipart",
+    # Upper bound <2.1: 2.1.1 does not pull greenlet (the asyncio extra in 2.1 is a separate
+    # optional target), CI failed with ModuleNotFoundError at collection of
+    # tests/api/test_admin.py (gh run 36230281253). The lower bound = production
+    # deploy-api-1 (SQLAlchemy 2.0.54, greenlet 3.5.6). [asyncio] pulls greenlet explicitly.
+    "sqlalchemy[asyncio]>=2.0.54,<2.1",
+    "alembic",
+    "asyncpg",
+    "pgvector",
+    "redis",
+    "pydantic-settings",
+    "aiogram>=3",
+    "httpx",
+    "openpyxl",
+    # .doc (Word 97–2003): pure Python, no antiword in the image. Upper bound — the next minor.
+    "olefile>=0.46,<0.48",
+    "xlrd",
+    "pypdf",
+    "anthropic",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "ruff==0.15.16",
+    "black==26.5.1",
+    "mypy",
+    "xlwt",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = [
+    "sr_default: test of the REAL default language sr (disables the legacy-ru fixture of tests/conftest.py)",
+]
+
+# --- Linter (ruff) ---
+# ruff = linter only; formatting is by black. So as not to conflict with black:
+#   line-length matches (88), E501 (line length) is left to black.
+#   I (isort) removed — black owns import formatting.
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+extend-exclude = ["archive", "tmp", "alembic/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = ["E501"]
+
+# --- Formatter (black) ---
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+extend-exclude = '/(archive|tmp|alembic/versions)/'
+
+# --- Types (mypy, non-blocking in CI) ---
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+no_implicit_optional = true
+
+# --- Coverage (T5) ---
+# The scope of measurement covers ALL product code src/ (ai, api, bots, db, parsers,
+# workers), not only workers. source=["src"] is the single source of truth for the
+# coverage scope: CI calls `pytest --cov=src`, the scope and the gate are set here,
+# in pyproject, not in the CI command flags (henceforth they are edited without touching
+# .github/workflows/ci.yml).
+# ADR-013: gate fail_under=70 by the COMBINED coverage for merge into main.
+# omit — only the re-export shims __init__.py (not packages; effect on total ~0.2pp).
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = ["*/__init__.py"]
+
+[tool.coverage.report]
+fail_under = 70
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "@(abc\\.)?abstractmethod",
+]

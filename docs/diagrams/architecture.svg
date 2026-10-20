@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 980" font-family="Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4a5568"/>
+    </marker>
+    <style>
+      .layer-label { font-size: 13px; font-weight: bold; fill: #4a5568; }
+      .box-title { font-size: 13px; font-weight: bold; fill: #1a202c; }
+      .box-sub { font-size: 11px; fill: #4a5568; }
+      .box-tag { font-size: 10px; fill: #718096; }
+      .arrow-line { stroke: #4a5568; stroke-width: 1.8; fill: none; }
+      .arrow-line-thick { stroke: #2b6cb0; stroke-width: 2.2; fill: none; }
+      .arrow-line-dashed { stroke: #718096; stroke-width: 1.5; fill: none; stroke-dasharray: 5 4; }
+      .title { font-size: 17px; font-weight: bold; fill: #1a202c; }
+    </style>
+  </defs>
+
+  <!-- Title -->
+  <text x="640" y="28" class="title" text-anchor="middle">Architecture of a SaaS tender monitoring service (Serbia)</text>
+
+  <!-- ============ LAYER 1: SOURCES (y: 70-160) ============ -->
+  <text x="30" y="90" class="layer-label">1. Tender sources</text>
+
+  <!-- jnportal MVP -->
+  <rect x="30" y="100" width="240" height="60" rx="6" fill="#fff5f5" stroke="#c53030" stroke-width="2"/>
+  <text x="150" y="120" class="box-title" text-anchor="middle">jnportal.src-ujn.example.invalid</text>
+  <text x="150" y="138" class="box-sub" text-anchor="middle">Public procurement RS · MVP</text>
+  <text x="150" y="153" class="box-tag" text-anchor="middle">JSON API · ~40k tenders/year</text>
+
+  <!-- obnova -->
+  <rect x="290" y="100" width="220" height="60" rx="6" fill="#fffaf0" stroke="#c05621" stroke-width="1.5"/>
+  <text x="400" y="120" class="box-title" text-anchor="middle">obnova.gov.rs</text>
+  <text x="400" y="138" class="box-sub" text-anchor="middle">PPO · large investments</text>
+  <text x="400" y="153" class="box-tag" text-anchor="middle">Phase 2</text>
+
+  <!-- javne-nabavke -->
+  <rect x="530" y="100" width="220" height="60" rx="6" fill="#fffaf0" stroke="#c05621" stroke-width="1.5"/>
+  <text x="640" y="120" class="box-title" text-anchor="middle">javne-nabavke.com</text>
+  <text x="640" y="138" class="box-sub" text-anchor="middle">Commercial aggregator</text>
+  <text x="640" y="153" class="box-tag" text-anchor="middle">Phase 3 · careful with the ToS</text>
+
+  <!-- tendersinfo -->
+  <rect x="770" y="100" width="220" height="60" rx="6" fill="#fffaf0" stroke="#c05621" stroke-width="1.5"/>
+  <text x="880" y="120" class="box-title" text-anchor="middle">tendersinfo.com</text>
+  <text x="880" y="138" class="box-sub" text-anchor="middle">International</text>
+  <text x="880" y="153" class="box-tag" text-anchor="middle">Phase 3</text>
+
+  <!-- EBRD / UNDP -->
+  <rect x="1010" y="100" width="240" height="60" rx="6" fill="#fffaf0" stroke="#c05621" stroke-width="1.5"/>
+  <text x="1130" y="120" class="box-title" text-anchor="middle">EBRD · UNDP Serbia</text>
+  <text x="1130" y="138" class="box-sub" text-anchor="middle">International donors</text>
+  <text x="1130" y="153" class="box-tag" text-anchor="middle">Phase 3 · EBRD €2.5 bn</text>
+
+  <!-- ============ ARROWS Layer 1 → Layer 2 (y: 160-200) ============ -->
+  <line x1="150" y1="160" x2="150" y2="200" class="arrow-line-thick" marker-end="url(#arrow)"/>
+  <line x1="400" y1="160" x2="400" y2="200" class="arrow-line-dashed" marker-end="url(#arrow)"/>
+  <line x1="640" y1="160" x2="640" y2="200" class="arrow-line-dashed" marker-end="url(#arrow)"/>
+  <line x1="880" y1="160" x2="880" y2="200" class="arrow-line-dashed" marker-end="url(#arrow)"/>
+  <line x1="1130" y1="160" x2="1130" y2="200" class="arrow-line-dashed" marker-end="url(#arrow)"/>
+
+  <!-- ============ LAYER 2: PARSERS (y: 200-275) ============ -->
+  <text x="30" y="183" class="layer-label">2. Parsers (Python · IPv4 · retries · backoff)</text>
+
+  <rect x="80" y="205" width="1120" height="60" rx="6" fill="#ebf8ff" stroke="#2b6cb0" stroke-width="2"/>
+  <text x="640" y="225" class="box-title" text-anchor="middle">Parser workers, one per source</text>
+  <text x="640" y="243" class="box-sub" text-anchor="middle">fetch → parse → normalization (CPV, region, price, deadline) → deduplication (hash + embeddings) → write</text>
+  <text x="640" y="258" class="box-tag" text-anchor="middle">Launched via APScheduler inside FastAPI · logging to Better Stack · alerts via Sentry</text>
+
+  <!-- Arrows 2 → 3 -->
+  <line x1="640" y1="265" x2="640" y2="305" class="arrow-line-thick" marker-end="url(#arrow)"/>
+
+  <!-- ============ LAYER 3: CORE (y: 305-525) ============ -->
+  <text x="30" y="300" class="layer-label">3. The system core (Docker Compose · VPS Hetzner CPX22 · the Netherlands)</text>
+
+  <!-- The big core container -->
+  <rect x="30" y="310" width="1220" height="210" rx="8" fill="#f7fafc" stroke="#4a5568" stroke-width="2"/>
+
+  <!-- PostgreSQL -->
+  <rect x="50" y="330" width="220" height="80" rx="6" fill="#e6fffa" stroke="#2c7a7b" stroke-width="2"/>
+  <text x="160" y="352" class="box-title" text-anchor="middle">PostgreSQL 16</text>
+  <text x="160" y="370" class="box-sub" text-anchor="middle">Multi-tenant with RLS</text>
+  <text x="160" y="385" class="box-sub" text-anchor="middle">tenders · subscribers</text>
+  <text x="160" y="400" class="box-sub" text-anchor="middle">profiles · notifications</text>
+
+  <!-- Redis -->
+  <rect x="290" y="330" width="180" height="80" rx="6" fill="#fef5e7" stroke="#dd6b20" stroke-width="2"/>
+  <text x="380" y="352" class="box-title" text-anchor="middle">Redis 7</text>
+  <text x="380" y="370" class="box-sub" text-anchor="middle">Worker queue</text>
+  <text x="380" y="385" class="box-sub" text-anchor="middle">FSM-storage aiogram</text>
+  <text x="380" y="400" class="box-sub" text-anchor="middle">cache and rate limit</text>
+
+  <!-- Routing-engine -->
+  <rect x="490" y="330" width="240" height="80" rx="6" fill="#faf5ff" stroke="#6b46c1" stroke-width="2"/>
+  <text x="610" y="352" class="box-title" text-anchor="middle">Routing-engine</text>
+  <text x="610" y="370" class="box-sub" text-anchor="middle">matching a tender to profiles</text>
+  <text x="610" y="385" class="box-sub" text-anchor="middle">filters: keywords, CPV,</text>
+  <text x="610" y="400" class="box-sub" text-anchor="middle">region, price, schedule</text>
+
+  <!-- Tracker -->
+  <rect x="750" y="330" width="220" height="80" rx="6" fill="#f0fff4" stroke="#2f855a" stroke-width="2"/>
+  <text x="860" y="352" class="box-title" text-anchor="middle">Tracker / reminders</text>
+  <text x="860" y="370" class="box-sub" text-anchor="middle">statuses Participating/To study</text>
+  <text x="860" y="385" class="box-sub" text-anchor="middle">thresholds 5 / 3 / 1 / 0 days</text>
+  <text x="860" y="400" class="box-sub" text-anchor="middle">morning summary 9:00</text>
+
+  <!-- AI module -->
+  <rect x="990" y="330" width="240" height="80" rx="6" fill="#fff5f7" stroke="#b83280" stroke-width="2"/>
+  <text x="1110" y="352" class="box-title" text-anchor="middle">AI module (Claude API)</text>
+  <text x="1110" y="370" class="box-sub" text-anchor="middle">Haiku 4.5 — classification</text>
+  <text x="1110" y="385" class="box-sub" text-anchor="middle">Sonnet 4.6 — terms-of-reference analysis</text>
+  <text x="1110" y="400" class="box-sub" text-anchor="middle">Opus 4.7 — deep analysis</text>
+
+  <!-- API gateway / FastAPI -->
+  <rect x="50" y="430" width="320" height="70" rx="6" fill="#edf2f7" stroke="#2d3748" stroke-width="2"/>
+  <text x="210" y="452" class="box-title" text-anchor="middle">FastAPI · a single process</text>
+  <text x="210" y="470" class="box-sub" text-anchor="middle">bot webhooks · REST for the cabinet</text>
+  <text x="210" y="485" class="box-sub" text-anchor="middle">Paddle webhook · authorization · i18n</text>
+
+  <!-- Billing -->
+  <rect x="390" y="430" width="280" height="70" rx="6" fill="#fefcbf" stroke="#b7791f" stroke-width="2"/>
+  <text x="530" y="452" class="box-title" text-anchor="middle">Billing module (PaymentProvider)</text>
+  <text x="530" y="470" class="box-sub" text-anchor="middle">MVP: Paddle (MoR, 5%+$0,50)</text>
+  <text x="530" y="485" class="box-sub" text-anchor="middle">Phase 2: CorvusPay via a DOO (1.5–2.5%)</text>
+
+  <!-- Caddy -->
+  <rect x="690" y="430" width="180" height="70" rx="6" fill="#e6fffa" stroke="#319795" stroke-width="2"/>
+  <text x="780" y="452" class="box-title" text-anchor="middle">Caddy 2</text>
+  <text x="780" y="470" class="box-sub" text-anchor="middle">reverse-proxy</text>
+  <text x="780" y="485" class="box-sub" text-anchor="middle">auto-HTTPS</text>
+
+  <!-- Monitoring -->
+  <rect x="890" y="430" width="340" height="70" rx="6" fill="#f0f4f8" stroke="#4a5568" stroke-width="2"/>
+  <text x="1060" y="452" class="box-title" text-anchor="middle">Monitoring and operations</text>
+  <text x="1060" y="470" class="box-sub" text-anchor="middle">Sentry · Healthchecks.io · UptimeRobot</text>
+  <text x="1060" y="485" class="box-sub" text-anchor="middle">Better Stack Logs · backup to Backblaze B2</text>
+
+  <!-- ============ ARROWS 3 → 4 (y: 525-565) ============ -->
+  <line x1="290" y1="525" x2="290" y2="565" class="arrow-line-thick" marker-end="url(#arrow)"/>
+  <line x1="540" y1="525" x2="540" y2="565" class="arrow-line-thick" marker-end="url(#arrow)"/>
+  <line x1="790" y1="525" x2="790" y2="565" class="arrow-line-thick" marker-end="url(#arrow)"/>
+  <line x1="1040" y1="525" x2="1040" y2="565" class="arrow-line-thick" marker-end="url(#arrow)"/>
+
+  <!-- ============ LAYER 4: DELIVERY CHANNELS (y: 565-665) ============ -->
+  <text x="30" y="550" class="layer-label">4. Delivery channels (the subscriber picks one or several)</text>
+
+  <!-- Viber -->
+  <rect x="170" y="570" width="240" height="90" rx="6" fill="#ede9fe" stroke="#6d28d9" stroke-width="2.5"/>
+  <text x="290" y="592" class="box-title" text-anchor="middle">Viber Bot</text>
+  <text x="290" y="611" class="box-sub" text-anchor="middle">#1 messenger in Serbia</text>
+  <text x="290" y="627" class="box-sub" text-anchor="middle">Rakuten Business Messages</text>
+  <text x="290" y="645" class="box-tag" text-anchor="middle">buttons · instant delivery</text>
+
+  <!-- Telegram -->
+  <rect x="420" y="570" width="240" height="90" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="540" y="592" class="box-title" text-anchor="middle">Telegram Bot</text>
+  <text x="540" y="611" class="box-sub" text-anchor="middle">RU audience and IT</text>
+  <text x="540" y="627" class="box-sub" text-anchor="middle">aiogram 3 · webhook</text>
+  <text x="540" y="645" class="box-tag" text-anchor="middle">code reused from v6</text>
+
+  <!-- Email -->
+  <rect x="670" y="570" width="240" height="90" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="790" y="592" class="box-title" text-anchor="middle">Email digest</text>
+  <text x="790" y="611" class="box-sub" text-anchor="middle">Postmark · sr / ru / en</text>
+  <text x="790" y="627" class="box-sub" text-anchor="middle">daily summary + urgent</text>
+  <text x="790" y="645" class="box-tag" text-anchor="middle">universal channel</text>
+
+  <!-- Web cabinet -->
+  <rect x="920" y="570" width="240" height="90" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="1040" y="592" class="box-title" text-anchor="middle">Web cabinet (PWA)</text>
+  <text x="1040" y="611" class="box-sub" text-anchor="middle">FastAPI + HTMX + Tailwind</text>
+  <text x="1040" y="627" class="box-sub" text-anchor="middle">profiles · billing · archive</text>
+  <text x="1040" y="645" class="box-tag" text-anchor="middle">smartphone + desktop</text>
+
+  <!-- Arrows 4 → 5 -->
+  <line x1="290" y1="660" x2="290" y2="700" class="arrow-line" marker-end="url(#arrow)"/>
+  <line x1="540" y1="660" x2="540" y2="700" class="arrow-line" marker-end="url(#arrow)"/>
+  <line x1="790" y1="660" x2="790" y2="700" class="arrow-line" marker-end="url(#arrow)"/>
+  <line x1="1040" y1="660" x2="1040" y2="700" class="arrow-line" marker-end="url(#arrow)"/>
+
+  <!-- ============ LAYER 5: SUBSCRIBERS (y: 700-790) ============ -->
+  <text x="30" y="678" class="layer-label">5. Subscribers (50+ companies · languages RS / RU / EN)</text>
+
+  <rect x="170" y="705" width="990" height="80" rx="6" fill="#f0fdf4" stroke="#15803d" stroke-width="2"/>
+  <text x="665" y="728" class="box-title" text-anchor="middle">Paying subscribers · 3 plans</text>
+  <text x="380" y="750" class="box-sub" text-anchor="middle">Starter €29 · 1 profile</text>
+  <text x="665" y="750" class="box-sub" text-anchor="middle">Pro €69 · 3 profiles + Opus</text>
+  <text x="950" y="750" class="box-sub" text-anchor="middle">Business €149 · 10 profiles · API</text>
+  <text x="665" y="772" class="box-tag" text-anchor="middle">Serbian companies · foreign ones · Russian residents in RS · card payment via Paddle/CorvusPay</text>
+
+  <!-- ============ LAYER 6 (separately, ON THE RIGHT): the development team ============ -->
+  <text x="30" y="830" class="layer-label">6. The development team and collaboration tools</text>
+
+  <rect x="30" y="840" width="380" height="120" rx="6" fill="#fafafa" stroke="#525252" stroke-width="1.5"/>
+  <text x="220" y="862" class="box-title" text-anchor="middle">Developers (owner + partner)</text>
+  <text x="220" y="882" class="box-sub" text-anchor="middle">GitHub (private) · Linear · Tailscale VPN</text>
+  <text x="220" y="900" class="box-sub" text-anchor="middle">CI/CD: GitHub Actions → staging → prod</text>
+  <text x="220" y="918" class="box-sub" text-anchor="middle">AI coding: Claude Code · Cursor Pro</text>
+  <text x="220" y="940" class="box-tag" text-anchor="middle">Documentation: /docs in the repo · Notion for non-technical</text>
+
+  <rect x="430" y="840" width="380" height="120" rx="6" fill="#fafafa" stroke="#525252" stroke-width="1.5"/>
+  <text x="620" y="862" class="box-title" text-anchor="middle">Legal framework</text>
+  <text x="620" y="882" class="box-sub" text-anchor="middle">DOO in Serbia (already exists)</text>
+  <text x="620" y="900" class="box-sub" text-anchor="middle">PDV registration · accountant</text>
+  <text x="620" y="918" class="box-sub" text-anchor="middle">ToS / Privacy in 3 languages (Iubenda)</text>
+  <text x="620" y="940" class="box-tag" text-anchor="middle">The Serbian Law on Personal Data Protection (≈ GDPR)</text>
+
+  <rect x="830" y="840" width="420" height="120" rx="6" fill="#fafafa" stroke="#525252" stroke-width="1.5"/>
+  <text x="1040" y="862" class="box-title" text-anchor="middle">Corporate email and communications</text>
+  <text x="1040" y="882" class="box-sub" text-anchor="middle">Proton Mail Essentials · 2 mailboxes on a custom domain</text>
+  <text x="1040" y="900" class="box-sub" text-anchor="middle">Cloudflare · DNS · WAF · CDN</text>
+  <text x="1040" y="918" class="box-sub" text-anchor="middle">1Password Family · shared secrets</text>
+  <text x="1040" y="940" class="box-tag" text-anchor="middle">Customer support: support@domain (via Postmark inbound)</text>
+
+</svg>

@@ -1,0 +1,18 @@
+# infra/config.yaml — project runtime configuration (not a secret, committed).
+#
+# ADR-029: the single mutable point of mapping of the abstract tier names
+# (`cheap` / `balanced` / `premium`, used in the architecture and the business logic)
+# to the concrete Anthropic model slugs. Slugs change every 3–6 months — replacing the
+# model here, without editing the code and ARCHITECTURE.md.
+#
+# AI pipeline levels (ARCHITECTURE §14.1):
+#   cheap    → L1 classification  (quick)
+#   balanced → L2 standard        (standard)
+#   premium  → L3 deep            (deep)
+#
+# The field tender_ai_analyses.model stores the actual slug at the time of the call
+# (ADR-029, DB_SCHEMA §2.16) — a historical record for audit, not configuration.
+ai_models:
+  cheap: "claude-haiku-5-5"
+  balanced: "claude-haiku-5-5"
+  premium: "claude-opus-5-5"

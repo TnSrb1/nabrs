@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}{{ t.nav_feed }} — TenderSRB{% endblock %}
+{% block content %}
+{# The working feed of the CURRENT matches of the tenant (the cabinet, the i18n chrome sr / ru / en),
+   paged. The row
+   is self-sufficient: without _tender_actions / feed_state — only the tender card +
+   the entry into the AI analysis.
+
+   “Current” is not decoration but the selection itself: tenders with a passed deadline do not come here
+   (feed_service._CURRENT_ONLY_PREDICATE). Therefore the heading promises
+   exactly what is shown, and there is no history here — there is nowhere to take it yet.
+
+   The order and the composition of the page are set by the SERVER (feed_service.get_feed_page,
+   sent_at DESC). The sections below are a presentation over this list
+   (feed_service.split_feed_by_urgency, a pure function): inside each section
+   the selection order is kept; a row cannot move to a neighbouring page. #}
+<div class="flex items-center justify-between gap-3 flex-wrap mb-2">
+  <h1 class="text-xl font-semibold">{{ t.nav_feed }}</h1>
+  <a href="/app" class="text-sm text-brand hover:underline">{{ t.back_to_dashboard }}</a>
+</div>
+<p class="fd-lede">{{ t.archive_lede if pf.actual else t.archive_lede_all }}</p>
+
+{% include "_delivery_warning.html" %}
+
+{# Honest "hidden by the district filter" banner — above the match list. #}
+{% include "_region_hidden_banner.html" %}
+
+{# The search, the filters, the sorting and the counter — ALWAYS (also with one template);
+   an empty feed without a single filter is not cluttered by the form. #}
+{% if items or pf.active or timed_out %}
+{% include "_feed_filters.html" %}
+{% endif %}
+
+{% if items %}
+{% if pf.sort == 'profile' %}
+{# “By template”: ONE feed in the selection order (the template name, then the fresh ones on top).
+   The urgency sections are not built here: they would break the groups into two pieces.
+   The group header — on every change of profile and at the start of every page; on a page
+   started in the middle of a group — a “continued” mark (group_carry — from the service). #}
+{% set _base_q = pf.query(drop=('profile_id', 'page')) %}
+{% for item in items %}
+{% if loop.first or item.profile_id != loop.previtem.profile_id %}
+{% if not loop.first %}</div></section>{% endif %}
+<section class="fd-group" aria-labelledby="fd-prof-{{ loop.index }}">
+  <h2 class="fd-group__title" id="fd-prof-{{ loop.index }}">{{ item.profile_name }}</h2>
+  <p class="fd-group__sub">{% if loop.first and group_carry == item.profile_id %}{{ t.ff_group_continued }} · {% endif %}<a href="/app/feed{{ _base_q }}{{ '&' if _base_q else '?' }}profile_id={{ item.profile_id | urlencode }}" class="text-brand hover:underline">{{ t.ff_group_only }}</a></p>
+  <div class="fd-list">
+{% endif %}
+    {% include "_feed_card.html" %}
+{% if loop.last %}
+  </div>
+</section>
+{% endif %}
+{% endfor %}
+{% else %}
+{% if urgent_items %}
+<section class="fd-group" aria-labelledby="fd-urgent-title">
+  <h2 class="fd-group__title" id="fd-urgent-title">{{ t.archive_urgent_title }} <span class="fd-group__num">{{ urgent_items | length }}</span></h2>
+  <p class="fd-group__sub">{{ t.archive_urgent_sub }}</p>
+  <div class="fd-list">
+    {% for item in urgent_items %}
+    {% include "_feed_card.html" %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if rest_items %}
+{# The subheading is needed only as a BOUNDARY between the sections: if there are no urgent ones,
+   the “Others” heading would hang over the whole list and separate nothing — then
+   the section is labelled via aria-label, and there is no extra heading on the screen. #}
+<section class="fd-group" {% if urgent_items %}aria-labelledby="fd-rest-title"{% else %}aria-label="{{ t.archive_matches_aria }}"{% endif %}>
+  {% if urgent_items %}
+  <h2 class="fd-group__title fd-group__title--quiet" id="fd-rest-title">{{ t.archive_rest_title }} <span class="fd-group__num">{{ rest_items | length }}</span></h2>
+  {% endif %}
+  <div class="fd-list">
+    {% for item in rest_items %}
+    {% include "_feed_card.html" %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endif %}
+
+{% from "_pager.html" import pager with context %}
+{% macro feed_href(n) -%}/app/feed{{ pf.query(page=n) }}{%- endmacro %}
+{{ pager(page, total_pages, feed_href, t.pager_aria, "/app/feed") }}
+{% else %}
+{# Two DIFFERENT kinds of emptiness: narrowed by search/filter — or the feed is empty altogether. #}
+{% if pf.active %}
+{% set empty_state_title = t.archive_empty_filtered %}
+{% set empty_state_hint = t.archive_empty_filtered_hint %}
+{% set empty_state_cta_href = "/app/feed" %}
+{% set empty_state_cta_label = t.ff_reset_all %}
+{# Narrowed by search — offer the same query across the whole showcase (/tenderi). #}
+{% set empty_state_secondary_href = ("/tenderi?q=" ~ (pf.q | urlencode)) if pf.q else none %}
+{% set empty_state_secondary_label = t.ff_search_all if pf.q else none %}
+{% else %}
+{% set empty_state_title = t.archive_empty_title %}
+{% set empty_state_hint = t.archive_empty_hint %}
+{% set empty_state_cta_href = "/app" %}
+{% set empty_state_cta_label = t.to_dashboard %}
+{% set empty_state_secondary_href = none %}
+{% set empty_state_secondary_label = none %}
+{% endif %}
+{% include "_empty_state.html" %}
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{# The entrance animation — ONLY by an external file: inline JS is forbidden by the CSP. GSAP is already
+   attached in base.html (a local file, 'self'); we do not fetch it again. #}
+<script src="{{ static_url('js/feed.js') }}" integrity="sha384-qnm3sMMKdQ2bODs/sYwXvE70aVCsnbp3+PEJw41n1GmPMLmikypTyWHxNNrU1i3P" crossorigin="anonymous" defer></script>
+{% endblock %}

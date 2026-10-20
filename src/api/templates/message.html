@@ -1,0 +1,26 @@
+{% extends "public_base.html" if public_chrome is defined and public_chrome else "base.html" %}
+{# A service page. The localised calls pass the KEYS of the catalog
+   (title_key / body_key) — we render them through `t`. The calls from foreign modules
+   (not yet localised) pass ready strings title / message —
+   we keep them as a fallback, so as not to break them (see REPORT: the remainder).
+   With the public chrome (an anonymous 404 / 500) — the showcase container, the brand in <title>
+   and two links: “Tenderi” and “Na početnu” (F-13). #}
+{% set _title = t[title_key] if (title_key is defined and title_key in t) else (title if title is defined else "") %}
+{% set _body = t[body_key] if (body_key is defined and body_key in t) else (message if message is defined else "") %}
+{% set _public = public_chrome is defined and public_chrome %}
+{% block title %}{{ _title }}{% if _public %} — {{ ui.brand }}{% endif %}{% endblock %}
+{% block content %}
+{% if _public %}
+<section class="mx-auto max-w-5xl px-4 pt-14 pb-12">
+  <h1 class="text-3xl font-bold tracking-tight text-slate-900">{{ _title }}</h1>
+  {% if _body %}<p class="mt-3 text-slate-600 max-w-2xl">{{ _body }}</p>{% endif %}
+  <p class="mt-6"><a href="/tenderi" class="inline-block py-2 underline text-slate-600">{{ ui.nav_tenderi }}</a> <span aria-hidden="true" class="text-slate-400">·</span> <a href="{{ home_href if home_href is defined else '/' }}" class="inline-block py-2 underline text-slate-600">{{ t.msg_home }}</a></p>
+</section>
+{% else %}
+<div class="max-w-md">
+  <h1 class="text-xl font-semibold mb-2">{{ _title }}</h1>
+  {% if _body %}<p class="text-slate-600">{{ _body }}</p>{% endif %}
+  <p class="mt-4"><a href="{{ home_href if home_href is defined else '/login' }}" class="text-slate-600 underline">{{ t.msg_home }}</a></p>
+</div>
+{% endif %}
+{% endblock %}

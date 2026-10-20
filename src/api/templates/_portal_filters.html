@@ -1,0 +1,102 @@
+{# The search / filters / sorting of the portal /tenderi (TASK portal_filters) — a GET form without
+   JS (CSP script-src 'self'), the chips of the active filters, the counter “Found N”.
+   Context: pf (PortalFilters), t (GEO), section_path, region_options,
+   source_options, found. <summary> — the FIRST child of <details>. #}
+<form method="get" action="{{ section_path }}" class="pf" role="search" aria-label="{{ t.search_label }}">
+  {% if pf.lang %}<input type="hidden" name="lang" value="{{ pf.lang }}">{% endif %}
+  <div class="pf__main">
+    <div class="pf__search">
+      <label for="pf-q" class="pf__sr">{{ t.search_label }}</label>
+      <input id="pf-q" type="search" name="q" value="{{ pf.q }}" maxlength="120" class="field-control" placeholder="{{ t.search_placeholder }}" autocomplete="off">
+      {% if pf.q %}<a href="{{ section_path }}{{ pf.query(drop=('q',)) }}" class="pf__clear" aria-label="{{ t.search_clear }}" title="{{ t.search_clear }}">×</a>{% endif %}
+    </div>
+    <div class="pf__sort">
+      <label for="pf-sort" class="pf__sr">{{ t.sort_label }}</label>
+      <select id="pf-sort" name="sort" class="field-control">
+        {% for key in sort_keys %}
+        <option value="{{ key }}"{% if pf.sort == key %} selected{% endif %}>{{ t['sort_' ~ key] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn-primary pf__submit">{{ t.search_submit }}</button>
+  </div>
+
+  <details class="pf__more"{% if pf.details_open %} open{% endif %}>
+    <summary class="form-section__summary">{{ t.filters_summary }}</summary>
+    <div class="pf__grid">
+      <div>
+        <label for="pf-customer" class="field__label">{{ t.f_customer }}</label>
+        <input id="pf-customer" type="text" name="customer" value="{{ pf.customer }}" maxlength="80" class="field-control">
+      </div>
+      {% if region_options %}
+      <div>
+        <label for="pf-region" class="field__label">{{ t.f_region }}</label>
+        <select id="pf-region" name="region" class="field-control">
+          <option value="">{{ t.f_region_any }}</option>
+          {% for code, label in region_options %}
+          <option value="{{ code }}"{% if pf.region == code %} selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+      {% if source_options %}
+      <div>
+        <label for="pf-source" class="field__label">{{ t.f_source }}</label>
+        <select id="pf-source" name="source" class="field-control">
+          <option value="">{{ t.f_source_any }}</option>
+          {% for key, label in source_options %}
+          <option value="{{ key }}"{% if pf.source == key %} selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+      <div>
+        <label for="pf-min" class="field__label">{{ t.f_min_amount }}</label>
+        <input id="pf-min" type="number" name="min_amount" min="0" step="any" inputmode="decimal" value="{{ pf.min_amount_str }}" class="field-control">
+      </div>
+      <div>
+        <label for="pf-max" class="field__label">{{ t.f_max_amount }}</label>
+        <input id="pf-max" type="number" name="max_amount" min="0" step="any" inputmode="decimal" value="{{ pf.max_amount_str }}" class="field-control">
+      </div>
+      <div class="pf__check">
+        <label class="field-check"><input type="checkbox" name="no_amount" value="1"{% if pf.no_amount %} checked{% endif %}> {{ t.f_no_amount }}</label>
+      </div>
+      <div>
+        <label for="pf-from" class="field__label">{{ t.f_published_from }}</label>
+        <input id="pf-from" type="date" name="published_from" value="{{ pf.published_from.isoformat() if pf.published_from else '' }}" class="field-control">
+      </div>
+      <div>
+        <label for="pf-to" class="field__label">{{ t.f_published_to }}</label>
+        <input id="pf-to" type="date" name="published_to" value="{{ pf.published_to.isoformat() if pf.published_to else '' }}" class="field-control">
+      </div>
+      <div>
+        <label for="pf-actual" class="field__label">{{ t.f_actual }}</label>
+        <select id="pf-actual" name="actual" class="field-control">
+          <option value="1"{% if pf.actual %} selected{% endif %}>{{ t.f_actual_yes }}</option>
+          <option value="0"{% if not pf.actual %} selected{% endif %}>{{ t.f_actual_all }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="pf__actions">
+      <button type="submit" class="btn-secondary">{{ t.apply }}</button>
+    </div>
+  </details>
+</form>
+
+{% if pf.active %}
+<div class="pf__status">
+  <p class="pf__found" role="status">{{ t.query_timeout if timed_out else t.found_n.format(n=found) }}</p>
+  <ul class="pf__chips" aria-label="{{ t.chips_label }}">
+    {% for kind, value, drop in pf.chips() %}
+    {% if kind == 'region' %}{% set _v = value | okrug_label %}
+    {% elif kind == 'sort' %}{% set _v = t['sort_' ~ value] %}
+    {% else %}{% set _v = value %}{% endif %}
+    {% set _text = t['chip_' ~ kind].format(v=_v) %}
+    <li><a href="{{ section_path }}{{ pf.query(drop=drop) }}" class="pf__chip" aria-label="{{ t.chip_remove.format(name=_text) }}">{{ _text }} <span aria-hidden="true">×</span></a></li>
+    {% endfor %}
+    <li><a href="{{ section_path }}{{ ('?lang=' ~ pf.lang) if pf.lang else '' }}" class="pf__reset">{{ t.reset_all }}</a></li>
+  </ul>
+</div>
+{% endif %}
+{# Search reset when the field is cleared — an external file (CSP), one for the feed and the portal. #}
+<script src="{{ static_url('js/pf_search_reset.js') }}" integrity="sha384-NLMkHGj1lMoO18DB8gibe5NNkcxIsbnsOtKcWN/jAts4FZz77J1dj+FlZMda77vj" crossorigin="anonymous" defer></script>

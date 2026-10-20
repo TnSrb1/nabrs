@@ -1,0 +1,28 @@
+{# The warning “the template is there, but there is no delivery” (the context delivery_warning from
+   channel_service.build_delivery_warning). One partial for all the screens where
+   the client works: the dashboard, the feed, the “Moj kabinet” hub, the template pages.
+   (a) no_channel — the tenant has no live channel at all → a button to the binding;
+   (b) channelless — a channel exists, the template has none selected → a button to edit the template.
+   The color role is a warning (amber), as for the neighbouring banners; the CSS is not touched. #}
+{% if delivery_warning %}
+{% if delivery_warning.no_channel %}
+<section class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6" role="alert" data-no-channel>
+  <p class="font-semibold text-amber-800">{{ t.nochan_title }}</p>
+  <p class="text-sm text-amber-700 mt-1">{{ t.nochan_body }}</p>
+  <a href="/cabinet/account#kanali" class="btn-primary inline-block mt-3">{{ t.no_channels_cta }}</a>
+</section>
+{% else %}
+<section class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6" role="alert" data-channelless>
+  <p class="font-semibold text-amber-800">{{ t.dgap_empty_title }}</p>
+  <p class="text-sm text-amber-700 mt-1">{{ t.dgap_empty_body }}</p>
+  <ul class="mt-3 space-y-2">
+    {% for p in delivery_warning.channelless %}
+    <li class="flex flex-col gap-1 items-start sm:flex-row sm:items-center sm:justify-between">
+      <span class="text-sm text-amber-800">{{ t.nochan_tpl_line.format(name=p.name or t.profile_untitled) }}</span>
+      <a href="/profiles/{{ p.id }}/edit" class="btn-primary inline-block shrink-0">{{ t.dgap_empty_cta.format(name=p.name or t.profile_untitled) }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endif %}

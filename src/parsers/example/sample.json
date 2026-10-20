@@ -1,0 +1,22 @@
+[
+  {
+    "id": "EX-0001",
+    "title": "Supply of office furniture",
+    "buyer": "Example Municipality",
+    "published": "2026-01-15T08:00:00+00:00",
+    "deadline": "2026-02-15T12:00:00+00:00",
+    "amount": 12000.0,
+    "currency": "EUR",
+    "cpv": "39130000"
+  },
+  {
+    "id": "EX-0002",
+    "title": "Road maintenance services",
+    "buyer": "Example Public Works",
+    "published": "2026-01-20T08:00:00+00:00",
+    "deadline": null,
+    "amount": null,
+    "currency": null,
+    "cpv": "45233141"
+  }
+]

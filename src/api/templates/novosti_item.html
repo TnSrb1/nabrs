@@ -1,0 +1,16 @@
+{% extends "public_base.html" %}
+{# A single news item: indexed, OG for links from social networks. #}
+{% block title %}{{ item_title }} — {{ ui.brand }}{% endblock %}
+{% block meta_description %}{{ item_body[0] }}{% endblock %}
+{% block og_title %}{{ item_title }}{% endblock %}
+{% block og_description %}{{ item_body[0] }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block content %}
+<article class="mx-auto max-w-3xl px-4 pt-14 pb-12" data-news-item="{{ item.slug }}">
+  <p class="text-sm text-slate-500">{{ t.published }}: <time datetime="{{ item.published.isoformat() }}">{{ item.published.strftime('%d.%m.%Y') }}</time></p>
+  <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">{{ item_title }}</h1>
+  {% for p in item_body %}<p class="mt-4 text-slate-700">{{ p }}</p>{% endfor %}
+  <p class="mt-6"><a href="{{ item.link }}" class="btn-primary inline-block"{% if item.is_external %} target="_blank" rel="noopener"{% endif %}>{{ item_link_label }}</a></p>
+  <p class="mt-6 text-sm"><a href="/novosti" class="underline text-slate-600">{{ t.back }}</a></p>
+</article>
+{% endblock %}

@@ -1,0 +1,78 @@
+{# The heading of the tender card + the translation toggle (portal, Stage 5).
+
+   The LinkedIn pattern “See translation ↔ See original”: the content from the source goes in
+   Serbian; on a click the heading is substituted by a machine translation (VG-26,
+   src/ai/translation.py — the common cache in Redis), the reverse transition to the original
+   does NOT call the model at all.
+
+   ‼️ The same partial is rendered TWICE: the primary render inside the card
+   (_feed_card.html / _cockpit_feed_teaser.html) and the answer of the HTMX fragment
+   GET /app/tenders/{id}/title. The markup must match — otherwise after the swap
+   the card falls out of line. Hence the container with an id: it is also the hx-target, the swap —
+   outerHTML (we replace itself entirely, together with the toggle).
+
+   ‼️ The heading remains a LINK both in the original and in the translation: the translation has no
+   right to break the transition to the tender. Where the link leads is decided by the caller
+   (the feed → the source in a new tab; the teaser → the card in the cabinet), therefore
+   title_url / title_class / title_blank come from outside, and are not hard-wired here.
+
+   Progressive enhancement: the toggle is a <button> with hx-get, without its own JS. HTMX is attached
+   globally in base.html; if JS did not run, the button is simply inert, and the card
+   is full-fledged — the original-link is visible.
+
+   Context: tender_id, profile_id, view ("feed" | "teaser" | "detail"), view_title,
+   title_url, title_class, title_blank, show_original, unavailable.
+
+   title_url is empty (view="detail") → the heading is not a link, but a <span> heading:
+   there is nowhere to lead on the card itself. The color of the translation button is amber
+   (--color-accent-*, the “action” role), by an inline style: there is no utility class for it
+   in the frozen CSS subset, and style-src allows inline. The tap zone
+   and :focus-visible come from .act-btn (min-height 2rem), as in _tender_description.html. #}
+{# ``view`` is in the id deliberately: /app/my renders the same tender TWICE
+   on the page (the funnel stage + a folder) through the same tender_id / profile_id
+   — without view both containers would get the same id, and the hx-target of the second
+   button would miss its own row (routes_tender_ai._CARD_TITLE_VIEWS,
+   the views my_board / my_folder). ``view`` already travels in _frag and is returned by the server,
+   therefore the id is reproduced after the swap too. #}
+{% set _box = "card-title-" ~ view ~ "-" ~ tender_id ~ "-" ~ profile_id %}
+{% set _frag = "/app/tenders/" ~ tender_id ~ "/title?profile_id=" ~ profile_id ~ "&view=" ~ view %}
+<div id="{{ _box }}" data-card-title>
+  {% if title_url %}
+  <a href="{{ title_url }}" class="{{ title_class }}"{% if title_blank %} target="_blank" rel="noopener"{% endif %}>{{ view_title }}</a>
+  {% else %}
+  <span class="{{ title_class }}">{{ view_title }}</span>
+  {% endif %}
+  {# ‼️ The translation language = the INTERFACE language of the user (the owner’s decision, 25.07): if they look
+     at an English page, the translation is English; at a Russian one — Russian. Previously
+     lang=ru was hard-coded here, and an English-speaking client was offered Russian text.
+     In the Serbian interface there is no button at all: the original of the tender is already Serbian
+     (original_lang), there is nothing to translate into. #}
+  {# ``ui_lang`` / ``ui_t`` come from the fragment route (the true interface language,
+     WITHOUT ?lang= — that one here means the translation target). In the first render
+     inside the card / the detail they are not passed → we fall back to the lang / t of the context: on
+     the page URLs there is no ?lang=, so this is the interface too. #}
+  {% set _uilang = ui_lang | default(lang, true) %}
+  {# We compare the LANGUAGES; we do not hard-wire “sr — a special case”: the rule will survive
+     the appearance of non-Serbian sources. #}
+  {% set _can_translate = _uilang != original_lang %}
+  <p class="mt-1">
+    {% if show_original %}{% if _can_translate %}
+    <button type="button" class="act-btn" style="color: var(--color-accent-600)"
+            hx-get="{{ _frag }}&amp;lang={{ _uilang }}" hx-target="#{{ _box }}" hx-swap="outerHTML" hx-indicator="this"
+            title="{{ t.ct_translate_title }}">{{ t.ct_show_translation }}</button>{% endif %}
+    {# The translation was requested, but the model / cache gave no answer. This is not an error: we show
+       the original and a quiet note; the button remains — a repeat is free on a cache hit
+       into the cache. #}
+    {% if unavailable %}<span class="text-xs text-slate-500">
+      {%- if block_reason == 'exhausted' %}{{ t.ct_block_exhausted }}
+      {%- elif block_reason == 'frozen' %}{{ t.ct_block_frozen }}
+      {%- elif block_reason == 'unavailable' %}{{ t.ct_block_plan }}
+      {%- else %}{{ t.ct_unavailable }}{% endif %}</span>{% endif %}
+    {% else %}
+    <span class="text-xs text-slate-500">{{ t.ct_machine_badge }}</span>
+    <button type="button" class="act-btn" style="color: var(--color-accent-600)"
+            hx-get="{{ _frag }}&amp;lang={{ original_lang }}" hx-target="#{{ _box }}" hx-swap="outerHTML" hx-indicator="this"
+            title="{{ t.ct_show_original_title }}">{{ t.ct_show_original }}</button>
+    {% endif %}
+  </p>
+</div>

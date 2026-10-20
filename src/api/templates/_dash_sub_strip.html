@@ -1,0 +1,14 @@
+{# The subscription term on the dashboard (owner 13.10, dashboard v2). Previously the fact stood five times
+   (the tile and the hero badge, the “Subscription” strip, the header badge, the calendar event).
+   Now — ONLY the header badge (_access_badge.html), and this strip appears
+   only as a CALL TO ACTION: ≤7 days remain or the access has expired. A permanent and a “distant”
+   term — silence. The tone — the container .alert (warn / error), as for the alert banner. #}
+{% set _sd = access_days.days %}
+{% if _sd is not none and _sd <= 7 %}
+<section class="alert {% if _sd <= 0 %}alert--error{% else %}alert--warn{% endif %}" data-dash-sub-strip aria-label="{{ t.dash_acct_title }}">
+  <p class="alert__title">
+    {%- if _sd <= 0 -%}{{ t.dash_sub_strip_expired }}{%- else -%}{{ t.dash_sub_strip_soon.format(days=plural(lang, "days_short", _sd)) }}{%- endif -%}
+  </p>
+  <a href="/cabinet/account#pretplata" class="btn-primary alert__cta">{{ t.sub_renew }}</a>
+</section>
+{% endif %}

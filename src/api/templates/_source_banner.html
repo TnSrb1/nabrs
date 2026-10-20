@@ -1,0 +1,34 @@
+{# The banner “enable the source in all templates” (the cabinet, the dashboard, the “New for you” block).
+   The subscription to a source is a tick in EACH template, therefore a new source is not ticked in the old
+   templates and tenders from it will not come. The banner says so directly and gives
+   one action: enable it in all live templates. Nothing is switched on without a press.
+   Expects: sources_banner (PendingSource | None), live_profile_count (the number of live templates).
+   HTMX: the buttons replace the whole section (#src-banner): “enable” → the fragment
+   _source_banner_done.html, “not now” → empty. Without JS the form goes as an ordinary POST.
+   The countries — codes → the catalog names (country_XX), as in the template form. #}
+{% if sources_banner %}
+{% set _sb = sources_banner %}
+<section class="card" id="src-banner" data-sources-banner="{{ _sb.source_key }}" aria-labelledby="src-banner-title">
+  <h2 class="ck-section__title" id="src-banner-title">{{ t.src_banner_title.format(name=_sb.label) }}</h2>
+  <p class="text-sm">{{ t.src_banner_body.format(missing=_sb.missing_in, total=live_profile_count) }}</p>
+  <p class="text-xs text-slate-500 mt-2">
+    <span>{{ t.src_banner_countries_label }}: {% for c in _sb.countries %}{{ t.get('country_' ~ c, c) }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
+    {%- if _sb.caps_short %} · <span>{{ t.src_banner_gives_label }}: {% for k in _sb.caps_short %}{{ t[k] }}{% if not loop.last %} · {% endif %}{% endfor %}</span>{% endif %}
+  </p>
+  {% if _sb.is_plan %}<p class="alert__extra text-sm">{{ t.src_banner_plan }}</p>{% endif %}
+  {% if _sb.has_match_all %}<p class="alert__extra text-sm">{{ t.src_banner_match_all }}</p>{% endif %}
+  <div class="flex flex-wrap gap-2 mt-3">
+    <form method="post" action="/app/izvori/vklyuchit"
+          hx-post="/app/izvori/vklyuchit" hx-target="#src-banner" hx-swap="outerHTML" hx-indicator="this">
+      <input type="hidden" name="csrf" value="{{ csrf_token }}">
+      <input type="hidden" name="source_key" value="{{ _sb.source_key }}">
+      <button type="submit" class="btn-primary">{{ t.src_banner_enable }}</button>
+    </form>
+    <form method="post" action="/app/izvori/skip"
+          hx-post="/app/izvori/skip" hx-target="#src-banner" hx-swap="outerHTML" hx-indicator="this">
+      <input type="hidden" name="csrf" value="{{ csrf_token }}">
+      <button type="submit" class="btn-secondary">{{ t.src_banner_skip }}</button>
+    </form>
+  </div>
+</section>
+{% endif %}

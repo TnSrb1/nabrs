@@ -1,0 +1,27 @@
+{% extends "public_base.html" %}
+{% block title %}{{ t.sgr_h1_success if success else t.sgr_h1_rejected }} — {{ ui.brand }}{% endblock %}
+{% block content %}
+{# The result text — by the CODE of the outcome (outcome) through the chrome catalog, and not by
+   the Russian string from auth_service: do not mix the two axes, the service gives the code. #}
+{% set _msg_keys = {
+  "trial_started": "sgr_msg_trial_started",
+  "verification_required": "sgr_msg_verification",
+  "rejected_turnstile": "sgr_msg_turnstile",
+  "rejected_email": "sgr_msg_email",
+  "rejected_duplicate": "sgr_msg_duplicate",
+  "rejected_invalid": "sgr_msg_invalid",
+} %}
+{% set _mk = _msg_keys.get(outcome) %}
+<section class="mx-auto max-w-5xl px-4 pt-14 pb-12">
+  <h1 class="text-3xl font-bold tracking-tight text-slate-900">{{ t.sgr_h1_success if success else t.sgr_h1_rejected }}</h1>
+  <div class="mt-6 max-w-md rounded border p-4 {{ 'bg-green-50 border-green-200' if success else 'bg-red-50 border-red-200' }}">
+    <p>{{ t[_mk] if _mk else message }}</p>
+  </div>
+  {% if success %}
+  <p class="mt-4"><a href="/login" class="text-slate-600 underline">{{ t.sgr_back_login }}</a></p>
+  {% else %}
+  <p class="mt-4"><a href="/signup" class="text-slate-600 underline">{{ t.sgr_back_signup }}</a></p>
+  {% endif %}
+  {% if outcome in ('trial_started', 'rejected_duplicate') %}<p class="mt-2 text-sm text-slate-500">{{ t.sgr_no_email }} <a href="/auth/resend" class="underline">{{ t.sgr_resend }}</a>.</p>{% endif %}
+</section>
+{% endblock %}

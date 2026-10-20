@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ t.rsn_page_title }}{% endblock %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-4">{{ t.rsn_title }}</h1>
+<form method="post" action="/auth/resend" class="space-y-4 max-w-md">
+  <div>
+    <label for="email" class="block text-sm mb-1">Email</label>
+    <input type="email" name="email" id="email" required autocomplete="email" class="field-control">
+  </div>
+  <button type="submit" class="btn-primary">{{ t.sgr_resend }}</button>
+</form>
+<p class="mt-4 text-sm">{{ t.rsn_back_pre }}<a href="/login" class="underline">{{ t.rsn_login_word }}</a>.</p>
+{% endblock %}

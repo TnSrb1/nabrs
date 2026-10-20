@@ -1,0 +1,70 @@
+{# The SINGLE alert banner of the dashboard (owner 13.10, dashboard v2). Previously four
+   independent banners lived (a dead channel, “no channel”, the limit, a light-blue nudge) — with
+   several states at once they were built into a stack above the hero. Now on the
+   screen there is ONE, by priority: a dead channel > no channel > a limit refusal >
+   a template without a channel > a gap “asked for a channel, it is not confirmed”.
+   The tone — the container `.alert--error|--warn|--info` (one component, three tones).
+
+   ‼️ The limit refusal (`profile_limit_notice`) is a ONE-OFF response to the client’s action
+   (“enable the template”), and a silent no-op is forbidden (CLAUDE.md,
+   money-ai-tiers). Therefore, when a banner higher up displaces it, it does NOT disappear:
+   it is appended as a paragraph to the same banner. The other states are permanent; they
+   will return at the next visit, they do not need duplication.
+   The attributes `data-no-channel` / `data-channelless` are kept — the tests and
+   the measurements look at them. #}
+{% set _dw = delivery_warning %}
+{% if dead_channels %}
+{% set _alert = "dead" %}
+{% elif _dw and _dw.no_channel %}
+{% set _alert = "no_channel" %}
+{% elif profile_limit_notice %}
+{% set _alert = "limit" %}
+{% elif _dw %}
+{% set _alert = "channelless" %}
+{% elif delivery_gaps %}
+{% set _alert = "gap" %}
+{% else %}
+{% set _alert = none %}
+{% endif %}
+{% if _alert %}
+<section class="alert {% if _alert == 'dead' %}alert--error{% elif _alert == 'gap' %}alert--info{% else %}alert--warn{% endif %}" role="{{ 'status' if _alert == 'gap' else 'alert' }}" data-dash-alert="{{ _alert }}"{% if _alert == 'no_channel' %} data-no-channel{% elif _alert == 'channelless' %} data-channelless{% endif %}>
+  {% if _alert == "dead" %}
+  <p class="alert__title">{{ t.dead_ch_title }}</p>
+  <p class="alert__body">{{ dead_channels | join(', ') }} {{ t.dead_ch_body }}</p>
+  <a href="/cabinet/account#kanali" class="btn-primary alert__cta">{{ t.dead_ch_cta }}</a>
+  {% elif _alert == "no_channel" %}
+  <p class="alert__title">{{ t.nochan_title }}</p>
+  <p class="alert__body">{{ t.nochan_body }}</p>
+  <a href="/cabinet/account#kanali" class="btn-primary alert__cta">{{ t.no_channels_cta }}</a>
+  {% elif _alert == "limit" %}
+  <p class="alert__title">{{ t.dash_limit_title }}</p>
+  <p class="alert__body">{{ t.dash_limit_body.format(limit=profile_limit) }}</p>
+  <a href="/plans" class="btn-primary alert__cta">{{ t.acct_profiles_limit_cta }}</a>
+  {% elif _alert == "channelless" %}
+  <p class="alert__title">{{ t.dgap_empty_title }}</p>
+  <p class="alert__body">{{ t.dgap_empty_body }}</p>
+  <ul class="alert__list">
+    {% for p in _dw.channelless %}
+    <li>
+      <span>{{ t.nochan_tpl_line.format(name=p.name or t.profile_untitled) }}</span>
+      <a href="/profiles/{{ p.id }}/edit" class="btn-primary shrink-0">{{ t.dgap_empty_cta.format(name=p.name or t.profile_untitled) }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="alert__title">{{ t.dgap_title }}</p>
+  <p class="alert__body">{{ t.dgap_body }}</p>
+  <ul class="alert__list">
+    {% for gap in delivery_gaps %}
+    <li>
+      <span>{% if gap.pending %}{{ gap.label }}: {{ t.dgap_pending_text }}{% else %}{{ gap.label }}: {{ t.dgap_never_text }}{% endif %}</span>
+      <a href="{{ gap.link }}" class="btn-primary shrink-0">{% if gap.pending %}{{ t.dgap_cta_pending.format(label=gap.label) }}{% else %}{{ t.dgap_cta_connect.format(label=gap.label) }}{% endif %}</a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% if profile_limit_notice and _alert != "limit" %}
+  <p class="alert__body alert__extra" data-limit-notice>{{ t.dash_limit_title }}. {{ t.dash_limit_body.format(limit=profile_limit) }} <a href="/plans" class="underline">{{ t.acct_profiles_limit_cta }}</a></p>
+  {% endif %}
+</section>
+{% endif %}

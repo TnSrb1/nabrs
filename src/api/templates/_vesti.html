@@ -1,0 +1,63 @@
+{# VESTI — the right column of the dashboard (v2, owner 13.10). Two tabs (without JS — CSP;
+   a tab = the link `?vesti=trziste#vesti`, like `?agenda=30` in ROKOVI):
+   “TenderSRB” — the latest entries of the public journal (src/api/public/news.py, the same
+   source as /novosti); “Tržište” — the market from OWN data (SQL, no AI and no external feeds;
+   the service — market_service.py, the shared part is cached once a day).
+   Each “Tržište” entry carries a date; no data — “no data for the date”, not silence.
+   The mark “Novo” — on the heading, while the freshest journal entry is not viewed
+   (`news_unread`, the “read” cookie); to close it — open /novosti. #}
+<section class="card dash-vesti" id="vesti" aria-labelledby="vesti-title">
+  <div class="dash-head">
+    <h2 class="ck-section__title" id="vesti-title">{{ t.vesti_title }}{% if news_unread %} <span class="badge badge-accent" data-news-new>{{ t.vesti_new }}</span>{% endif %}</h2>
+    {% if vesti_tab != "trziste" %}<a href="/novosti" class="text-sm text-brand font-medium hover:underline shrink-0">{{ t.vesti_all }}</a>{% endif %}
+  </div>
+  <nav class="ck-teaser__tabs" aria-label="{{ t.vesti_tabs_label }}">
+    {# href — without JS (a full load of /app); hx-* — the block switch without a reload.
+       autofocus — only in the response to a switch (vesti_focus): the focus stays on the tab. #}
+    <a href="/app#vesti" class="ck-teaser__tab" data-vesti-tab="news"{% if vesti_tab != "trziste" %} aria-current="true"{% if vesti_focus %} autofocus{% endif %}{% endif %} hx-get="/app/vesti" hx-target="#vesti" hx-swap="outerHTML" hx-push-url="/app#vesti" hx-indicator="#vesti">{{ t.vesti_tab_news }}</a>
+    <a href="/app?vesti=trziste#vesti" class="ck-teaser__tab" data-vesti-tab="market"{% if vesti_tab == "trziste" %} aria-current="true"{% if vesti_focus %} autofocus{% endif %}{% endif %} hx-get="/app/vesti?vesti=trziste" hx-target="#vesti" hx-swap="outerHTML" hx-push-url="/app?vesti=trziste#vesti" hx-indicator="#vesti">{{ t.vesti_tab_market }}</a>
+  </nav>
+  {% if vesti_tab == "trziste" and market %}
+  <ul class="vesti__list" data-vesti-market>
+    {% set pub = market.published %}
+    <li data-mkt="published">
+      <span class="vesti__date">{{ pub.date }}</span>
+      {% if pub.empty %}{{ t.mkt_published_title }}: {{ t.mkt_nodata.format(date=pub.date) }}
+      {% else %}{{ t.mkt_published.format(total=pub.total, rs=pub.c.RS, ba=pub.c.BA, me=pub.c.ME, mk=pub.c.MK) }}{% endif %}
+    </li>
+    {% set top = market.top %}
+    <li data-mkt="top">
+      <span class="vesti__date">{{ top.date }}</span>
+      {% if top.empty %}{{ t.mkt_top_title }}: {{ t.mkt_nodata.format(date=top.date) }}
+      {% else %}{{ t.mkt_top_title }}:
+      <ol class="vesti__top">
+        {% for i in top.rows %}
+        <li><a href="{{ i.href }}" class="vesti__link">{{ i.title }}</a> <span class="vesti__meta">€{{ i.amount }}{% if i.customer %} · {{ i.customer }}{% endif %}</span></li>
+        {% endfor %}
+      </ol>
+      {% endif %}
+    </li>
+    {% set aw = market.awards %}
+    <li data-mkt="awards">
+      <span class="vesti__date">{{ aw.date }}</span>
+      {% if aw.empty %}{{ t.mkt_awards_title }}: {{ t.mkt_nodata.format(date=aw.date) }}
+      {% else %}{{ t.mkt_awards.format(n=aw.count) }}{% if aw.total %}{{ t.mkt_awards_total.format(sum=aw.total) }}{% endif %}{% if aw.top %}; <a href="{{ aw.top.href }}" class="vesti__link">{{ t.mkt_awards_top.format(customer=aw.top.customer or "—", amount=aw.top.amount) }}</a>{% endif %}{% endif %}
+    </li>
+    {% set me = market.personal %}
+    <li data-mkt="personal">
+      <span class="vesti__date">{{ me.date }}</span>
+      {% if me.empty %}{{ t.mkt_personal_title }}: {{ t.mkt_nodata.format(date=me.date) }}
+      {% else %}{{ t.mkt_personal.format(new=me.new, exp=me.expiring) }}{% endif %}
+    </li>
+  </ul>
+  {% else %}
+  <ul class="vesti__list">
+    {% for n in news_latest %}
+    <li>
+      <span class="vesti__date">{{ n.published.strftime('%d.%m.%Y') }}</span>
+      <a href="/novosti/{{ n.slug }}" class="vesti__link">{{ n.title[lang] }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</section>

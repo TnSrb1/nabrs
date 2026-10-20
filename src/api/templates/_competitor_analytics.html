@@ -1,0 +1,93 @@
+{# The competitor’s profile — the strongest winner of the customer (web-ai-4, VG-06 E2).
+   Context: competitor — CompetitorAnalyticsView. Pure SQL over the award data
+   (no AI / limits); the gate — Pro+ and the freeze. The body — ru (the cabinet language). The render by
+   competitor.status. The classes are reused from _customer_analytics.html (no
+   new Tailwind classes → the SRI does not change). #}
+<section id="competitor-analytics" class="card mb-6">
+  <h2 class="text-lg font-semibold mb-3">{{ t.comp_h }}</h2>
+  {% if competitor is none %}
+  {# safeguard: the analytics were not computed (edge case) — the section is not shown #}
+  {% elif competitor.status == 'success' %}
+  <p class="text-sm text-slate-600 mb-3">
+    {{ t.comp_lede_pre }} <span class="font-medium text-slate-800">{{ competitor.winner_name }}</span>{% if competitor.winner_pib %} <span class="text-slate-500">· PIB {{ competitor.winner_pib }}</span>{% endif %}. {{ t.comp_lede_post }}
+  </p>
+
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+    <div class="metric">
+      <div class="metric__value">{{ competitor.total_wins }}</div>
+      <div class="metric__label">{{ t.comp_total_wins }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric__value">{{ competitor.distinct_customers }}</div>
+      <div class="metric__label">{{ t.comp_distinct_customers }}</div>
+    </div>
+    {% if competitor.with_amount > 0 %}
+    <div class="metric">
+      <div class="metric__value">{{ competitor.total_rsd_fmt }}<small> RSD</small></div>
+      <div class="metric__label">{{ t.cpb_sum_by.format(n=competitor.with_amount, eur=competitor.total_eur_fmt) }}</div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if competitor.top_customers %}
+  <p class="font-medium mb-2">{{ t.comp_top_customers }}</p>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-left text-slate-500 border-b border-slate-300">
+          <th class="px-3 py-2 font-medium">#</th>
+          <th class="px-3 py-2 font-medium">{{ t.th_customer }}</th>
+          <th class="px-3 py-2 font-medium text-right">{{ t.th_wins }}</th>
+          <th class="px-3 py-2 font-medium text-right">{{ t.th_sum }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in competitor.top_customers %}
+        <tr class="border-b border-slate-300 last:border-b-0">
+          <td class="px-3 py-2 text-slate-400">{{ c.rank }}</td>
+          <td class="px-3 py-2 text-slate-800">{{ c.name }}</td>
+          <td class="px-3 py-2 text-right text-slate-700">{{ c.wins }}</td>
+          <td class="px-3 py-2 text-right text-slate-700">{{ c.sum_rsd_fmt or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <a href="/app/tenders/{{ data.tender_id }}/analytics.csv?profile_id={{ data.profile_id }}&amp;kind=competitor" class="btn-secondary">⬇️ {{ t.export_csv }}</a>
+    <span class="text-xs text-slate-500">{{ t.comp_export_hint }}</span>
+  </div>
+
+  <p class="mt-3 text-xs text-slate-500 italic">{{ t.ca_source_note }}</p>
+
+  {% elif competitor.status == 'gate_pro' %}
+  {% set empty_state_title = t.gate_pro_title %}
+  {% set empty_state_hint = t.comp_gate_hint %}
+  {% set empty_state_cta_href = "/plans" %}
+  {% set empty_state_cta_label = t.see_plans %}
+  {% set empty_state_secondary_href = none %}
+  {% set empty_state_secondary_label = none %}
+  {% include "_empty_state.html" %}
+
+  {% elif competitor.status == 'frozen' %}
+  {% set empty_state_title = t.frozen_title %}
+  {% set empty_state_hint = t.comp_frozen_hint %}
+  {% set empty_state_cta_href = "/plans" %}
+  {% set empty_state_cta_label = t.renew_plan %}
+  {% set empty_state_secondary_href = none %}
+  {% set empty_state_secondary_label = none %}
+  {% include "_empty_state.html" %}
+
+  {% else %}
+  {# no_data | no_customer | no_tender — there is no strongest winner with a known PIB #}
+  {% set empty_state_title = t.comp_nodata_title %}
+  {% set empty_state_hint = t.comp_nodata_hint %}
+  {% set empty_state_cta_href = none %}
+  {% set empty_state_cta_label = none %}
+  {% set empty_state_secondary_href = none %}
+  {% set empty_state_secondary_label = none %}
+  {% include "_empty_state.html" %}
+  {% endif %}
+</section>

@@ -1,0 +1,38 @@
+{% extends "public_base.html" %}
+{# F-10 / F-11 / F-12 / F-20: sign-up — the frame of the showcase; the caption “checking” of the inactive
+   button (aria-live, the rows in the script signup_turnstile.js); the “what next” line without terms. #}
+{% block title %}{{ t.sgn_page_title }}{% endblock %}
+{% block content %}
+<section class="mx-auto max-w-5xl px-4 pt-14 pb-12">
+  <h1 class="text-3xl font-bold tracking-tight text-slate-900">{{ t.nav_signup }}</h1>
+  <div class="mt-6">
+    {% if consent_error %}
+    <p id="consent-error" class="mb-4 text-sm text-red-600">{{ t.sgn_consent_error }}</p>
+    {% endif %}
+    {% if trial_note %}<p class="mb-4 text-sm font-semibold" style="color: var(--status-success)">{{ trial_note }}</p>{% endif %}
+    {% if turnstile_error %}
+    <p id="turnstile-error" role="alert" class="mb-4 text-sm text-red-600">{{ t.sgr_msg_turnstile }}</p>
+    {% endif %}
+    <form method="post" action="/signup" class="space-y-4 max-w-md" data-turnstile-form>
+      <div>
+        <label for="email" class="block text-sm mb-1">Email</label>
+        <input type="email" name="email" id="email" required autocomplete="email" value="{{ email|default('') }}" class="field-control">
+      </div>
+      <p class="text-sm">{{ t.sgn_passwordless_hint }}</p>
+      <p class="text-sm text-slate-600">{{ t.sgn_next_steps }}</p>
+      <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-callback="tsrbTurnstileOk" data-expired-callback="tsrbTurnstileReset" data-error-callback="tsrbTurnstileError" data-timeout-callback="tsrbTurnstileReset"></div>
+      <label class="consent-row flex items-start gap-2 text-sm">
+        <input type="checkbox" name="consent" value="yes" required class="mt-1"{% if consent_error %} aria-invalid="true" aria-describedby="consent-error"{% endif %}>
+        <span>{{ t.sgn_consent_pre }}<a href="/legal/privacy" target="_blank" class="underline">{{ t.sgn_consent_privacy }}</a>{{ t.sgn_consent_and }}<a href="/legal/terms" target="_blank" class="underline">{{ t.sgn_consent_terms }}</a>{{ t.sgn_consent_post }}</span>
+      </label>
+      {# aria-live: the caption appears and goes together with the blocking of the button (signup_turnstile.js).
+         The container lives in the DOM permanently — otherwise the screen reader may not voice the insertion. #}
+      <p class="text-sm text-slate-600" aria-live="polite"><span id="turnstile-wait" hidden>{{ t.sgn_turnstile_wait }}</span></p>
+      <button type="submit" class="btn-primary">{{ t.sgn_create_btn }}</button>
+    </form>
+    <p class="mt-4 text-sm">{{ t.sgn_have_account }} <a href="/login" class="underline">{{ t.sgn_login_link }}</a></p>
+  </div>
+</section>
+<script src="{{ static_url('js/signup_turnstile.js') }}" integrity="sha384-G2uKZVg8t59MgekhbquRlJoUCyTQodFPYzdpbI54T2rdCf9EKtX3R0CTwQZMYNkK" crossorigin="anonymous"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{% endblock %}

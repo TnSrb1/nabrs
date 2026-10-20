@@ -1,0 +1,96 @@
+{% from "_hint_tip.html" import tip with context %}
+{# v2 (owner 13.10): the tab “nearest deadlines” is removed — the same rows are now in ROKOVI;
+   the tenders from the visible part of ROKOVI do not get here (a filter in the route).
+   The teaser of the latest deliveries (DASHBOARD_TEASER_LIMIT, now 5) instead of the feed-catalog: on the dashboard tenders
+   do not hang — the full list with the AI badges and the pagination lives on /app/feed.
+   The heading leads to the tender card in the cabinet (/app/tenders/{id}?profile_id=…) —
+   the entry into the AI analysis stays one click away.
+   The empty states are kept as they were: without a profile / without a channel / waiting for the first
+   match — three different answers, not one faceless placeholder. #}
+<section class="card" data-cockpit="teaser" aria-labelledby="teaser-title">
+  <div class="flex items-center justify-between gap-3 flex-wrap">
+    <h2 class="ck-section__title" id="teaser-title">{{ t.teaser_title }} {{ tip(t.teaser_tip, label=t.tip_what) }}</h2>
+    <a href="/app/feed" class="text-sm text-brand font-medium hover:underline shrink-0">{{ t.all_matches }}</a>
+  </div>
+  {# The dashboard search — a GET to /app/feed?q=: one search place in the cabinet; the results
+     live in the feed. The teaser switch — ?teaser= links (a whitelist on the server). #}
+  <form method="get" action="/app/feed" class="ck-teaser__search" role="search" aria-label="{{ t.ff_search_label }}">
+    <label for="ck-q" class="pf__sr">{{ t.ff_search_label }}</label>
+    <input id="ck-q" type="search" name="q" maxlength="120" class="field-control" placeholder="{{ t.ff_search_placeholder }}" autocomplete="off">
+    {# Scope switch without JS: two buttons of one form, the second has its own formaction. #}
+    <button type="submit" class="btn-primary pf__submit">{{ t.dash_search_mine }}</button>
+    <button type="submit" formaction="/tenderi" class="btn-secondary pf__submit">{{ t.dash_search_all }}</button>
+  </form>
+  {% if sources_count %}
+  <p class="text-xs text-slate-500 mt-2"><a href="/izvori" class="src-link hover:underline">{{ t.dash_sources_coverage.format(k=sources_used, n=sources_count) }}</a></p>
+  {% endif %}
+  {% if feed_items %}
+  <ul class="space-y-2">
+    {% for item in feed_items %}
+    <li class="flex flex-col gap-2 items-start sm:flex-row sm:justify-between text-sm border-b last:border-b-0 pb-2 last:pb-0">
+      <div class="min-w-0 dash-feed__main">
+        {# Stage 5: the heading + the translation toggle (the same partial as in the feed).
+           The link leads to the cabinet card, not to the source — the entry into the AI analysis in one
+           click, and the translation does not change this. #}
+        {% with tender_id=item.tender_id, profile_id=item.profile_id, view="teaser",
+                view_title=item.title,
+                title_url="/app/tenders/" ~ item.tender_id ~ "?profile_id=" ~ item.profile_id,
+                title_class="font-medium hover:underline", title_blank=false,
+                show_original=true, unavailable=false, original_lang="sr" %}
+        {% include "_card_title.html" %}
+        {% endwith %}
+        <p class="text-xs text-slate-500">
+          {% if item.customer_name %}🏛 {{ item.customer_name }} · {% endif %}{{ t.profile_prefix }} {{ item.profile_name }}
+        </p>
+        {% with also_on_n=item.also_on_n, also_on_conf=item.canonical_confidence, also_on_class="text-xs text-slate-500 mt-1" %}{% include "_also_on.html" %}{% endwith %}
+      </div>
+      {# The right block — the same two columns as in _feed_card.html: the deadline | the value (the delivery date).
+         Without the columns the badge drifts with the length of the neighbouring text (measurement dash_teaser_probe.js). #}
+      <div class="fd-card__side fd-card__side--cols">
+        {% set _dl = item.deadline_at | days_left %}
+        <span class="fd-card__deadline">
+        {% if _dl is not none %}
+          {% if _dl < 0 %}
+          <span class="badge badge-expired" title="{{ t.deadline_passed_title }}">{{ t.deadline_expired }}</span>
+          {% elif _dl == 0 %}
+          <span class="badge badge-urgent" title="{{ t.deadline_title }} {{ item.deadline_at | dl_local(item.source_key, lang) }}">{{ t.deadline_today }}</span>
+          {% elif _dl <= 2 %}
+          <span class="badge badge-urgent" title="{{ t.deadline_title }} {{ item.deadline_at | dl_local(item.source_key, lang) }}">⏰ {{ plural(lang, "days_left_short", _dl) }}</span>
+          {% elif _dl <= 7 %}
+          <span class="badge badge-new" title="{{ t.deadline_title }} {{ item.deadline_at | dl_local(item.source_key, lang) }}">{{ plural(lang, "days_left_short", _dl) }}</span>
+          {% else %}
+          <span class="badge badge-muted" title="{{ t.deadline_title }} {{ item.deadline_at | dl_local(item.source_key, lang) }}">{{ t.deadline_until }} {{ item.deadline_at | d_local }}</span>
+          {% endif %}
+        {% endif %}
+        </span>
+        {% if item.capped %}<span class="fd-card__sent fd-card__value" title="{{ t.fd_capped_title.format(cap=delivery_daily_cap()) }}">{{ t.fd_capped }}</span>{% elif item.web_only %}<span class="fd-card__sent fd-card__value">{{ t.found_prefix }} {{ (item.sent_at | localtime).strftime('%d.%m') }}</span>{% elif item.sent_at %}<span class="fd-card__sent fd-card__value">{{ t.delivered_prefix }} {{ (item.sent_at | localtime).strftime('%d.%m') }}</span>{% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% elif not profiles %}
+  {% set empty_state_title = t.teaser_empty_np_title %}
+  {% set empty_state_hint = t.teaser_empty_np_hint %}
+  {% set empty_state_cta_href = "/profiles/new" %}
+  {% set empty_state_cta_label = t.cta_create_profile %}
+  {% set empty_state_secondary_href = none %}
+  {% set empty_state_secondary_label = none %}
+  {% include "_empty_state.html" %}
+  {% elif not has_live_channel %}
+  {% set empty_state_title = t.teaser_empty_tg_title %}
+  {% set empty_state_hint = t.teaser_empty_tg_hint %}
+  {% set empty_state_cta_href = "/cabinet/account#kanali" %}
+  {% set empty_state_cta_label = t.tg_connect %}
+  {% set empty_state_secondary_href = none %}
+  {% set empty_state_secondary_label = none %}
+  {% include "_empty_state.html" %}
+  {% else %}
+  {% set empty_state_title = t.teaser_empty_wait_title %}
+  {% set empty_state_hint = t.teaser_empty_wait_hint %}
+  {% set empty_state_cta_href = none %}
+  {% set empty_state_cta_label = none %}
+  {% set empty_state_secondary_href = none %}
+  {% set empty_state_secondary_label = none %}
+  {% include "_empty_state.html" %}
+  {% endif %}
+</section>

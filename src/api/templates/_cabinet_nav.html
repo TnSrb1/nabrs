@@ -1,0 +1,153 @@
+{# The cabinet header — one partial for two frames: base.html (the cabinet) and public_base.html
+   (the showcase, when the visitor is logged in). Otherwise “Plans” / “Help” from the cabinet menu
+   led into a foreign header without a way back (the owner’s complaint of 02.10.2026). It expects `t` —
+   catalog of the cabinet (on the showcase it is supplied by public_base via nav_t). #}  <header class="site-header site-header--cabinet">
+    {# The identification of the current session (whoami, the owner’s complaint of 20.09.2026): the client
+       logs in under several accounts and cannot check which one
+       they are in the cabinet — on 04.08.2026 this already cost an hour for nothing
+       (the diagnosis was analyzed on the wrong account). The tenant’s name, if there is one
+       (tenants.display_name), plus the email always — there is never an empty place,
+       because we draw the row only when the email arrived (deps.
+       resolve_cabinet_whoami: anonymous / resolution error → None, no row).
+       Its own row ABOVE the navigation — we do not cram it into .site-header__bar, which
+       already had a real overflow at 390px (see app.css). #}
+    {# The cabinet languages (owner 11.10.2026): on the desktop the switcher is in this same row,
+       on the right (inside .site-header__identity), not in the menu row: the items ru + the language
+       did not fit into 960px, the language fell onto the third row and the logo “drifted apart”.
+       On <640px the row is hidden for those who have neither whoami nor a badge (--lang-only), and the language
+       lives inside the “Meni” menu (.nav-menu-lang). #}
+    {% if authed and (whoami_email or lang_names or nav_access) %}
+    <div class="site-header__identity{% if not whoami_email and not nav_access %} site-header__identity--lang-only{% endif %}">
+      {# The login row (owner 11.10.2026, header-identity-hub): on the left — the “Moj kabinet:” link
+         to the hub /cabinet/account and the status badge → /cabinet/account#status. The item and the badge
+         are removed from the main row: two entries into one place inflated the menu sideways. #}
+      <div class="site-header__who">
+        {% if whoami_email %}
+        <a class="whoami" href="/cabinet/account" title="{{ t.nav_account_label }} {% if whoami_tenant_name %}{{ whoami_tenant_name }} · {% endif %}{{ whoami_email }}">
+          <span class="whoami__label">{{ t.nav_account_label }}</span>
+          <span class="whoami__who">{% if whoami_tenant_name %}<strong class="whoami__tenant">{{ whoami_tenant_name }}</strong> · {% endif %}{{ whoami_email }}</span>
+        </a>
+        {% endif %}
+        {% if nav_access %}
+        <a href="/cabinet/account#status" class="whoami-badge">{% include "_access_badge.html" %}</a>
+        {% endif %}
+      </div>
+      {% if lang_names %}
+      {# The POST form writes users.locale + the lang cookie; the server returns to the same
+         page (return_to). The active language — span[aria-current], not clickable. #}
+      <form method="post" action="/cabinet/locale" class="lang-switch nav-hide-mobile" aria-label="{{ t.aria_lang }}">
+        <input type="hidden" name="return_to" value="{{ request.url.path }}">
+        {% for code, name in lang_names.items() %}
+        {% if code == lang %}
+        <span class="lang-pill is-active" aria-current="true">{{ name }}</span>
+        {% else %}
+        <button type="submit" name="lang" value="{{ code }}" class="lang-pill">{{ name }}</button>
+        {% endif %}
+        {% endfor %}
+      </form>
+      {% endif %}
+      {# “Logout” — in this same row on the right, not in the menu row: with the “Admin” item
+         the row wrapped, and the header grew to 137px. A POST form, as before. On
+         <640px the item is in the “Meni” menu (nav-mobile), here it is hidden. #}
+      <form method="post" action="/logout" class="whoami-logout-form nav-hide-mobile"><input type="hidden" name="csrf" value="{{ csrf_token }}"><button type="submit" class="whoami-logout">{{ t.nav_logout }}</button></form>
+    </div>
+    {% endif %}
+    <div class="site-header__bar mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
+      <a href="/" class="brand">
+        <img src="{{ static_url('favicon.svg') }}" alt="">
+        TenderSRB
+      </a>
+      <nav class="site-header__actions text-sm flex flex-wrap items-center gap-1" aria-label="{{ t.aria_nav }}">
+        {% if authed %}
+        {# The cabinet navigation (owner 10.10.2026, the cabinet’s info): the daily ones — in view
+           (Dashboard · Matches · My tenders), the tools — in “Alati ▾”
+           (the items are NOT hidden; the plan label — only if the tenant has NO access,
+           by the same gates as the pages: nav_access). The entry to the cabinet and the status badge
+           are in the login row above (owner 11.10.2026), not here. Cenovnik / Izvori / Novosti —
+           in the footer. On <640px instead of a row — ONE menu “Meni” with groups.
+           The copies of the items for the phone live inside .nav-mobile; the desktop
+           elements are marked nav-hide-mobile. #}
+        {% macro tool_label(code, tt) %}{% if code %} <span class="badge {{ 'badge-error' if code == 'paused' else 'badge-muted' }} nav-tool-badge" data-tool-label="{{ code }}">{{ tt['nav_tool_' ~ code] }}</span>{% endif %}{% endmacro %}
+        {% set p = request.url.path %}
+        {% set nar_label = nav_access.narucilac_label if nav_access else none %}
+        {% set an_label = nav_access.analitika_label if nav_access else none %}
+        {% set tools_active = p.startswith('/tenderi') or p in ['/cabinet/narucilac', '/app/analitika', '/library', '/cpv-kodovi'] %}
+        {% set cabinet_active = p == '/cabinet/account' %}
+        <a href="/app" class="nav-link nav-hide-mobile{% if p == '/app' %} is-active{% endif %}">{{ t.nav_dashboard }}</a>
+        <a href="/app/feed" class="nav-link nav-hide-mobile{% if p == '/app/feed' %} is-active{% endif %}">{{ t.nav_feed }}</a>
+        <a href="/app/my" class="nav-link nav-hide-mobile{% if p == '/app/my' %} is-active{% endif %}">{{ t.nav_my }}</a>
+        <details class="nav-more nav-hide-mobile">
+          <summary class="nav-link{% if tools_active %} is-active{% endif %}">{{ t.nav_tools }} ▾</summary>
+          <div class="nav-more__menu">
+            <a href="/tenderi" class="nav-link{% if p.startswith('/tenderi') %} is-active{% endif %}">{{ t.nav_all_tenders }}</a>
+            <a href="/cabinet/narucilac" class="nav-link{% if p == '/cabinet/narucilac' %} is-active{% endif %}">{{ t.nav_narucilac }}{{ tool_label(nar_label, t) }}</a>
+            <a href="/app/analitika" class="nav-link{% if p == '/app/analitika' %} is-active{% endif %}">{{ t.nav_analitika }}{{ tool_label(an_label, t) }}</a>
+            <a href="/library" class="nav-link{% if p == '/library' %} is-active{% endif %}">{{ t.nav_library }}</a>
+            <a href="/cpv-kodovi" class="nav-link{% if p.startswith('/cpv-kodovi') %} is-active{% endif %}">{{ t.nav_cpv }}</a>
+          </div>
+        </details>
+        <a href="/help" class="nav-link nav-hide-mobile{% if p == '/help' %} is-active{% endif %}">{{ t.nav_help }}</a>
+        {# Admin — only for the operator from the allowlist (deps.resolve_platform_admin_flag).
+           A convenience, not a gate: access is decided by require_admin on the server. #}
+        {% if is_platform_admin %}<a href="/admin" class="nav-link nav-hide-mobile{% if p.startswith('/admin') %} is-active{% endif %}">{{ t.nav_admin }}</a>{% endif %}
+        {# The phone: ONE menu with three groups; the language — inside (in the header on the phone
+           it is absent). <summary> — the first child of <details>. #}
+        <details class="nav-more nav-mobile">
+          <summary class="nav-link{% if p not in ['/app', '/app/feed', '/app/my'] %} is-active{% endif %}">{{ t.nav_menu }} ▾</summary>
+          <div class="nav-more__menu">
+            <p class="nav-group-title">{{ t.nav_group_daily }}</p>
+            <a href="/app" class="nav-link{% if p == '/app' %} is-active{% endif %}">{{ t.nav_dashboard }}</a>
+            <a href="/app/feed" class="nav-link{% if p == '/app/feed' %} is-active{% endif %}">{{ t.nav_feed }}</a>
+            <a href="/app/my" class="nav-link{% if p == '/app/my' %} is-active{% endif %}">{{ t.nav_my }}</a>
+            <p class="nav-group-title">{{ t.nav_tools }}</p>
+            <a href="/tenderi" class="nav-link{% if p.startswith('/tenderi') %} is-active{% endif %}">{{ t.nav_all_tenders }}</a>
+            <a href="/cabinet/narucilac" class="nav-link{% if p == '/cabinet/narucilac' %} is-active{% endif %}">{{ t.nav_narucilac }}{{ tool_label(nar_label, t) }}</a>
+            <a href="/app/analitika" class="nav-link{% if p == '/app/analitika' %} is-active{% endif %}">{{ t.nav_analitika }}{{ tool_label(an_label, t) }}</a>
+            <a href="/library" class="nav-link{% if p == '/library' %} is-active{% endif %}">{{ t.nav_library }}</a>
+            <a href="/cpv-kodovi" class="nav-link{% if p.startswith('/cpv-kodovi') %} is-active{% endif %}">{{ t.nav_cpv }}</a>
+            <p class="nav-group-title">{{ t.nav_group_account }}</p>
+            <a href="/cabinet/account" class="nav-link{% if cabinet_active %} is-active{% endif %}">{{ t.nav_account }}</a>
+            <a href="/help" class="nav-link{% if p == '/help' %} is-active{% endif %}">{{ t.nav_help }}</a>
+            {% if is_platform_admin %}<a href="/admin" class="nav-link{% if p.startswith('/admin') %} is-active{% endif %}">{{ t.nav_admin }}</a>{% endif %}
+            {% if lang_names %}
+            <form method="post" action="/cabinet/locale" class="lang-switch nav-menu-lang" aria-label="{{ t.aria_lang }}">
+              <input type="hidden" name="return_to" value="{{ p }}">
+              {% for code, name in lang_names.items() %}
+              {% if code == lang %}
+              <span class="lang-pill is-active" aria-current="true">{{ name }}</span>
+              {% else %}
+              <button type="submit" name="lang" value="{{ code }}" class="lang-pill">{{ name }}</button>
+              {% endif %}
+              {% endfor %}
+            </form>
+            {% endif %}
+            <form method="post" action="/logout"><input type="hidden" name="csrf" value="{{ csrf_token }}"><button type="submit" class="nav-link" style="background:none;border:0;font:inherit;cursor:pointer;min-height:2rem;min-width:2rem">{{ t.nav_logout }}</button></form>
+          </div>
+        </details>
+        {% else %}
+        <a href="/help" class="nav-link{% if request.url.path == '/help' %} is-active{% endif %}">{{ t.nav_help }}</a>
+        <a href="/login" class="nav-link{% if request.url.path == '/login' %} is-active{% endif %}">{{ t.nav_login }}</a>
+        <a href="/signup" class="nav-link{% if request.url.path == '/signup' %} is-active{% endif %}">{{ t.nav_signup }}</a>
+        {% endif %}
+        {# The cabinet language switcher (Phase 1.1). The guard `lang_names` — in case of a direct
+           render of the template without the context processor (isolated tests of the partials):
+           then the switcher is simply not drawn. Inline JS is forbidden by the CSP, therefore
+           both branches are “honest” navigation without JS. #}
+        {% if lang_names %}
+        {% if not authed %}
+        {# An anonymous user: they have no users row, and POST /cabinet/locale sent them with a 303 to
+           /login — a click on “SR” on the sign-up form THREW the user off the form (audit
+           2026-08-02, HIGH-1). Here the same mechanism as on the showcase
+           (public_base.html): a GET link ?lang=, the choice remembers persist_lang in
+           the lang cookie. We do not create a second way to change the language — the POST form
+           remains exactly for the logged-in users. #}
+        <nav class="lang-switch" aria-label="{{ t.aria_lang }}">
+          {% for code, name in lang_names.items() %}
+          <a href="{{ lang_switch_href(request, code) }}"{% if code == lang %} aria-current="true"{% endif %} class="lang-pill{% if code == lang %} is-active{% endif %}">{{ name }}</a>
+          {% endfor %}
+        </nav>
+        {% endif %}
+        {% endif %}
+      </nav>
+    </div>
+  </header>

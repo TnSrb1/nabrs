@@ -1,0 +1,72 @@
+{% extends "public_base.html" %}
+{# GEO-2: the hub /tenderi — the list of CPV sections and regions that passed the threshold
+   MIN_TENDERS_FOR_PAGE (routes_geo). The entry point for AI assistants / the search engine
+   ("tenderi za <subject> / u <city>") and for the internal interlinking of the cards. #}
+{% block title %}{{ t.hub_title }} — {{ ui.brand }}{% endblock %}
+{% block meta_description %}{{ t.hub_meta }}{% endblock %}
+{% block og_title %}{{ t.hub_title }}{% endblock %}
+{% block og_description %}{{ t.hub_meta }}{% endblock %}
+{% block head_extra %}{% if noindex %}<meta name="robots" content="noindex,follow">{% endif %}{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-5xl px-4 py-8">
+  <h1 class="text-2xl font-semibold text-slate-900">{{ t.hub_title }}</h1>
+  <p class="mt-2 text-slate-600 max-w-2xl">{{ t.hub_intro }}</p>
+  {% if sources_count %}
+  <p class="mt-2 text-sm"><a href="/izvori" class="src-link underline">{{ t.hub_sources_link.format(n=sources_count) }}</a></p>
+  {% endif %}
+
+  {% include "_portal_filters.html" %}
+  <p class="mt-4"><a href="/cpv-kodovi" class="src-link underline">{{ ui.nav_cpv }} →</a></p>
+
+  {% if pf.active %}
+  <section class="mt-8">
+    <h2 class="text-xl font-semibold text-slate-900">{{ t.results_heading }}</h2>
+    {% if open_rows %}
+    <div class="mt-4 fd-list">
+      {% for row in open_rows %}
+      {% include "_geo_tender_row.html" %}
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="mt-4 text-slate-600">{{ t.query_timeout if timed_out else t.empty_results }}</p>
+    {% endif %}
+
+    {% from "_pager.html" import pager with context %}
+    {% macro sect_href(n) -%}{{ section_path }}{{ pf.query(page=n) }}{%- endmacro %}
+    {{ pager(page, total_pages, sect_href, t.pager_page, section_path) }}
+  </section>
+  {% endif %}
+
+  {% if not pf.active and not cpv_sections and not region_sections %}
+  <p class="mt-8 text-slate-600">{{ t.hub_empty }}</p>
+  {% endif %}
+
+  {% if cpv_sections and not pf.active %}
+  <section class="mt-8">
+    <h2 class="text-xl font-semibold text-slate-900">{{ t.hub_cpv_heading }}</h2>
+    <div class="mt-4 grid gap-3 sm:grid-cols-3">
+      {% for code, s in cpv_sections %}
+      <a href="/tenderi/cpv/{{ code }}" class="card">
+        <p class="font-semibold text-slate-900">{{ s.label }}</p>
+        <p class="mt-1 text-sm text-slate-500">{{ plural(lang, 'open_tenders', s.open) }}</p>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if region_sections and not pf.active %}
+  <section class="mt-8">
+    <h2 class="text-xl font-semibold text-slate-900">{{ t.hub_region_heading }}</h2>
+    <div class="mt-4 grid gap-3 sm:grid-cols-3">
+      {% for code, s in region_sections %}
+      <a href="/tenderi/region/{{ code }}" class="card">
+        <p class="font-semibold text-slate-900">{{ code | okrug_label }}</p>
+        <p class="mt-1 text-sm text-slate-500">{{ plural(lang, 'open_tenders', s.open) }}</p>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

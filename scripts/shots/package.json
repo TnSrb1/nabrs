@@ -1,0 +1,9 @@
+{
+  "name": "tendersrb-shots",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Screenshot of a page + measurement of the invariants of the TenderSRB interface",
+  "dependencies": {
+    "playwright": "^1.49.0"
+  }
+}

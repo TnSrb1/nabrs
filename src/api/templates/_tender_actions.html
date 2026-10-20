@@ -1,0 +1,89 @@
+{# The workflow buttons (follow / stage / to folder / note) for a tender (VG-17).
+   Tender-centric — without profile_id. The swap container: #actions-{{ tender_id }};
+   each HTMX action returns this same partial with the current state.
+   Context: tender_id, state (is_watched / note / folder_ids / status), folders;
+   stage_choices — a global from templating.py (the same funnel as the bot’s). #}
+<div id="actions-{{ tender_id }}" class="mt-2 flex flex-wrap items-center gap-2 text-xs">
+  {# --- Watch (deadline reminders via the reminders worker) --- #}
+  {% if state.is_watched %}
+  <button type="button" class="badge badge-success cursor-pointer"
+          hx-post="/app/tenders/{{ tender_id }}/watch" hx-vals='{"watch": "off"}'
+          hx-target="#actions-{{ tender_id }}" hx-swap="outerHTML" hx-indicator="this"
+          title="{{ t.watch_on_title }}">✓ {{ t.watch_watching }}</button>
+  {% else %}
+  {# A secondary look (act-btn), not badge-new: blue in the card is reserved for
+     urgency and match-score; “action” cannot be colored with it (the design audit). #}
+  <button type="button" class="act-btn"
+          hx-post="/app/tenders/{{ tender_id }}/watch" hx-vals='{"watch": "on"}'
+          hx-target="#actions-{{ tender_id }}" hx-swap="outerHTML" hx-indicator="this"
+          title="{{ t.watch_off_title }}">👀 {{ t.watch_follow }}</button>
+  {% endif %}
+
+  {# --- The funnel stage: the same 7 as in the bot (one table tender_user_status).
+         By “👀 Studying” / “✅ Participating” the reminders worker sends reminders to TG. #}
+  <details class="inline-block">
+    {# The funnel stage is METADATA, not urgency: blue is reserved for time
+       (“there is still time”), therefore “new” is drawn in the neutral .badge-muted.
+       The green badge-success is kept: it means “the stage is selected”, it is a status. #}
+    <summary class="badge {{ 'badge-muted' if state.status == 'new' else 'badge-success' }} cursor-pointer"
+             title="{{ t.stage_summary_title }}">{{ t['status_' ~ state.status] }}</summary>
+    <div class="mt-1 rounded border bg-white p-2">
+      <ul class="space-y-1">
+        {% for value, label in stage_choices %}
+        <li>
+          <button type="button"
+                  class="act-menu-item w-full text-left rounded px-2 py-1 hover:bg-slate-50 {{ 'font-semibold' if value == state.status }}"
+                  hx-post="/app/tenders/{{ tender_id }}/status" hx-vals='{"status": "{{ value }}"}'
+                  hx-target="#actions-{{ tender_id }}" hx-swap="outerHTML" hx-indicator="this">
+            {% if value == state.status %}✓ {% endif %}{{ t['status_' ~ value] }}
+          </button>
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="mt-2 border-t px-2 text-slate-500">{{ t.stage_reminds_note }}</p>
+    </div>
+  </details>
+
+  {# --- To a folder --- #}
+  <details class="inline-block">
+    <summary class="{{ 'badge badge-success cursor-pointer' if state.folder_ids else 'act-btn' }}">🗂 {% if state.folder_ids %}{{ t.in_folders }} ({{ state.folder_ids | length }}){% else %}{{ t.to_folder }}{% endif %}</summary>
+    <div class="mt-1 rounded border bg-white p-2">
+      {% if folders %}
+      <ul class="space-y-1">
+        {% for f in folders %}
+        <li>
+          {% if f.id in state.folder_ids %}
+          <button type="button" class="act-menu-item w-full text-left rounded px-2 py-1 hover:bg-slate-50"
+                  hx-post="/app/tenders/{{ tender_id }}/folders/{{ f.id }}/remove"
+                  hx-target="#actions-{{ tender_id }}" hx-swap="outerHTML" hx-indicator="this"
+                  title="{{ t.folder_remove_title }}">✓ {{ f.name }}</button>
+          {% else %}
+          <button type="button" class="act-menu-item w-full text-left rounded px-2 py-1 hover:bg-slate-50"
+                  hx-post="/app/tenders/{{ tender_id }}/folders/{{ f.id }}/add"
+                  hx-target="#actions-{{ tender_id }}" hx-swap="outerHTML" hx-indicator="this"
+                  title="{{ t.folder_add_title }}">{{ f.name }}</button>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-slate-500 px-2 py-1">{{ t.no_folders_yet }}</p>
+      {% endif %}
+      <a href="/app/my" class="block mt-2 border-t px-2 text-brand hover:underline">{{ t.manage_folders }}</a>
+    </div>
+  </details>
+
+  {# --- Note --- #}
+  <details class="inline-block">
+    <summary class="{{ 'badge badge-success cursor-pointer' if state.note else 'act-btn' }}">✏️ {% if state.note %}{{ t.note_exists }}{% else %}{{ t.note_add }}{% endif %}</summary>
+    <form class="mt-1 rounded border bg-white p-2"
+          hx-post="/app/tenders/{{ tender_id }}/note"
+          hx-target="#actions-{{ tender_id }}" hx-swap="outerHTML" hx-indicator="this">
+      <textarea name="body" rows="3" maxlength="2000"
+                class="field-control"
+                aria-label="{{ t.note_ph }}"
+                placeholder="{{ t.note_ph }}">{{ state.note or '' }}</textarea>
+      <button type="submit" class="btn-primary mt-1">{{ t.save }}</button>
+    </form>
+  </details>
+</div>

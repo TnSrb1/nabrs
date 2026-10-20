@@ -1,0 +1,31 @@
+{# The block “The tenders already open for this template” — after the creation and the edit of the template
+   (profile_created.html, profile_detail.html?updated=1). open_now — a list of
+   preview_service.PreviewExample: the same matching predicate, but only those open
+   right now (the deadline in the future / no deadline and the tender is fresh). This is a READ: the block does not
+   put anything into delivery. The mark “from the archive” — on EVERY row with `archived`: the tender
+   appeared before the delivery cutoff of the profile; after an edit it does not move, and notifications
+   for such a tender will not come. The link is the public /tender/{id}, a new tab
+   (as for the form examples). #}
+<section class="form-section" aria-labelledby="open-now-title">
+  <h2 id="open-now-title" class="text-base font-semibold mb-1">{{ t.open_now_title }}</h2>
+  {%- if open_now %}
+  <ul class="recap">
+    {% for ex in open_now %}
+    <li class="recap__row">
+      <a href="/tender/{{ ex.id }}" target="_blank" rel="noopener" class="preview-examples__link block py-2 underline hover:text-slate-900">
+        {%- for text, hit in ex.title_parts %}{% if hit %}<mark>{{ text }}</mark>{% else %}{{ text }}{% endif %}{% endfor -%}
+        {%- if not ex.title_parts %}{{ t.cf_unnamed }}{% endif -%}
+      </a>
+      <span class="recap__key">
+        {%- if ex.customer_name %}{{ ex.customer_name }}{% endif -%}
+        {%- if ex.deadline_at %}{% if ex.customer_name %} · {% endif %}{{ t.res_deadline }} {{ ex.deadline_at | d_local }}{% endif -%}
+        {%- if ex.archived %}{% if ex.customer_name or ex.deadline_at %} · {% endif %}{{ t.open_now_archived }}{% endif -%}
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+  {%- else %}
+  <p class="text-sm text-slate-500">{{ t.open_now_empty }}</p>
+  <p class="mt-2"><a href="/profiles/{{ profile.id }}/edit" class="underline hover:text-slate-900">{{ t.res_edit }}</a></p>
+  {%- endif %}
+</section>

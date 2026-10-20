@@ -1,0 +1,61 @@
+{% from "_hint_tip.html" import tip with context %}
+{# The mini deadline calendar — the right column of the dashboard (v2). Only the month GRID
+   with marker dots; the list of events moved to ROKOVI (_rokovi.html), where
+   it is the single agenda. There are two types of events (feed_service.build_calendar_events):
+   ⏰ the deadline of a delivered tender, 📝 an action on a tender in work. The deadline
+   of the subscription is NOT shown as an event: it stands as a header badge.
+
+   The dots on the grid = the DIFFERENT types of events of that day (not one event per dot).
+
+   The date↔tenders link (cockpit_calendar.js). The markup carries only the DATA:
+   `data-date` (the ISO day) on each cell and on each agenda item — the match goes
+   by the string; the agenda items are searched across the WHOLE document (the agenda is in another column).
+   The button role, tabindex and aria-label are set by JS: without JS the cell does nothing,
+   and promising the keyboard a button that will not work is not allowed.
+
+   Mobile: the same block — <details>, it is closed by the script at a width <1024
+   (on ≥1024 there is no collapsing: the summary is hidden by CSS, the block is open). Without JS it remains
+   open — we hide nothing from those whose script did not run. #}
+<details class="card dash-cal" open data-cockpit="calendar" aria-labelledby="calendar-title">
+  {# The “?” — in the heading row. A button inside <summary> does not toggle the <details>
+     (an interactive descendant of the summary does not trigger the activation), and on the desktop, where
+     the summary has pointer-events:none, the hint is returned pointer-events:auto. #}
+  <summary class="dash-cal__toggle"><h2 class="ck-section__title" id="calendar-title">{{ t.cal_title }} {{ tip(t.cal_tip, label=t.tip_what) }}</h2></summary>
+  <div class="cal">
+    <div>
+      <div class="cal__head">
+        <span class="cal__month">{{ t['mon_' ~ calendar_month.month] }} {{ calendar_month.year }}</span>
+      </div>
+      <div class="cal__grid" role="presentation">
+        {# Weekday labels (Mon…Sun) — from the catalog by locale, the week starts on Monday. #}
+        {% for i in range(1, 8) %}
+        <div class="cal__wd">{{ t['wd_' ~ i] }}</div>
+        {% endfor %}
+        {% for week in calendar_month.weeks %}
+          {% for d in week %}
+          <div class="cal__day{% if not d.in_month %} is-out{% endif %}{% if d.is_today %} is-today{% endif %}{% if d.has_events %} has-events{% endif %}"
+               data-cal-day
+               data-date="{{ d.day.isoformat() }}"
+               data-cal-label="{{ d.day.strftime('%d.%m.%Y') }}{% if d.is_today %}, {{ t.cal_today }}{% endif %}{% if d.has_events %}, {{ t.cal_events_label }} — {{ d.count }}{% else %}, {{ t.cal_no_events }}{% endif %}"
+               {% if d.is_today %}aria-current="date"{% endif %}
+               {% if d.has_events %}title="{{ d.day.strftime('%d.%m.%Y') }}: {{ t.cal_events_label }} — {{ d.count }}"{% endif %}>
+            <span class="cal__num">{{ d.day.day }}</span>
+            <span class="cal__dots">
+              {# Modifier classes as literals, not by concatenation: the CSS coverage guard sees only static text. #}
+              {% for kind in d.kinds %}<span class="cal__dot {% if kind == 'action' %}cal__dot--action{% else %}cal__dot--deadline{% endif %}"></span>{% endfor %}
+            </span>
+          </div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+      {# The reply to a click on a date without items in the visible agenda. Empty and hidden without
+         JS; role="status" — the screen reader will hear it, the focus will not be taken. `data-cal-far`
+         — the text for a date that HAS events, but outside the 7-day window. #}
+      <p class="cal__note" data-cal-note data-cal-far="{{ t.cal_far_hint }}" role="status" hidden></p>
+      <div class="cal__legend mt-3">
+        <span><span class="cal__dot cal__dot--deadline"></span> {{ t.cal_legend_deadline }}</span>
+        <span><span class="cal__dot cal__dot--action"></span> {{ t.cal_legend_action }}</span>
+      </div>
+    </div>
+  </div>
+</details>

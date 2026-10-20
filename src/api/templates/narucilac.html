@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{# The page “Customer analytics” (A3). Context: page — NarucilacPageView.
+   The classes — ONLY those that exist in app.css (there is no Tailwind build; the SRI is fixed).
+   The body — ru (the cabinet language). The render by page.status, inside — by page.selected_status. #}
+{% block title %}{{ t.ca_page_title }}{% endblock %}
+{% block content %}
+{# Directory link: q/sort/page are kept; name (the selected profile) too. #}
+{% macro dir_href(page, sort=none, pg=1, name=none, keep_q=true) -%}
+/cabinet/narucilac?sort={{ (sort or page.sort) | urlencode }}{% if pg > 1 %}&amp;page={{ pg }}{% endif %}{% if keep_q and page.term %}&amp;q={{ page.term | urlencode }}{% endif %}{% if name %}&amp;name={{ name | urlencode }}{% endif %}
+{%- endmacro %}
+
+{% if page.status == 'gate_pro' %}
+<section class="card mb-6">
+  <h1 class="text-xl font-semibold mb-1">{{ t.ca_h }}</h1>
+  <p class="text-sm text-slate-500 mb-4">{{ t.nar_gate_sub }}</p>
+  {% set empty_state_title = t.gate_pro_title %}
+  {% set empty_state_hint = t.ca_gate_hint %}
+  {% set empty_state_cta_href = "/plans" %}
+  {% set empty_state_cta_label = t.see_plans %}
+  {% set empty_state_secondary_href = none %}
+  {% set empty_state_secondary_label = none %}
+  {% include "_empty_state.html" %}
+</section>
+
+{% elif page.status == 'frozen' %}
+<section class="card mb-6">
+  <h1 class="text-xl font-semibold mb-1">{{ t.ca_h }}</h1>
+  <div class="empty-state">
+    <p class="empty-state__title">{{ t.frozen_title }}</p>
+    <p class="empty-state__hint">{{ t.ca_frozen_hint }}</p>
+    <div class="empty-state__actions">
+      {% with access_mode='cta' %}{% include "_access_badge.html" %}{% endwith %}
+      <a href="/plans" class="btn-ghost">{{ t.see_plans }}</a>
+    </div>
+  </div>
+</section>
+
+{% else %}
+<section class="card mb-6">
+  <h1 class="text-xl font-semibold mb-1">{{ t.ca_h }}</h1>
+  <p class="text-sm text-slate-500">{{ t.nar_intro }}</p>
+</section>
+
+{% if page.selected_status == 'success' and page.selected %}
+{% set a = page.selected %}
+<section class="card mb-6">
+  <h2 class="text-lg font-semibold mb-1">{{ a.customer_name }}</h2>
+  <p class="text-sm text-slate-600 mb-3">
+    {% if a.customer_pib %}<span class="text-slate-500">PIB {{ a.customer_pib }} · </span>{% endif %}
+    {# No period = no dates for ANY decision, then “N more without a date” lies:
+       these N are not “more”, but all of them. Therefore the counter only together with the period. #}
+    {% if a.period_fmt %}{{ t.nar_period }} <span class="font-medium text-slate-800">{{ a.period_fmt }}</span>{% if a.without_date %}<span class="text-slate-500"> {{ t.nar_without_date.format(n=a.without_date) }}</span>{% endif %}
+    {% else %}{{ t.nar_no_period.format(n=a.total_awards) }}{% endif %}
+  </p>
+
+  {% include "_customer_profile_body.html" %}
+
+  {% if a.with_amount > 0 %}
+  <p class="font-medium mb-2">{{ t.nar_typical_price }}</p>
+  <div class="grid gap-3 sm:grid-cols-2 mb-4">
+    <div class="metric">
+      <div class="metric__value">{{ a.median_rsd_fmt or '—' }}</div>
+      <div class="metric__label">{{ t.nar_median }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric__value">{{ a.avg_rsd_fmt or '—' }}</div>
+      <div class="metric__label">{{ t.nar_avg }}</div>
+    </div>
+  </div>
+  <p class="mb-4 text-xs text-slate-500 italic">{{ t.nar_price_note.format(n=a.with_amount, total=a.total_awards) }}</p>
+  {% endif %}
+
+  {# The export (C4): the key is the same name by which the profile on the screen was counted, otherwise
+     the downloaded file would diverge from what is shown. The file has the top 50, the page has the top 5. #}
+  <p class="mb-2">
+    <a href="/cabinet/narucilac.csv?name={{ page.selected_name | urlencode }}" class="btn-secondary">⬇ {{ t.export_csv }}</a>
+  </p>
+  <p class="mb-4 text-xs text-slate-500 italic">{{ t.nar_export_hint }}</p>
+
+  <p class="mt-3 text-xs text-slate-500 italic">{{ t.nar_sum_note }}</p>
+</section>
+
+{% elif page.selected_status == 'no_data' %}
+<section class="card mb-6">
+  <h2 class="text-lg font-semibold mb-3">{{ page.selected_name }}</h2>
+  {% set empty_state_title = t.ca_nodata_title %}
+  {% set empty_state_hint = t.nar_nodata_hint %}
+  {% set empty_state_cta_href = none %}
+  {% set empty_state_cta_label = none %}
+  {% set empty_state_secondary_href = none %}
+  {% set empty_state_secondary_label = none %}
+  {% include "_empty_state.html" %}
+</section>
+{% endif %}
+
+<section class="card mb-6">
+  <h2 class="text-lg font-semibold mb-3">{% if page.term %}{{ t.nar_found }}{% else %}{{ t.nar_most_active }}{% endif %}</h2>
+  {# The search — in the header of the directory, above the table it filters; sort lives
+     in a hidden field, so that the search does not reset the chosen order. #}
+  <form method="get" action="/cabinet/narucilac" role="search" class="mb-4">
+    <input type="hidden" name="sort" value="{{ page.sort }}">
+    <label class="field__label block mb-1" for="q">{{ t.nar_search_label }}</label>
+    <div class="flex flex-wrap items-center gap-3">
+      <input class="field-control flex-1 min-w-0" type="search" id="q" name="q" value="{{ page.term }}" placeholder="{{ t.nar_search_ph }}" maxlength="120">
+      <button type="submit" class="btn-primary">{{ t.nar_search_btn }}</button>
+      {% if page.term %}<a href="{{ dir_href(page, keep_q=false) }}" class="btn-secondary" data-testid="nar-reset" aria-label="{{ t.nar_search_reset_aria }}"><span aria-hidden="true">×</span> {{ t.nar_search_reset }}</a>{% endif %}
+    </div>
+  </form>
+  {% if page.candidates %}
+  {% macro th_sort(key, label, cls) %}
+  {% set active = page.sort == key %}
+  <th class="px-3 py-2 font-medium {{ cls }}" scope="col" aria-sort="{{ 'ascending' if active and key == 'name_asc' else ('descending' if active else 'none') }}">
+    <a href="{{ dir_href(page, sort=key) }}" class="inline-block py-2 {{ 'text-slate-900' if active else 'hover:text-slate-900' }}"{% if active %} aria-current="true"{% endif %}>{{ label }}{% if active %} <span aria-hidden="true">{{ '↑' if key == 'name_asc' else '↓' }}</span>{% endif %}</a>
+  </th>
+  {% endmacro %}
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-left text-slate-500 border-b border-slate-300">
+          {{ th_sort('name_asc', t.th_narucilac, '') }}
+          {{ th_sort('decisions_desc', t.th_decisions, 'text-right') }}
+          {{ th_sort('last_desc', t.th_last, 'text-right') }}
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in page.candidates %}
+        <tr class="border-b border-slate-300 last:border-b-0">
+          <td class="px-3 py-2 text-slate-800">
+            <a href="{{ dir_href(page, pg=page.page, name=c.name) }}" class="hover:text-slate-900">{{ c.name }}</a>
+            {% if c.pib %}<span class="text-slate-500"> · PIB {{ c.pib }}</span>{% endif %}
+          </td>
+          <td class="px-3 py-2 text-right text-slate-700">{{ c.awards }}</td>
+          <td class="px-3 py-2 text-right text-slate-700">{{ c.last_date_fmt or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% from "_pager.html" import pager with context %}
+  {% macro pg_href(n) -%}{{ dir_href(page, pg=n) }}{%- endmacro %}
+  {{ pager(page.page, page.total_pages, pg_href, t.nar_pager_aria, "/cabinet/narucilac") }}
+  {% else %}
+  {% set empty_state_title = t.nar_none_title %}
+  {% set empty_state_hint = t.nar_none_hint %}
+  {% set empty_state_cta_href = "/cabinet/narucilac" %}
+  {% set empty_state_cta_label = t.nar_show_active %}
+  {% set empty_state_secondary_href = none %}
+  {% set empty_state_secondary_label = none %}
+  {% include "_empty_state.html" %}
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}

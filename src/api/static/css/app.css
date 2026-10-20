@@ -1,0 +1,3097 @@
+/* ==========================================================================
+   TenderSRB — design system (VG-28.1)
+   Tokens + base components. Changing the hex values of the tokens below repaints
+   the whole UI from one place. The palette is a PROPOSAL for the owner’s approval (see REPORT).
+   Below, after this block, — the unchanged compiled Tailwind CSS.
+   ========================================================================== */
+:root {
+  /* Brand — deep blue-indigo (B2B / public-procurement trust), NOT bare slate */
+  --color-primary-50: #eef2f9;
+  --color-primary-100: #d7e1f0;
+  --color-primary-200: #adc0dd;
+  --color-primary-300: #7f9bc6;
+  --color-primary-400: #5779ac;
+  --color-primary-500: #3a5d8f;
+  --color-primary-600: #2a4874;
+  --color-primary-700: #1f3760; /* primary brand color */
+  --color-primary-800: #172a49;
+  --color-primary-900: #101e34;
+
+  /* Accent — warm amber for the CTA / highlights, does not overlap with the statuses */
+  --color-accent-500: #c07f1a;
+  --color-accent-600: #9c6714;
+  /* The light fill of the amber badge. Chosen by CONTRAST, not by eye:
+     accent-600 on it gives 4.66 (the threshold for small text is 4.5), whereas on the
+     more saturated #fdf6e8 it would be 4.47 — below the threshold. */
+  --color-accent-50: #fffbf3;
+
+  /* The neutral scale (compatible with the existing slate palette of Tailwind) */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #f8fafc;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+  --color-neutral-900: #0f172a;
+
+  /* The semantics of the tender statuses: new / burning deadline / expired / success / error */
+  --status-new: #2563eb;
+  --status-new-bg: #eff6ff;
+  --status-new-border: #bfdbfe;
+  --status-urgent: #c2410c;
+  --status-urgent-bg: #fff7ed;
+  --status-urgent-border: #fed7aa;
+  --status-expired: #475569; /* neutral-600, not -500: on #f1f5f9 the contrast is 6.92 (was 4.34 — "expired" fell short of 4.5 at 12px/700) */
+  --status-expired-bg: #f1f5f9;
+  --status-expired-border: #e2e8f0;
+  --status-success: #15803d;
+  --status-success-bg: #f0fdf4;
+  --status-success-border: #bbf7d0;
+  --status-error: #b91c1c;
+  --status-error-bg: #fef2f2;
+  --status-error-border: #fecaca;
+
+  /* The typographic scale */
+  --text-xs: .75rem;
+  --text-sm: .875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+
+  /* The spacing grid (a multiple of 4px) */
+  --space-1: .25rem;
+  --space-2: .5rem;
+  --space-3: .75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Radii */
+  --radius-sm: .25rem;
+  --radius-md: .5rem;
+  --radius-lg: .75rem;
+  --radius-container: var(--radius-lg);
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / .06);
+  --shadow-md: 0 4px 6px -1px rgb(15 23 42 / .08), 0 2px 4px -2px rgb(15 23 42 / .06);
+  --shadow-lg: 0 10px 15px -3px rgb(15 23 42 / .10), 0 4px 6px -4px rgb(15 23 42 / .05);
+
+  /* The height of the sticky header (Stage 9) — the SINGLE source for the scroll-margin of the anchors.
+     When you change the vertical rhythm of .site-header, edit it here, otherwise the anchors
+     (#telegram-card, #analysis, the calendar clicks) will slide under the header. */
+  --header-h: 3.5rem;
+}
+
+/* -- Global typography (web-ux-polish): the heading hierarchy and the base
+   readability. The Tailwind reset sets h1–h6 to inherit (the body size, without a
+   hierarchy) — we set the rhythm from the --text-* scale */весов. Правила на ЭЛЕМЕНТЫ:
+   утилитарные классы (.text-xl и т.п.) специфичнее и продолжают точечно
+   переопределять; margin-bottom (0-0-1) уступает .mb-* (0-1-0) — заголовки
+   с утилитой отступа не сдвигаются, «голые» получают разумный ритм.
+   Палитра и токены-цвета НЕ меняются. */
+body { line-height: 1.6; }
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-neutral-900);
+  line-height: 1.25;
+  text-wrap: balance;
+}
+h1 { font-size: var(--text-3xl); font-weight: 700; letter-spacing: -.01em; margin-bottom: var(--space-4); }
+h2 { font-size: var(--text-2xl); font-weight: 700; margin-bottom: var(--space-3); }
+h3 { font-size: var(--text-xl); font-weight: 600; margin-bottom: var(--space-2); }
+h4 { font-size: var(--text-lg); font-weight: 600; margin-bottom: var(--space-1); }
+/* The line measure for long text content (readability ≈70 characters). */
+.prose-measure { max-width: 68ch; }
+
+/* -- Buttons: the primary / secondary / ghost / danger hierarchy --------------------- */
+.btn-primary, .btn-secondary, .btn-ghost, .btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-md);
+  padding: .5rem 1rem;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1.25rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+  text-decoration: none;
+}
+.btn-primary { background: var(--color-primary-700); color: var(--color-neutral-0); }
+.btn-primary:hover { background: var(--color-primary-800); }
+.btn-secondary { background: var(--color-neutral-0); color: var(--color-primary-700); border-color: var(--color-primary-200); }
+.btn-secondary:hover { background: var(--color-primary-50); }
+.btn-ghost { background: transparent; color: var(--color-neutral-600); }
+.btn-ghost:hover { background: var(--color-neutral-100); color: var(--color-neutral-900); }
+.btn-danger { background: var(--status-error); color: var(--color-neutral-0); }
+.btn-danger:hover { background: #7f1d1d; }
+/* The active report of the “Ready report” (/app/analitika): the brand fill, the shape and
+   the border are the same as .btn-secondary — the layout does not shift. */
+.btn-secondary.is-active { background: var(--color-primary-700); color: var(--color-neutral-0); border-color: var(--color-primary-700); }
+.btn-secondary.is-active:hover { background: var(--color-primary-800); border-color: var(--color-primary-800); }
+
+/* -- Status badges --------------------------------------------------------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .125rem .625rem;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  /* The default of the bare .badge (without a modifier): without it color=inherit, background=none,
+     border transparent → the badge wrapper is invisible. The modifiers below override it. */
+  color: var(--color-neutral-600);
+  background: var(--color-neutral-100);
+  border-color: var(--color-neutral-200);
+}
+.badge-new { color: var(--status-new); background: var(--status-new-bg); border-color: var(--status-new-border); }
+.badge-urgent { color: var(--status-urgent); background: var(--status-urgent-bg); border-color: var(--status-urgent-border); }
+.badge-expired { color: var(--status-expired); background: var(--status-expired-bg); border-color: var(--status-expired-border); }
+.badge-success { color: var(--status-success); background: var(--status-success-bg); border-color: var(--status-success-border); }
+.badge-error { color: var(--status-error); background: var(--status-error-bg); border-color: var(--status-error-border); }
+/* A neutral badge for METADATA (translation, plan label, “consortium”,
+   stage, a calm deadline “until DD.MM”): gray ≠ “expired”. The orange badge
+   stays ONLY for urgency, the reddish one — for expired. */
+.badge-muted { color: var(--color-neutral-600); background: var(--color-neutral-100); border-color: var(--color-neutral-200); }
+/* The amber badge — the “action and upsell” role (the canon of the color roles). Introduced for the
+   “AI” label on the landing: the label needed the accent, but blue is taken by time
+   and the match score. Contrast: text 4.66, border 3.23 on its own fill
+   and 3.34 on the white page — both thresholds (4.5 / 3.0) are passed. */
+.badge-accent { color: var(--color-accent-600); background: var(--color-accent-50); border-color: var(--color-accent-500); }
+/* The tap zone of the clickable badges (the <a> itself is the click target; no container needed):
+   .badge stays a non-clickable default (the tender card, the feed) — this class
+   is added NEXT to it, only on <a class="badge …">. The real growth of the
+   box (not a pseudo-element), so that in the row of .fd-card__ai (gap .35rem) the zones
+   of the neighbouring badges do not overlap — the flex-gap is counted from the new, larger
+   borders of the box. */
+.badge-tap { min-height: 2rem; min-width: 2rem; justify-content: center; }
+
+/* A compact secondary action button of the funnel (_tender_actions): “Follow”,
+   “to folder”, “+ note”. They used to be .badge-new (blue) — but blue in the card is
+   reserved for urgency and match-score, so an “action” cannot be colored with it. Neutral
+   with primary text = an “available action”; the active state stays green
+   (.badge-success). The tap zone min-height 2rem. Works on both <button> and
+   <summary> (the marker reset — as for .nav-more / .faq). */
+.act-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  min-height: 2rem;
+  padding: .25rem .6rem;
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-primary-800);
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-300);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  list-style: none;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+.act-btn::-webkit-details-marker { display: none; }
+.act-btn:hover { background: var(--color-primary-50); border-color: var(--color-primary-200); }
+.act-btn:focus-visible { outline: 2px solid var(--color-primary-700); outline-offset: 2px; }
+
+/* The items inside the “Stage” / “To folder” dropdowns (_tender_actions.html): the bare
+   utilities (px-2 py-1 text-sm) gave ~24px — below the tap norm of 2rem. The class is
+   added NEXT to the existing utilities, it does not replace them. */
+.act-menu-item { display: flex; align-items: center; min-height: 2rem; }
+
+/* -- Card --------------------------------------------------------------- */
+.card {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-container);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-4);
+}
+
+/* -- Empty state (a single component, see _empty_state.html) ----------------- */
+.empty-state {
+  background: var(--color-neutral-0);
+  border: 1px dashed var(--color-neutral-300);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8) var(--space-6);
+  text-align: center;
+}
+.empty-state__title { font-size: var(--text-base); color: var(--color-neutral-700); }
+.empty-state__hint { margin-top: var(--space-1); font-size: var(--text-sm); color: var(--color-neutral-500); }
+.empty-state__actions {
+  margin-top: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+/* -- Cabinet forms: sections, fields, gate hints, onboarding (web-ux-2) ----- */
+.form-section {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-4);
+}
+.form-section + .form-section { margin-top: var(--space-4); }
+.form-section__title {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-primary-800);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+.form-section__desc {
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-500);
+}
+.form-section__body {
+  margin-top: var(--space-3);
+  display: grid;
+  gap: var(--space-4);
+}
+
+.field__label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-neutral-700);
+  margin-bottom: var(--space-1);
+}
+.field__req { color: var(--status-error); margin-left: .125rem; }
+.field__hint {
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-600);
+}
+.field-control {
+  width: 100%;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  padding: .5rem .75rem;
+  font-size: var(--text-sm);
+  color: var(--color-neutral-900);
+  background: var(--color-neutral-0);
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.field-control:focus {
+  /* The primary-100 ring gave a contrast of 1.26 against white — the focus is practically not
+     visible. An explicit outline primary-500 + a denser ring primary-200. */
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 1px;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px var(--color-primary-200);
+}
+.field-check {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+}
+.field-check input { flex: none; }
+
+/* The “All tenders” mode (0043) — the same checkbox, but highlighted: it answers the
+   section’s question before the keywords and changes the meaning of the whole form (the topic is no longer
+   needed, AI is switched off forcibly). The color role is “there is still time” /
+   a neutral information of primary, and NOT urgent: in the product urgency means
+   only a near deadline. We stretch it across the whole width of the section: the hint row
+   wraps, while the parent’s inline-flex would squeeze it to its content. */
+.match-all {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--color-primary-200);
+  border-radius: var(--radius-md);
+  background: var(--color-primary-50);
+}
+.match-all input { margin-top: .2rem; }
+
+/* The banner “the profile will find nothing” (0043). The color role — a warning about
+   the setup, not the urgency of time: the orange `--status-urgent` in the product is
+   taken only by a near deadline, so we take the amber of action — the client
+   needs an ACTION, and next to it is a link to edit the profile. */
+.profile-silent {
+  margin-top: var(--space-2);
+  padding: var(--space-2);
+  border: 1px solid var(--color-accent-500);
+  border-radius: var(--radius-md);
+  background: var(--color-accent-50);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-700);
+}
+.profile-silent a {
+  display: inline-block;
+  margin-top: var(--space-1);
+  font-weight: 600;
+  color: var(--color-accent-600);
+  text-decoration: underline;
+}
+
+/* The gate hint: a field unavailable on the plan + a CTA to /plans. An upsell, NOT
+   an alarm → the accent tokens + primary-50, not urgent. Orange (urgent) in the
+   product means ONLY the urgency of time, so the upsell does not take it. */
+.gate-note {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  flex-wrap: wrap;
+  margin-top: var(--space-2);
+  padding: .375rem .625rem;
+  font-size: var(--text-xs);
+  color: var(--color-accent-600);
+  background: var(--color-primary-50);
+  border: 1px solid var(--color-accent-500);
+  border-radius: var(--radius-md);
+}
+.gate-note a { color: var(--color-accent-600); font-weight: 700; text-decoration: underline; }
+.gate-note a:hover { color: var(--color-primary-800); }
+
+/* The micro-onboarding: why a profile is needed (the first visit, 0 profiles) */
+.onboard-tip {
+  background: var(--color-primary-50);
+  border: 1px solid var(--color-primary-100);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.onboard-tip__title { font-weight: 600; color: var(--color-primary-800); }
+.onboard-tip__text {
+  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-600);
+}
+
+/* “Assembled from the template …”: what exactly was substituted into the form. More noticeable than the micro-
+   onboarding (it is the answer to the question “why these words here”), but not alarming —
+   the amber is taken by the action, so the left line is in the brand color. */
+.prefill-note {
+  background: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  border-left: 3px solid var(--color-primary-500);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.prefill-note__title { font-weight: 600; color: var(--color-neutral-800); }
+.prefill-note__text {
+  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-600);
+}
+
+/* The action panel of the form */
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-top: var(--space-4);
+}
+
+/* -- Tooltip/hint ------------------------------------------------------------ */
+.hint {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  font-size: var(--text-xs);
+  color: var(--color-neutral-500);
+  border-bottom: 1px dotted var(--color-neutral-400);
+  cursor: help;
+}
+
+/* -- The contextual “?” hint (VG-30): the single component _hint_tip.html ------
+   The trigger icon + the pop-up bubble hint. Shown on hover AND on
+   focus (keyboard / screen reader): the trigger is a real <button>. Only tokens,
+   the palette is unchanged. */
+.tip { position: relative; display: inline-flex; vertical-align: middle; }
+.tip__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  min-height: 2rem;
+  padding: 0;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-full);
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-600);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: help;
+  transition: color .15s ease, background-color .15s ease, border-color .15s ease;
+}
+.tip__icon:hover,
+.tip__icon:focus-visible {
+  color: var(--color-primary-700);
+  background: var(--color-primary-50);
+  border-color: var(--color-primary-700);
+  outline: none;
+}
+.tip__bubble {
+  position: absolute;
+  bottom: calc(100% + .5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  width: max-content;
+  /* Never wider than the viewport minus the margins: on a phone the bubble at the edge of the form / header
+     used to spill over the edge and add horizontal scrolling. */
+  max-width: min(16rem, calc(100vw - 2rem));
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-neutral-800);
+  color: var(--color-neutral-0);
+  font-size: var(--text-xs);
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: left;
+  white-space: normal;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .15s ease, visibility .15s ease;
+  pointer-events: none;
+}
+.tip__bubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--color-neutral-800);
+}
+.tip:hover .tip__bubble,
+.tip:focus-within .tip__bubble { opacity: 1; visibility: visible; }
+
+/* -- Navigation with the active state ----------------------------------------- */
+.nav-link {
+  color: var(--color-neutral-600);
+  font-size: var(--text-sm);
+  padding: .375rem .625rem;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: color .15s ease, background-color .15s ease;
+}
+.nav-link:hover { color: var(--color-neutral-900); background: var(--color-neutral-100); }
+.nav-link.is-active { color: var(--color-primary-700); background: var(--color-primary-50); font-weight: 600; }
+
+/* -- Cabinet navigation: the secondary items in a compact “More” dropdown -------
+   (web-ux-polish). A plain <details>, without JS. The primary items and “Plans”
+   stay inline; the dropdown removes the overload of the row (~12 links). Only
+   tokens. */
+.nav-more { position: relative; }
+.nav-more > summary { list-style: none; cursor: pointer; -webkit-user-select: none; user-select: none; }
+.nav-more > summary::-webkit-details-marker { display: none; }
+.nav-more[open] > summary { color: var(--color-primary-700); background: var(--color-primary-50); }
+.nav-more__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + .25rem);
+  z-index: 40;
+  min-width: 12.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .125rem;
+  padding: var(--space-2);
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  /* #592: on a low window (desktop / tablet sideways, <~340px) the menu at ~336px was
+     cut off by its lower edge, the lower items were unreachable — the menu is absolute inside
+     the sticky header, the page does not scroll it. We cut it by the viewport height and give
+     its own scrolling (100vh — a fallback without dvh); the phone overrides the same
+     thing in @media (max-width: 639px). */
+  max-height: calc(100vh - var(--header-h) - var(--space-2));
+  max-height: calc(100dvh - var(--header-h) - var(--space-2));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* The items inside — the full width of the menu (nav-link is inline by default). */
+.nav-more__menu .nav-link { display: block; }
+/* The copies of “Plans” / “Logout” inside the menu are needed ONLY on the phone (there the inline versions are
+   hidden) — on the desktop we hide them, so that the item does not double. It reveals them
+   @media (max-width: 639px) above in the source order. */
+.nav-more__menu .nav-show-mobile { display: none; }
+
+/* The cabinet’s info (owner 10.10.2026): the plan label of a tool in “Alati ▾”, the headings
+   of the groups of the mobile menu (the status badge — in the login row, see .whoami-badge). The mobile
+   menu “Meni” (.nav-mobile) is hidden on the desktop — the row of links there is ordinary. */
+.nav-mobile { display: none; }
+.nav-tool-badge { margin-left: .5rem; }
+.nav-group-title {
+  margin: .375rem 0 0;
+  padding: .25rem .5rem 0;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--color-neutral-500);
+}
+.nav-group-title:first-child { margin-top: 0; }
+.nav-menu-lang { margin-left: 0; padding: .25rem .25rem 0; }
+
+/* The standalone link row “Tenders from the sources: N →” (the cockpit and /tenderi):
+   stands on its own line, not inside a sentence, so the tap zone is >=2rem.
+   The font does not grow — only the target height. */
+.src-link { display: inline-flex; align-items: center; min-height: 2rem; }
+
+/* -- The cabinet language switcher (i18n Phase 1.1) --------------------------------
+   Three pills SR / RU / EN in the header. In the cabinet — a POST form (writes users.locale +
+   a cookie), the pills are <button>s with a full reset of the button chrome, the active
+   language — <span>.is-active (not clickable). On the public header (public_base.html)
+   the same class on <a href="?lang="> , because there the switch goes via a query parameter,
+   without a form — one component, the carrier markup differs. Only the palette tokens.
+   The tap zone: it was ~20px (bare text without padding / height) — min-height 2rem.
+   ‼️ The height alone is not enough: the measurement of 02.08 (shots) showed 27×32 on all six public
+   screens — by width the pill did not reach the minimum, and a finger misses on both
+   axes. min-width closes the second axis; it moves the header width by ~15px, and
+   therefore scrollWidth is checked (the size and width invariants conflict). */
+.lang-switch { display: inline-flex; align-items: center; gap: .125rem; margin-left: .25rem; }
+.lang-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2rem;
+  min-width: 2rem;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--text-xs);
+  line-height: 1;
+  color: var(--color-neutral-500);
+  padding: .25rem .375rem;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: color .15s ease, background-color .15s ease;
+}
+.lang-pill:hover { color: var(--color-neutral-900); background: var(--color-neutral-100); }
+.lang-pill:focus-visible { outline: 2px solid var(--color-accent-500); outline-offset: 2px; }
+.lang-pill.is-active { color: var(--color-primary-700); font-weight: 600; cursor: default; }
+
+/* -- The consent row on sign-up (audit 02.08, package 3) ------------------
+   ‼️ The TARGET SIZE is fixed, not the click zone: the checkbox sits INSIDE the <label>, and
+   a click on the consent text already ticks the box (verified by a click 12px from the row’s edge —
+   checked became true). The defect is elsewhere: the little square itself came out with the browser
+   default of 13×13 — half the minimum of 2rem, a small target for
+   a finger and a poorly distinguishable state on mobile. The row was
+   20px high. The links inside the consent text are deliberately NOT stretched —
+   a forced height on an inline link breaks the rhythm of the line (CLAUDE.md). */
+.consent-row { min-height: 2rem; }
+.consent-row input[type="checkbox"] {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: none;
+}
+
+/* -- The admin table: a sticky header, zebra, an even vertical rhythm ---------
+   (web-ux-polish). The scroll wrapper (max-height) keeps the header above the rows when
+   scrolling a long list. Only tokens. */
+.admin-table__wrap {
+  max-height: 70vh;
+  overflow: auto;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  background: var(--color-neutral-0);
+}
+.admin-table { width: 100%; font-size: var(--text-sm); border-collapse: collapse; }
+.admin-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-neutral-50);
+  border-bottom: 1px solid var(--color-neutral-200);
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+  white-space: nowrap;
+}
+.admin-table tbody td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-neutral-200);
+  vertical-align: middle;
+}
+.admin-table tbody tr:last-child td { border-bottom: 0; }
+.admin-table tbody tr:nth-child(even) { background: var(--color-neutral-50); }
+.admin-table tbody tr:hover { background: var(--color-primary-50); }
+
+/* -- The list filter panel (search + select) — web-ux-polish ---------------- */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.filter-bar__field { display: flex; flex-direction: column; gap: var(--space-1); }
+.filter-bar__label { font-size: var(--text-xs); font-weight: 600; color: var(--color-neutral-500); }
+
+/* -- Skeleton placeholder ----------------------------------------------------- */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-neutral-200);
+  border-radius: var(--radius-md);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / .55), transparent);
+  animation: skeleton-shimmer 1.4s infinite;
+}
+@keyframes skeleton-shimmer { 100% { transform: translateX(100%); } }
+
+/* -- The frame: header / brand ------------------------------------------------------ */
+.site-header { background: var(--color-neutral-0); border-bottom: 1px solid var(--color-neutral-200); }
+.brand { display: inline-flex; align-items: center; gap: .5rem; font-weight: 700; font-size: var(--text-lg); color: var(--color-primary-800); text-decoration: none; min-height: 2rem; }
+.brand img { width: 28px; height: 28px; border-radius: var(--radius-sm); }
+/* The session identification in the cabinet header (whoami, owner 20.09.2026) — a thin row ABOVE the
+   main brand / navigation row, not inside it: .site-header__bar already
+   broke on the phone from the extra width (see --header-h below), adding
+   one more flex element there is risky. A long email has no right to push out
+   the header — truncate instead of wrapping, the `title` carries the full text. */
+.site-header__identity {
+  padding-top: .375rem;
+  /* owner 11.10.2026: on the right, in the same row — the language switcher (desktop).
+     whoami shrinks (min-width:0 + ellipsis), the language does not.
+     The row is the full width of the window: the language is pressed to the right edge of the window (1rem), while whoami
+     holds the left edge of the max-w-5xl container, like the logo below (owner 11.10.2026).
+     We do not set overflow: it used to cut off the focus outline of .lang-pill; the cutting of a long
+     email is done by .whoami itself (overflow:hidden + ellipsis). */
+  padding-left: max(1rem, calc((100% - 64rem) / 2 + 1rem));
+  padding-right: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+/* The left part of the login row (owner 11.10.2026): the “Moj kabinet:” link + the status badge.
+   It shrinks first — ellipsis on .whoami__who; the language and “Logout” on the right do not shrink. */
+.site-header__who { flex: 0 1 auto; min-width: 0; display: flex; align-items: center; gap: .5rem; }
+.site-header__who .whoami { min-width: 0; }
+.site-header__identity .lang-switch { flex-shrink: 0; margin-left: auto; }
+.whoami {
+  display: flex;
+  align-items: center;
+  /* The “·” separator and the tenant are separate flex elements: without a gap the space by the “·”
+     got eaten (DOO Primer· client). The gap gives an even margin on both sides. */
+  gap: .25rem;
+  min-height: 2rem;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--text-xs);
+  color: var(--color-neutral-500);
+  text-decoration: none;
+}
+.whoami:hover, .whoami:focus-visible { text-decoration: underline; }
+.whoami:focus-visible { outline: 2px solid var(--color-accent-500); outline-offset: 2px; }
+.whoami__label { flex: none; white-space: nowrap; }
+.whoami__who { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.whoami__tenant { color: var(--color-neutral-700); }
+/* The status badge in the login row — a link to /cabinet/account#status. The tap zone
+   2rem on BOTH axes (the badge itself was 26px high); underline on hover,
+   an outline on focus — as for whoami. */
+.whoami-badge {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  min-height: 2rem;
+  min-width: 2rem;
+  text-decoration: none;
+  border-radius: var(--radius-md);
+}
+.whoami-badge:hover { text-decoration: underline; }
+.whoami-badge:focus-visible { outline: 2px solid var(--color-accent-500); outline-offset: 2px; }
+/* “Logout” in the identification row (to the right of the languages, 1024px+ with the Admin item).
+   The tap zone 2rem on both axes; the text — as whoami, without a frame. */
+.whoami-logout-form { display: flex; flex-shrink: 0; margin: 0 0 0 .25rem; }
+.whoami-logout {
+  min-height: 2rem;
+  min-width: 2rem;
+  padding: 0 .5rem;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: var(--text-xs);
+  color: var(--color-neutral-500);
+  cursor: pointer;
+}
+.whoami-logout:hover { color: var(--color-neutral-900); text-decoration: underline; }
+.whoami-logout:focus-visible { outline: 2px solid var(--color-accent-500); outline-offset: 2px; }
+/* -- The public header (public_base.html): brand + languages + navigation ------------
+   The languages and the navigation are pressed to the right (margin-left:auto of the languages absorbs
+   the free space, the brand stays on the left) — the desktop view as before. On the phone the
+   row wraps (see @media max-width:639px): brand + languages in the first row,
+   the navigation in the second, nothing goes beyond the viewport. */
+.site-header--public .lang-switch { margin-left: auto; }
+/* ≥640px: the ru labels + the languages did not fit into one row (measurement 11.10:
+   scrollWidth 812 > 640/768 on the showcase). The brand and the languages do not shrink; the row of links
+   wraps under them, rather than sticking out beyond the viewport. */
+@media (min-width: 640px) {
+  .site-header--public .site-header__bar { flex-wrap: wrap; row-gap: 0; }
+  .site-header--public .brand { flex-shrink: 0; white-space: nowrap; }
+  .site-header--public .site-header__actions { flex-wrap: wrap; justify-content: flex-end; min-width: 0; gap: .25rem 1rem; }
+}
+/* The cabinet header ≥640px: the brand does not shrink and does not push into the menu; the items take
+   the rest of the row, pressed to the right, and wrap when there is no room (do not
+   overlap the logo). The language — in the whoami row above, not in this row. */
+@media (min-width: 640px) {
+  .site-header--cabinet .brand { flex-shrink: 0; white-space: nowrap; }
+  .site-header--cabinet .site-header__actions { flex: 1 1 0; min-width: 0; justify-content: flex-end; }
+}
+@media (max-width: 639px) {
+  .site-header__identity--lang-only { display: none; }
+}
+
+/* -- Accent text on the brand token (the landing, headings) ------------------ */
+.text-brand { color: var(--color-primary-700); }
+
+/* -- The numeric step marker (“how it works” on the landing) ---------------- */
+.step-num { background: var(--color-primary-700); color: var(--color-neutral-0); }
+.step-num.is-done { background: var(--status-success); }
+.step-num.is-pending { background: var(--color-neutral-300); color: var(--color-neutral-600); }
+
+/* -- The onboarding stepper (VG-30b, “Getting started” on the dashboard) ---------------- */
+.onboarding-step.is-done { opacity: .6; }
+.onboarding-step__title.is-done { text-decoration: line-through; color: var(--color-neutral-500); }
+
+/* -- The plans showcase: the popular plan + the value matrix (VG-12 ph.2) -------- */
+/* The grid of the plan cards: 1 column on the phone, the row only from 768px. Its own class
+   instead of sm:grid-cols-3: at 640–760px three columns gave ~190px for the price, the caption
+   and 8 features — cramped. There is no Tailwind build, so the breakpoint is here, not in a utility. */
+.plan-grid { grid-template-columns: 1fr; }
+@media (min-width: 768px) {
+  /* As many columns as there are cards (Pro + Business — 2; Free is removed from the showcase). */
+  .plan-grid { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+}
+/* The highlight of the popular plan (Pro) with a brand border and a shadow — from the tokens. */
+.plan-featured { border-color: var(--color-primary-700); box-shadow: var(--shadow-md); }
+/* The “Popular” ribbon — the accent amber, separate from “Your plan” (slate). */
+.plan-badge {
+  background: var(--color-accent-500);
+  /* Dark text on the amber: white on #c07f1a = 3.34 (low at 12px/600),
+     neutral-900 = 5.12. The background amber is kept. */
+  color: var(--color-neutral-900);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: .125rem .75rem;
+  white-space: nowrap;
+}
+/* The matrix row: a tick / dash + the label + the limit on the right. */
+.feature-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-600);
+}
+.feature-row.feature-off { color: var(--color-neutral-500); }
+.feature-row__mark { flex: none; margin-top: .125rem; }
+.feature-yes { color: var(--status-success); }
+/* neutral-500, not -300: the dash “no feature” carries meaning, it must be readable. */
+.feature-no { color: var(--color-neutral-500); }
+.feat-limit {
+  margin-left: auto;
+  padding-left: var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-primary-700);
+  white-space: nowrap;
+}
+
+/* -- The AI artifacts of the tender: verdict, score scale, checklist, draft, metrics
+   (web-ux-3). Only presentation — they render the already saved output JSON.
+   The colors — from the status tokens; the palette is not extended. --------------------- */
+
+/* The large verdict banner “is it worth taking part” (go / caution / no_go). */
+.verdict {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid transparent;
+}
+.verdict--go { background: var(--status-success-bg); border-color: var(--status-success-border); }
+.verdict--caution { background: var(--status-urgent-bg); border-color: var(--status-urgent-border); }
+.verdict--no_go { background: var(--status-error-bg); border-color: var(--status-error-border); }
+.verdict--none { background: var(--color-neutral-50); border-color: var(--color-neutral-200); }
+.verdict__icon { font-size: 1.75rem; line-height: 1; flex: none; }
+.verdict__label { font-size: var(--text-lg); font-weight: 700; line-height: 1.2; }
+.verdict--go .verdict__label { color: var(--status-success); }
+.verdict--caution .verdict__label { color: var(--status-urgent); }
+.verdict--no_go .verdict__label { color: var(--status-error); }
+.verdict--none .verdict__label { color: var(--color-neutral-600); }
+.verdict__score { margin-left: auto; text-align: right; flex: none; }
+.verdict__score-num { font-size: var(--text-2xl); font-weight: 700; line-height: 1; color: var(--color-neutral-900); }
+.verdict__score-max { font-size: var(--text-sm); color: var(--color-neutral-500); }
+
+/* The horizontal score scale 0..100; the fill color — by the verdict threshold. */
+.score-meter { margin-top: var(--space-3); }
+.score-meter__track {
+  height: .5rem;
+  border-radius: var(--radius-full);
+  background: var(--color-neutral-200);
+  overflow: hidden;
+}
+.score-meter__fill { height: 100%; border-radius: var(--radius-full); background: var(--color-neutral-400); }
+.score-meter__fill--go { background: var(--status-success); }
+.score-meter__fill--caution { background: var(--status-urgent); }
+.score-meter__fill--no_go { background: var(--status-error); }
+.score-meter__scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-500);
+}
+
+/* The reasons panel with a colored stripe on the left (for / against / risks). */
+.reason-panel {
+  border-left: 3px solid var(--color-neutral-300);
+  padding-left: var(--space-3);
+}
+.reason-panel--pro { border-left-color: var(--status-success); }
+.reason-panel--con { border-left-color: var(--status-urgent); }
+.reason-panel--risk { border-left-color: var(--status-error); }
+.reason-panel__title { display: flex; align-items: center; gap: .375rem; font-weight: 600; font-size: var(--text-sm); margin-bottom: var(--space-2); }
+.reason-panel--pro .reason-panel__title { color: var(--status-success); }
+.reason-panel--con .reason-panel__title { color: var(--status-urgent); }
+.reason-panel--risk .reason-panel__title { color: var(--status-error); }
+.reason-panel ul { list-style: none; display: flex; flex-direction: column; gap: var(--space-1); font-size: var(--text-sm); color: var(--color-neutral-700); }
+.reason-panel li { display: flex; gap: .5rem; align-items: baseline; }
+.reason-panel li::before { content: "•"; color: var(--color-neutral-400); flex: none; }
+
+/* The document checklist: checkbox rows + a category chip. */
+.chk-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.chk-item { display: flex; align-items: flex-start; gap: var(--space-2); font-size: var(--text-sm); }
+.chk-item__box { flex: none; font-size: var(--text-base); line-height: 1.4; }
+.chk-item__note { display: block; margin-top: .125rem; font-size: var(--text-xs); color: var(--color-neutral-500); }
+.chip {
+  display: inline-block;
+  padding: 0 .4rem;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-600);
+  vertical-align: middle;
+}
+
+/* The draft: a toolbar (copy / download) + a readable body block. */
+.artifact-toolbar { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
+.artifact-body {
+  background: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  color: var(--color-neutral-800);
+}
+.artifact-body__heading { font-weight: 700; color: var(--color-primary-800); margin-top: var(--space-4); }
+.artifact-body__heading:first-child { margin-top: 0; }
+.artifact-body__text { white-space: pre-wrap; overflow-wrap: anywhere; margin-top: var(--space-1); }
+
+/* The metric tile of the analytics (customer / competitor). */
+.metric {
+  border: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+.metric__value { font-size: var(--text-xl); font-weight: 700; color: var(--color-neutral-900); line-height: 1.2; }
+.metric__value small { font-size: var(--text-sm); font-weight: 600; color: var(--color-neutral-500); }
+.metric__label { margin-top: .125rem; font-size: var(--text-xs); color: var(--color-neutral-500); }
+
+/* The concentration bar (the share of the customer’s top-1) — visual instead of a bare %. */
+.bar-track { height: .375rem; border-radius: var(--radius-full); background: var(--color-neutral-200); overflow: hidden; }
+.bar-fill { height: 100%; border-radius: var(--radius-full); background: var(--color-primary-500); }
+.bar-fill--hot { background: var(--status-urgent); }
+
+/* -- The help center (web-ux-4): anchor navigation, steps, the AI-function cards,
+   the bot commands, the FAQ accordion. Only presentation, from the existing
+   tokens; the palette is not extended. ---------------------------------------- */
+
+/* Anchor navigation: pill links to the sections */
+.help-nav { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.help-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  padding: .375rem .75rem;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-primary-700);
+  background: var(--color-primary-50);
+  border: 1px solid var(--color-primary-100);
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  transition: background-color .15s ease, color .15s ease;
+}
+.help-chip:hover { background: var(--color-primary-100); color: var(--color-primary-800); }
+
+/* The section heading with an accent icon */
+.help-section__head { display: flex; align-items: center; gap: var(--space-3); }
+.help-section__icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.25rem;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-50);
+  border: 1px solid var(--color-primary-100);
+}
+.help-section__title { font-size: var(--text-xl); font-weight: 700; color: var(--color-primary-800); }
+
+/* Quick start: numbered step cards */
+.help-steps { display: grid; gap: var(--space-4); }
+.help-step { display: flex; gap: var(--space-3); align-items: flex-start; }
+.help-step__num {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  background: var(--color-primary-700);
+  color: var(--color-neutral-0);
+}
+.help-step__title { font-weight: 600; color: var(--color-neutral-900); }
+.help-step__text { margin-top: .125rem; font-size: var(--text-sm); color: var(--color-neutral-600); }
+
+/* The AI functions: a grid of cards (name + plan badge / what it does / how to call) */
+.help-feature-grid { display: grid; gap: var(--space-4); }
+.help-feature { display: flex; flex-direction: column; height: 100%; }
+.help-feature__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.help-feature__name { font-weight: 600; color: var(--color-neutral-900); }
+.help-feature__what { margin-top: var(--space-2); font-size: var(--text-sm); color: var(--color-neutral-600); }
+.help-feature__how {
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-primary-700);
+  display: flex;
+  align-items: baseline;
+  gap: .375rem;
+}
+.help-feature__how::before { content: "→"; flex: none; }
+
+/* The bot commands: a mono code + description */
+.help-cmd { display: flex; gap: var(--space-2); align-items: baseline; font-size: var(--text-sm); }
+.help-cmd code {
+  flex: none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: var(--color-neutral-100);
+  color: var(--color-primary-800);
+  border-radius: var(--radius-sm);
+  padding: .0625rem .375rem;
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+/* The FAQ accordion */
+.faq-item {
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background: var(--color-neutral-0);
+}
+.faq-item + .faq-item { margin-top: var(--space-2); }
+.faq-item__q {
+  list-style: none;
+  cursor: pointer;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.faq-item__q::-webkit-details-marker { display: none; }
+.faq-item__q::after { content: "+"; flex: none; color: var(--color-primary-500); font-weight: 700; }
+.faq-item[open] .faq-item__q::after { content: "–"; }
+.faq-item__a { padding: 0 var(--space-4) var(--space-4); font-size: var(--text-sm); color: var(--color-neutral-600); }
+
+/* ≥640px: the AI functions in 2 columns. The steps (3 of them) — only from 768px: at 640–760px
+   three columns gave ~190px per step and the text was squeezed. */
+@media (min-width: 640px) {
+  .help-feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 768px) {
+  .help-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* -- The template library (web-ux-5): intro, category groups, cards ------
+   Only presentation: renders the public templates of template_library. -------- */
+.tpl-intro { margin-bottom: var(--space-6); }
+.tpl-meta {
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-neutral-500);
+}
+.tpl-group { margin-bottom: var(--space-8); }
+.tpl-group__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+.tpl-group__title {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-neutral-800);
+}
+.tpl-count {
+  flex: none;
+  min-width: 1.25rem;
+  padding: 0 .45rem;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: 1.25rem;
+  text-align: center;
+  border-radius: var(--radius-full);
+  color: var(--color-primary-700);
+  background: var(--color-primary-50);
+}
+.tpl-grid {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: 1fr;
+}
+.tpl-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-4);
+  transition: box-shadow .15s ease, border-color .15s ease;
+}
+.tpl-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary-200);
+}
+.tpl-card__body { display: flex; flex-direction: column; gap: var(--space-2); }
+.tpl-card__title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-neutral-900);
+}
+.tpl-card__desc {
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  color: var(--color-neutral-600);
+}
+.tpl-tags { display: flex; flex-wrap: wrap; gap: .375rem; }
+.tpl-tag {
+  padding: .125rem .5rem;
+  font-size: var(--text-xs);
+  border-radius: var(--radius-sm);
+  color: var(--color-neutral-600);
+  background: var(--color-neutral-100);
+}
+.tpl-tag--cpv {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--color-primary-700);
+  background: var(--color-primary-50);
+}
+.tpl-tag--more { color: var(--color-neutral-500); background: transparent; }
+.tpl-card__cta { margin-top: auto; }
+/* The live figure “≈ N tenders in 30 days” — the main signal of the card: the template
+   is alive even BEFORE the click. The color is blue --status-new (“match score”, the same
+   role as the profile’s match), not amber: amber is taken by the action. */
+.tpl-card__count {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--status-new);
+}
+/* Zero is not “urgent” and not “action”, but a disabled state: gray. */
+.tpl-card__count--zero {
+  font-weight: 400;
+  color: var(--color-neutral-500);
+}
+/* The card “show all” stands alone above the grid — there is no need to stretch it to the full width,
+   but it must not get lost either: we highlight it with the brand border. */
+.tpl-card--all {
+  margin-bottom: var(--space-6);
+  border-color: var(--color-primary-200);
+  background: var(--color-primary-50);
+}
+
+/* One showcase by industries (library_showcase, 01.10.2026). */
+/* The package “the whole industry” — the first card of the industry; a mark above the heading. */
+.tpl-card--pkg { border-color: var(--color-primary-200); }
+.tpl-card__badge {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--color-primary-700);
+}
+.tpl-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: auto;
+}
+.tpl-card__actions .tpl-card__cta { margin-top: 0; }
+.tpl-card__more { min-height: 2rem; min-width: 2rem; }
+/* The industry chips — anchors to the sections; the tap zone 2rem on both axes. */
+.tpl-sector-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+}
+.tpl-sector-nav__chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  min-width: 2rem;
+  padding: .25rem .75rem;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  text-decoration: none;
+}
+.tpl-sector-nav__chip:hover { border-color: var(--color-primary-200); color: var(--color-primary-700); }
+.tpl-sector-nav__chip:focus-visible { outline: 2px solid var(--color-primary-700); outline-offset: 2px; }
+.tpl-group { scroll-margin-top: calc(var(--header-h, 3.5rem) + var(--space-2)); }
+.tpl-search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+.tpl-search .field-control { flex: 1 1 14rem; width: auto; }
+/* /cpv-kodovi: the search result row and the section summary (cpv_directory.js, cpv_directory.html). */
+.cd-head, .cd-meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.5rem; }
+.cd-meta { align-items: center; gap: 0 0.75rem; margin-top: 0.25rem; font-size: 0.875rem; }
+.cd-link { display: inline-flex; align-items: center; min-height: 2rem; text-decoration: underline; }
+.cd-sum { padding-block: 0.5rem; }
+/* “How the templates work” and “the narrow industry templates” — <details> without JS. */
+.tpl-howto, .tpl-more {
+  margin-bottom: var(--space-6);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  background: var(--color-neutral-0);
+}
+.tpl-more { margin-top: var(--space-3); margin-bottom: 0; }
+.tpl-howto > summary, .tpl-more > summary {
+  display: flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-neutral-700);
+  cursor: pointer;
+}
+/* The expand marker: display:flex on summary removes the standard triangle. */
+.tpl-howto > summary::before, .tpl-more > summary::before {
+  content: "▸";
+  margin-right: var(--space-2);
+  color: var(--color-neutral-500);
+}
+.tpl-howto[open] > summary::before, .tpl-more[open] > summary::before { content: "▾"; }
+.tpl-howto > summary:focus-visible, .tpl-more > summary:focus-visible { outline: 2px solid var(--color-primary-700); outline-offset: 2px; }
+.tpl-more[open] > summary { border-bottom: 1px solid var(--color-neutral-200); }
+.tpl-more > .tpl-grid { padding: var(--space-3); }
+.tpl-howto__list {
+  list-style: decimal;
+  padding: 0 var(--space-4) var(--space-4) calc(var(--space-4) + 1.25rem);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--color-neutral-700);
+}
+.tpl-howto__list li + li { margin-top: var(--space-1); }
+/* The composition page of the template. */
+.tpl-detail {
+  display: grid;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  background: var(--color-neutral-0);
+}
+.tpl-detail__row { display: grid; gap: var(--space-1); }
+.tpl-detail__key { font-size: var(--text-xs); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--color-neutral-500); }
+.tpl-detail__val { font-size: var(--text-sm); color: var(--color-neutral-800); min-width: 0; overflow-wrap: anywhere; }
+.tpl-detail__hint { font-size: var(--text-xs); color: var(--color-neutral-500); margin-bottom: var(--space-2); }
+.tpl-detail__cpv { display: grid; gap: var(--space-2); }
+.tpl-tag--stop { color: var(--color-neutral-600); background: var(--color-neutral-100); text-decoration: line-through; }
+.tpl-detail__actions { display: grid; gap: var(--space-3); margin-bottom: var(--space-8); }
+.tpl-detail__buttons { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+@media (min-width: 640px) {
+  .tpl-detail__row { grid-template-columns: 11rem minmax(0, 1fr); gap: var(--space-4); }
+}
+
+/* ≥640px: the template cards in two columns */
+@media (min-width: 640px) {
+  .tpl-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* -- The public tender card (web-ux-6): an entry / growth point. A clear
+   card (title / customer / facts / CPV / description) + a conversion CTA.
+   Only presentation, from the existing tokens; the palette is not extended. --- */
+.tp-back {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+  text-decoration: none;
+}
+.tp-back:hover { color: var(--color-primary-700); }
+
+/* The top tender card */
+.tp-card {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-6);
+}
+.tp-card__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
+.tp-title { font-size: var(--text-2xl); font-weight: 700; line-height: 1.25; color: var(--color-neutral-900); }
+.tp-customer {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .4rem;
+  margin-top: var(--space-2);
+  font-size: var(--text-base);
+  color: var(--color-neutral-600);
+}
+.tp-alts {
+  margin-top: var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  padding: .125rem .625rem;
+  font-size: var(--text-xs);
+  color: var(--color-neutral-500);
+  background: var(--color-neutral-100);
+  border-radius: var(--radius-full);
+}
+
+/* The grid of facts: deadline / amount / status / region / procedure */
+.tp-facts {
+  margin-top: var(--space-5);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+.tp-fact {
+  border: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+.tp-fact--accent { border-color: var(--status-urgent-border); background: var(--status-urgent-bg); }
+.tp-fact__label { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .03em; color: var(--color-neutral-500); }
+.tp-fact__value { margin-top: .2rem; font-size: var(--text-base); font-weight: 600; color: var(--color-neutral-900); }
+.tp-fact__value small { font-size: var(--text-xs); font-weight: 500; color: var(--color-neutral-500); margin-left: .3rem; }
+.tp-fact--accent .tp-fact__value { color: var(--status-urgent); }
+/* Inside an accent (urgent) card the small text is in the urgent tone too —
+   otherwise gray on the #fff7ed background loses both the contrast and the meaning. */
+.tp-fact--accent .tp-fact__value small { color: var(--status-urgent); }
+
+/* The CPV chips */
+.tp-tags { margin-top: var(--space-5); display: flex; flex-wrap: wrap; gap: .375rem; }
+.tp-cpv {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .375rem;
+  padding: .2rem .6rem;
+  font-size: var(--text-xs);
+  border-radius: var(--radius-full);
+  color: var(--color-primary-700);
+  background: var(--color-primary-50);
+  border: 1px solid var(--color-primary-100);
+}
+.tp-cpv__code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-weight: 700; }
+
+/* The description / specification with expansion, if long */
+.tp-section { margin-top: var(--space-6); }
+.tp-section__title { font-size: var(--text-sm); font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--color-primary-800); margin-bottom: var(--space-2); }
+.tp-desc { font-size: var(--text-sm); line-height: 1.65; color: var(--color-neutral-700); white-space: pre-wrap; overflow-wrap: anywhere; }
+/* The heading of an attached document inside the description — the parser marker
+   `### file name` (documents_fetch.py) is rendered as a label, not as text.
+   Inline (not <p>): .tp-desc__full is collapsed by -webkit-line-clamp,
+   which counts the lines of the inline flow and breaks on block children. */
+.tp-desc__doc-title { color: var(--color-neutral-600); }
+/* The collapsed block “Iz dokumentacije” — a description made of file extracts only. */
+.tp-docs > summary { cursor: pointer; font-size: var(--text-sm); font-weight: 600; color: var(--color-neutral-700); min-height: 2rem; padding: var(--space-1) 0; }
+/* A checkbox hack instead of <details>: the specification text itself is an ordinary <div.tp-desc__full>
+   (it is selectable with the mouse and is announced by the screen reader as text, not as a “button”).
+   The hidden checkbox holds the state; the clamp / expansion and the labels switch by a
+   cascade `~` from its :checked. The checkbox is NOT display:none (otherwise it would drop out of the
+   tab order) — it is moved off screen via opacity / position, the focus is kept. */
+/* The expansion container: a positioning context for the hidden checkbox. */
+.tp-desc--clamp { position: relative; }
+.tp-desc__cb {
+  position: absolute;
+  width: 1px; height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.tp-desc__full { display: block; }
+.tp-desc__cb:not(:checked) ~ .tp-desc__full {
+  display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden;
+}
+.tp-desc__toggle { display: block; cursor: pointer; }
+/* The label-switch under the preview; a click on the label toggles the checkbox. */
+.tp-desc__hint {
+  margin-top: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-primary-700);
+}
+.tp-desc__hint::after { content: "▾"; }
+.tp-desc__cb:checked ~ .tp-desc__toggle .tp-desc__hint::after { content: "▴"; }
+.tp-desc__cb:checked ~ .tp-desc__toggle .tp-desc__more { display: none; }
+.tp-desc__cb:not(:checked) ~ .tp-desc__toggle .tp-desc__less { display: none; }
+.tp-desc-none { font-size: var(--text-sm); color: var(--color-neutral-500); }
+.tp-source { margin-top: var(--space-5); }
+
+/* Trust: the transparency of the source (eNabavke) + how we count the urgency */
+.tp-trust {
+  margin-top: var(--space-6);
+  border: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+.tp-trust__title {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  color: var(--color-neutral-500);
+  margin-bottom: var(--space-2);
+}
+.tp-trust__list { display: grid; grid-template-columns: 1fr; gap: var(--space-2); }
+.tp-trust__item {
+  display: flex;
+  align-items: baseline;
+  gap: .5rem;
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: var(--color-neutral-600);
+}
+.tp-trust__ico { flex: none; }
+.tp-trust__more { margin-top: var(--space-3); font-size: var(--text-xs); }
+.tp-trust__more a { color: var(--color-primary-700); text-decoration: none; }
+.tp-trust__more a:hover { text-decoration: underline; }
+
+/* The conversion CTA — the main one for growth (anonymous and logged-in) */
+.tp-cta {
+  margin-top: var(--space-8);
+  border: 1px solid var(--color-primary-100);
+  background: var(--color-primary-50);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+.tp-cta__title { font-size: var(--text-xl); font-weight: 700; color: var(--color-primary-800); }
+.tp-cta__subtitle { margin-top: var(--space-2); font-size: var(--text-sm); line-height: 1.6; color: var(--color-neutral-600); }
+.tp-cta__grid { margin-top: var(--space-5); display: grid; grid-template-columns: 1fr; gap: var(--space-3); }
+.tp-cta__item { background: var(--color-neutral-0); border: 1px solid var(--color-primary-100); border-radius: var(--radius-md); padding: var(--space-3); }
+.tp-cta__item-title { display: flex; align-items: center; gap: .4rem; font-size: var(--text-sm); font-weight: 600; color: var(--color-neutral-900); }
+.tp-cta__item-desc { margin-top: .2rem; font-size: var(--text-xs); line-height: 1.4; color: var(--color-neutral-500); }
+.tp-cta__actions { margin-top: var(--space-5); display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.tp-cta__trust { margin-top: var(--space-3); font-size: var(--text-xs); color: var(--color-neutral-500); }
+
+/* The AI analysis (logged-in, own tenant) — a wrapper over the ready output JSON */
+.tp-ai { margin-top: var(--space-6); }
+.tp-ai__title { display: flex; align-items: center; gap: .4rem; font-size: var(--text-lg); font-weight: 700; color: var(--color-neutral-900); margin-bottom: var(--space-3); }
+
+/* ≥640px: the facts in 2 columns, the CTA advantages in 3 */
+@media (min-width: 640px) {
+  .tp-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tp-cta__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* Scroll-in-a-box for long lists (e.g. “My tenders”): the list does not grow the
+   page endlessly; the header / filters stay visible above the container. */
+.scroll-box {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* ==========================================================================
+   The dashboard cockpit (portal, Stage 1): “my week”, the calendar, needs action.
+   Only the fixed palette (--color-primary-* / --color-accent-* /
+   neutrals / --status-*): there is no second accent and no image backgrounds here.
+   All states — on transform / opacity / the background color, so that the cockpit animation
+   (GSAP, cockpit.js) does not fight the layout.
+   ========================================================================== */
+
+/* -- The hero strip “My week” ----------------------------------------------- */
+.ck-hero {
+  background: var(--color-primary-700);
+  border-radius: var(--radius-container);
+  padding: var(--space-5);
+  color: var(--color-neutral-0);
+  box-shadow: var(--shadow-md);
+}
+.ck-hero__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.ck-hero__title {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: var(--color-neutral-0);
+  margin: 0;
+}
+.ck-hero__sub { font-size: var(--text-sm); color: var(--color-primary-200); }
+.ck-hero__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+/* The indicator tile. The figures are tabular: during the counter animation the width does not dance. */
+.ck-tile {
+  background: rgb(255 255 255 / .08);
+  /* .22, not .14: on the dark hero background the border /.14 gave a contrast of 1.52 —
+     the tiles merged into one sheet. */
+  border: 1px solid rgb(255 255 255 / .22);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color .2s ease, transform .2s ease;
+}
+a.ck-tile:hover { background: rgb(255 255 255 / .16); }
+a.ck-tile:active { transform: scale(.98); }
+a.ck-tile:focus-visible,
+.ck-chip:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
+.ck-tile__value {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+}
+.ck-tile__value--sm { font-size: var(--text-2xl); }
+.ck-tile__label {
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-primary-100);
+}
+.ck-tile__hint { margin-top: var(--space-2); font-size: var(--text-xs); color: var(--color-primary-200); }
+.ck-tile__hint a { color: inherit; text-decoration: underline; }
+/* The zero tile with an explanation: across the full width of the row and of the last one — the long text does not get squeezed into a third. */
+.ck-hero__grid .ck-tile--explain { grid-column: 1 / -1; order: 4; }
+.ck-tile__hint a:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+/* The urgency of the subscription — only the semantic status tokens. */
+.ck-tile.is-urgent { background: var(--status-urgent-bg); border-color: var(--status-urgent-border); }
+.ck-tile.is-urgent .ck-tile__value { color: var(--status-urgent); }
+.ck-tile.is-urgent .ck-tile__label,
+.ck-tile.is-urgent .ck-tile__hint { color: var(--color-neutral-600); }
+.ck-tile.is-error { background: var(--status-error-bg); border-color: var(--status-error-border); }
+.ck-tile.is-error .ck-tile__value { color: var(--status-error); }
+.ck-tile.is-error .ck-tile__label,
+.ck-tile.is-error .ck-tile__hint { color: var(--color-neutral-600); }
+
+/* The funnel breakdown chips and the status badges inside the hero. */
+.ck-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+.ck-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .15rem .5rem;
+  border-radius: var(--radius-full);
+  background: rgb(255 255 255 / .12);
+  border: 1px solid rgb(255 255 255 / .18);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-0);
+  text-decoration: none;
+}
+.ck-chip:hover { background: rgb(255 255 255 / .22); }
+.ck-chip__num { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* The cockpit sections: the heading in sentence case, weight 600, denser than a usual h2. */
+.ck-section__title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  letter-spacing: -.01em;
+  margin-bottom: var(--space-3);
+}
+
+/* -- The deadlines and events calendar ------------------------------------------ */
+/* minmax(0, 1fr), NOT a bare 1fr: the bare one is minmax(auto,1fr), and one wide row
+   of the agenda (a long token in the tender / customer name) inflated the column by its
+   min-content — the calendar (cal__head / cal__grid share the same column) moved out beyond
+   viewport (the cockpit: 442 > 390). minmax(0,…) lets the column shrink, the content
+   wraps (overflow-wrap on agenda__title / …meta). */
+.cal { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-5); }
+/* v2: .cal — only the month grid in the right column (the agenda is in ROKOVI). */
+.cal__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.cal__month { font-size: var(--text-sm); font-weight: 600; color: var(--color-neutral-700); text-transform: capitalize; }
+.cal__legend { display: flex; flex-wrap: wrap; gap: var(--space-3); font-size: var(--text-xs); color: var(--color-neutral-500); }
+.cal__legend span { display: inline-flex; align-items: center; gap: .3rem; }
+.cal__grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
+.cal__wd {
+  text-align: center;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  padding-bottom: var(--space-1);
+}
+.cal__day {
+  min-height: 2.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  padding: .2rem;
+  text-align: center;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-50);
+}
+.cal__day.is-out { color: var(--color-neutral-400); background: transparent; }
+.cal__day.has-events { background: var(--color-neutral-0); border-color: var(--color-neutral-200); }
+
+/* The four states of the cell, deliberately of a DIFFERENT kind — so that they are not confused when
+   they coincide on one date (today + there are events + selected + peek):
+     today — the number in a filled disc (a permanent marker of “where I am”);
+     events — the cell background / border + dots at the bottom;
+     selected — the border and the background of the brand tone (clicked, a persistent state);
+     peek — a thin amber ring (hover over an agenda item, transient).
+   ‼️ Previously “today” was set by the cell background and silently lost to the rule
+   .has-events further down the file — that is, it disappeared exactly on the days when the calendar
+   is needed. The disc on .cal__num does not depend on the cell background at all. */
+.cal__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.375rem;
+  height: 1.375rem;
+  border-radius: var(--radius-full);
+  line-height: 1;
+}
+.cal__day.is-today .cal__num {
+  background: var(--color-primary-700);
+  color: var(--color-neutral-0);
+  font-weight: 700;
+}
+.cal__day.is-selected {
+  border-color: var(--color-primary-700);
+  background: var(--color-primary-50);
+  color: var(--color-primary-800);
+}
+.cal__day.is-peek { box-shadow: inset 0 0 0 2px var(--color-accent-500); }
+
+/* The cell becomes a button only under JS (the role is set by cockpit_calendar.js) —
+   the cursor and the hover are attached to the same role, so as not to promise a click without JS. */
+.cal__day[role="button"] { cursor: pointer; transition: background-color .2s ease, box-shadow .2s ease; }
+.cal__day[role="button"]:hover { background: var(--color-primary-50); }
+.cal__day[role="button"]:focus-visible { outline: 2px solid var(--color-primary-700); outline-offset: 2px; }
+.cal__note { margin-top: var(--space-2); font-size: var(--text-xs); color: var(--color-neutral-500); }
+.cal__dots { display: flex; justify-content: center; gap: 2px; margin-top: .15rem; min-height: .4rem; }
+.cal__dot { width: .35rem; height: .35rem; border-radius: var(--radius-full); display: inline-block; }
+.cal__dot--deadline { background: var(--status-urgent); }
+.cal__dot--action { background: var(--color-primary-700); }
+/* primary-400, not accent: amber is reserved for the action / upsell, not for the
+   subscription event (otherwise orange would lose its single meaning “urgency / CTA”). */
+.cal__dot--subscription { background: var(--color-primary-400); }
+
+/* The agenda: the nearest events as a list (available without the grid and without JS). */
+.agenda { display: flex; flex-direction: column; gap: var(--space-2); }
+.agenda__item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-neutral-200);
+  border-left-width: 3px;
+  border-radius: var(--radius-md);
+  background: var(--color-neutral-0);
+  text-decoration: none;
+  color: inherit;
+  transition: background-color .2s ease, transform .2s ease;
+}
+.agenda__item:hover { background: var(--color-primary-50); }
+.agenda__item:active { transform: scale(.99); }
+.agenda__item:focus-visible { outline: 2px solid var(--color-primary-700); outline-offset: 2px; }
+/* The items of the date selected in the calendar: a light fill of the brand tone + a ring, so that
+   the selection reads also over the usual :hover of the neighbours. A low-saturation tone —
+   a highlight, not an alarm. */
+.agenda__item.is-highlighted {
+  background: var(--color-primary-50);
+  border-color: var(--color-primary-200);
+  box-shadow: 0 0 0 1px var(--color-primary-200);
+}
+.agenda__item--deadline { border-left-color: var(--status-urgent); }
+.agenda__item--action { border-left-color: var(--color-primary-700); }
+.agenda__item--subscription { border-left-color: var(--color-accent-500); }
+.agenda__date {
+  flex: none;
+  width: 3.6rem;
+  text-align: center;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-500);
+}
+.agenda__day { display: block; font-size: var(--text-base); font-weight: 700; line-height: 1.2; color: var(--color-neutral-900); }
+.agenda__body { min-width: 0; flex: 1 1 auto; }
+/* The title link inside an agenda row. The row is no longer an <a> (inside it
+   lives the translation button), so the underline and the focus are on the link itself. */
+.agenda__title-link { color: inherit; text-decoration: none; }
+.agenda__title-link:hover { text-decoration: underline; }
+.agenda__title-link:focus-visible { outline: 2px solid var(--color-primary-700); outline-offset: 2px; border-radius: var(--radius-sm); }
+/* overflow-wrap: a long unbreakable token in the name of a tender / customer otherwise
+   inflates the min-content of the .cal column and pushes the calendar beyond the viewport (see .cal). */
+.agenda__title { font-size: var(--text-sm); font-weight: 600; color: var(--color-neutral-900); overflow-wrap: anywhere; }
+.agenda__meta { margin-top: .1rem; font-size: var(--text-xs); color: var(--color-neutral-500); overflow-wrap: anywhere; }
+.agenda__left { flex: none; align-self: center; }
+/* ‼️ Mobile: an agenda row — TWO rows, not three columns.
+   A measurement on the live production 10.08.2026 (a tenant with a real stream, viewport 390):
+   date 58px + badge 105px — fixed columns, the body was left with 109px of
+   324 (34%), the title link got 84px and fell apart into FIVE lines of
+   one or two words each. The median row height 279px against 123px at 1280 —
+   that is, the dashboard was inflated not by the data but by the layout: in total 28 296px for 101
+   rows instead of 13 005px.
+   We fix it by the LAYOUT (the invariant: overflow and length are fixed by the layout, not by
+   shrinking the targets): the date and the badge share the first row, the body takes the second
+   entirely. We do not touch the tap zones — .agenda__title-link is deliberately outside the
+   ≥2rem rule (a forced height breaks the rhythm of the list). */
+@media (max-width: 639px) {
+  .agenda__item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: var(--space-3);
+    row-gap: var(--space-1);
+    align-items: start;
+  }
+  .agenda__date {
+    grid-column: 1;
+    grid-row: 1;
+    width: auto;
+    text-align: left;
+  }
+  .agenda__day { display: inline; font-size: var(--text-sm); }
+  .agenda__left { grid-column: 2; grid-row: 1; justify-self: end; }
+  .agenda__body { grid-column: 1 / -1; grid-row: 2; }
+}
+
+/* The tail of the agenda: “Show N more” / “Collapse” (_agenda_list.html).
+   The label is switched by the [open] STATE, not by a script: under the CSP
+   `script-src 'self'` there are no inline handlers, and the block must work
+   without JS. The triangle marker is removed (list-style + ::-webkit-details-marker),
+   and in its place our own arrow in ::before, which rotates on expansion. */
+   /* ‼️ A tap zone ≥2rem on BOTH axes: min-height gives the height, display:flex —
+   the width of the column (inline-flex would squeeze the row to the label). */
+.agenda-more { margin-top: var(--space-2); }
+.agenda-more__toggle {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  min-height: 2rem;
+  padding: var(--space-1) 0;
+  cursor: pointer;
+  list-style: none;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-primary-700);
+  -webkit-user-select: none;
+  user-select: none;
+}
+.agenda-more__toggle::-webkit-details-marker { display: none; }
+.agenda-more__toggle::before {
+  content: "▾";
+  font-size: var(--text-xs);
+  line-height: 1;
+  transition: transform .2s ease;
+}
+.agenda-more[open] > .agenda-more__toggle::before { transform: rotate(180deg); }
+.agenda-more__toggle:hover { color: var(--color-primary-800); text-decoration: underline; }
+.agenda-more__toggle:focus-visible { outline: 2px solid var(--color-primary-700); outline-offset: 2px; border-radius: var(--radius-sm); }
+.agenda-more__label { display: inline; }
+.agenda-more__label--open { display: none; }
+.agenda-more[open] .agenda-more__label--closed { display: none; }
+.agenda-more[open] .agenda-more__label--open { display: inline; }
+.agenda-more__list { margin-top: var(--space-2); }
+
+/* -- The secondary blocks of the dashboard: collapsed, but available -------------------- */
+.ck-more { border-top: 1px solid var(--color-neutral-200); margin-top: var(--space-8); padding-top: var(--space-4); }
+.ck-more > summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-neutral-600);
+  padding: var(--space-2) 0;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.ck-more > summary::-webkit-details-marker { display: none; }
+.ck-more > summary:hover { color: var(--color-neutral-900); }
+.ck-more > summary:focus-visible { outline: 2px solid var(--color-primary-700); outline-offset: 2px; }
+
+/* ≥640px: the tiles a bit roomier (three in a row — at all widths: v2 keeps the hero
+   in one row; at 390px that is ~110px per tile, the caption wraps). */
+@media (min-width: 640px) {
+  .ck-hero__grid { gap: var(--space-3); }
+  /* the number and the caption — in a line: a tile of ~48px instead of ~85px (the screen-length measurement). */
+  .ck-hero { padding: var(--space-4) var(--space-5); }
+  .ck-hero__head { margin-bottom: var(--space-3); }
+  .ck-hero__grid .ck-tile { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-4); }
+  .ck-hero__grid .ck-tile__label { margin-top: 0; font-size: var(--text-sm); }
+  .ck-hero__grid .ck-tile__value { font-size: var(--text-2xl); }
+}
+
+/* ==========================================================================
+   The dashboard v2 (owner 13.10): the frame, a single alert banner, the templates in a row.
+   Three kinds of containers: .card / .alert / .ck-hero; one radius
+   (--radius-container); one gap between the sections (the gap of .dash).
+   ========================================================================== */
+.dash { display: flex; flex-direction: column; gap: var(--space-6); }
+.dash__body { display: flex; flex-direction: column; gap: var(--space-6); }
+/* Below 1024px the wrapper columns are “dissolved”: their children are direct members of the flex
+   `.dash__body`, and the order on mobile is set by `order`:
+   ROKOVI → NOVO → VESTI → TEMPLATES → the calendar. */
+.dash-main, .dash-side { display: contents; }
+.dash-rokovi { order: 1; }
+.dash-novo { order: 2; display: flex; flex-direction: column; gap: var(--space-6); }
+.dash-vesti { order: 3; }
+.dash-tpl { order: 4; }
+.dash-cal { order: 5; }
+.dash-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.dash-head .ck-section__title { margin-bottom: var(--space-2); }
+/* ≥1024px: the main column 2/3 + the right 1/3; the right one sticks under the header. */
+@media (min-width: 1024px) {
+  .dash__body { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); align-items: start; }
+  .dash-main, .dash-side { display: flex; flex-direction: column; gap: var(--space-6); min-width: 0; }
+  .dash-side { position: sticky; top: calc(var(--header-h) + var(--space-4)); }
+  .dash-cal { order: 1; }
+  .dash-vesti { order: 2; }
+  /* The collapse of the calendar — mobile only: on the desktop the block is always open. */
+  .dash-cal__toggle { pointer-events: none; }
+  .dash-cal__toggle::after { content: none !important; }
+}
+/* The calendar <details>: the heading is the summary (the first child), the arrow is in ::after. */
+.dash-cal__toggle { display: flex; align-items: center; justify-content: space-between; min-height: 2rem; cursor: pointer; list-style: none; }
+.dash-cal__toggle::-webkit-details-marker { display: none; }
+.dash-cal__toggle::after { content: "▾"; color: var(--color-neutral-500); }
+.dash-cal[open] > .dash-cal__toggle::after { content: "▴"; }
+.dash-cal__toggle:focus-visible { outline: 2px solid var(--color-primary-700); outline-offset: 2px; }
+.dash-cal__toggle .ck-section__title { margin-bottom: 0; }
+/* The calendar’s “?” lives in the h2 inside the summary; on the desktop the summary has no pointer-events — we return them to the hint. */
+.dash-cal__toggle .tip { pointer-events: auto; }
+
+/* The alert banner — a single container with tones. The fill and the border are status tokens;
+   the text — neutrals (the contrast is counted from them, not from the tone). */
+.alert {
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-container);
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-neutral-800);
+  margin-bottom: var(--space-6);
+}
+.dash .alert { margin-bottom: 0; }
+.alert--error { background: var(--status-error-bg); border-color: var(--status-error-border); }
+.alert--warn { background: var(--status-urgent-bg); border-color: var(--status-urgent-border); }
+.alert--info { background: var(--status-new-bg); border-color: var(--status-new-border); }
+.alert__title { font-weight: 600; color: var(--color-neutral-900); }
+.alert__body { margin-top: var(--space-1); font-size: var(--text-sm); color: var(--color-neutral-700); }
+.alert__extra { padding-top: var(--space-2); border-top: 1px solid var(--color-neutral-200); }
+.alert__cta { display: inline-block; margin-top: var(--space-3); }
+.alert__list { margin-top: var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); }
+.alert__list li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); font-size: var(--text-sm); }
+
+/* ROKOVI compact: the customer — in the same row as the heading (measurement: the agenda row
+   2–3 rows → 1–2; the overview screen is shorter). Only inside the ROKOVI block. */
+.dash-rokovi .agenda { gap: var(--space-1); }
+.dash-rokovi .agenda__item { padding: var(--space-1) var(--space-3); align-items: center; }
+.dash-rokovi .agenda__body { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: var(--space-2); }
+.dash-rokovi .agenda__meta { margin-top: 0; }
+/* The status / customer — always a SECOND row under the name. The body is flex-wrap, and in the rows of
+   “action” with a short name, the status “✅ Učestvujem” was put in the same row, while
+   for the deadlines (a long name) the customer dropped down: the alignment depended on the length. */
+.dash-rokovi .agenda__meta { flex: 1 1 100%; }
+/* The event icon and the heading (the block from _card_title.html) — in one row. */
+.dash-rokovi .agenda__title [data-card-title] { display: inline; }
+
+/* The teaser of deliveries: the customer / template — in one row with the heading (≥640px). */
+@media (min-width: 640px) {
+  .dash-feed__main { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: var(--space-3); }
+}
+
+/* Templates: ONE row per template (name · delivered N · status · toggle). */
+.dash-tpl__limit { font-size: var(--text-xs); color: var(--color-neutral-500); margin-bottom: var(--space-1); }
+.dash-tpl__list { margin: 0; padding: 0; list-style: none; }
+.dash-tpl__row { padding: var(--space-1) 0; border-top: 1px solid var(--color-neutral-200); }
+.dash-tpl__row:first-child { border-top: 0; padding-top: 0; }
+.dash-tpl__line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); }
+.dash-tpl__name { flex: 1 1 8rem; min-width: 0; display: inline-flex; align-items: center; min-height: 2rem; font-weight: 500; overflow-wrap: anywhere; }
+.dash-tpl__name:hover { text-decoration: underline; }
+.dash-tpl__count { font-size: var(--text-xs); color: var(--color-neutral-500); white-space: nowrap; }
+
+/* Vesti: the date + the title link. */
+.vesti__list { display: flex; flex-direction: column; gap: var(--space-2); }
+.vesti__date { display: block; font-size: var(--text-xs); color: var(--color-neutral-500); font-variant-numeric: tabular-nums; }
+.vesti__link { display: inline-flex; align-items: center; min-height: 2rem; font-size: var(--text-sm); font-weight: 500; overflow-wrap: anywhere; }
+.vesti__link:hover { text-decoration: underline; }
+.vesti__meta { font-size: var(--text-xs); color: var(--color-neutral-500); overflow-wrap: anywhere; }
+.vesti__top { margin: var(--space-1) 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-1); }
+
+/* ‼️ Respect for prefers-reduced-motion: the transitions and appearances are off; everything
+   is at its final state at once. cockpit.js does not animate at all with this flag —
+   the rule below insures the CSS transitions. */
+@media (prefers-reduced-motion: reduce) {
+  .ck-tile, .agenda__item, .cal__day[role="button"] { transition: none; }
+  .agenda-more__toggle::before { transition: none; }
+  a.ck-tile:active, .agenda__item:active { transform: none; }
+}
+
+/* ==========================================================================
+   “My tenders” — the funnel board (portal, Stage 2). The cockpit’s language: the headings in
+   sentence case, weight 600, elevation only for the sake of hierarchy, the states — on
+   transform / the background color. The palette — only the existing tokens (--color-primary-*
+   / --color-accent-* / neutrals / --status-*); there is no second accent here.
+   ========================================================================== */
+
+/* -- The segment control of the stage filter ----------------------------------------- */
+.seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius-md);
+  background: var(--color-neutral-100);
+  border: 1px solid var(--color-neutral-200);
+}
+.seg__item {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  gap: .35rem;
+  padding: .3rem .7rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-neutral-600);
+  text-decoration: none;
+  transition: background-color .2s ease, color .2s ease;
+}
+.seg__item:hover { background: var(--color-neutral-0); color: var(--color-neutral-900); }
+.seg__item:focus-visible { outline: 2px solid var(--color-primary-700); outline-offset: 2px; }
+.seg__item.is-active {
+  background: var(--color-primary-700);
+  color: var(--color-neutral-0);
+  box-shadow: var(--shadow-sm);
+}
+.seg__num { font-variant-numeric: tabular-nums; opacity: .75; }
+/* <640px .seg → a horizontal scroll tab: the rule is moved to the common mobile block
+   @media (max-width: 639px) of the sticky header (there also --header-h), so as not to
+   breed a second max-width block. */
+
+/* -- The board ------------------------------------------------------------------ */
+.fn { display: block; margin-bottom: var(--space-6); }
+.fn__head { margin-bottom: var(--space-3); }
+.fn__sub { font-size: var(--text-sm); color: var(--color-neutral-500); margin-top: calc(-1 * var(--space-2)); }
+.fn__note { margin-top: var(--space-4); font-size: var(--text-sm); color: var(--color-neutral-500); }
+/* minmax(0, 1fr) — the columns do not push the grid with long words, therefore body has
+   no horizontal scrolling; overflow-x on the board itself is an insurance
+   for narrow viewports, the container scrolls, not the page. */
+.fn__board {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  overflow-x: auto;
+}
+.fn-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  background: var(--color-neutral-0);
+  box-shadow: var(--shadow-sm);
+}
+.fn__board--archive { margin-top: var(--space-3); }
+/* The outcomes (won / lost / skipped) — the archive: without elevation, a muted background. */
+.fn-col--archive { background: var(--color-neutral-50); box-shadow: none; }
+.fn-col__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.fn-col__title { font-size: var(--text-sm); font-weight: 600; color: var(--color-neutral-800); margin: 0; }
+.fn-col__count {
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+  color: var(--color-primary-700);
+}
+.fn-col.is-empty .fn-col__count { color: var(--color-neutral-500); }
+.fn-col__note { margin-top: var(--space-1); font-size: var(--text-xs); color: var(--color-neutral-500); }
+/* A long column scrolls ITSELF — the neighbouring stages stay in view. */
+.fn-col__list {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 26rem;
+  overflow-y: auto;
+}
+.fn-col__empty { margin-top: var(--space-3); font-size: var(--text-xs); color: var(--color-neutral-500); }
+
+/* -- The tender row on the board ------------------------------------------------ */
+.fn-row {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background: var(--color-neutral-0);
+  transition: background-color .2s ease, border-color .2s ease;
+}
+.fn-row:hover { background: var(--color-primary-50); border-color: var(--color-primary-200); }
+.fn-row__title { font-size: var(--text-sm); font-weight: 600; color: var(--color-neutral-900); text-decoration: none; }
+a.fn-row__title:hover { text-decoration: underline; }
+a.fn-row__title:focus-visible { outline: 2px solid var(--color-primary-700); outline-offset: 2px; }
+.fn-row__meta { margin-top: .15rem; font-size: var(--text-xs); color: var(--color-neutral-500); overflow-wrap: anywhere; }
+.fn-row__note { margin-top: .25rem; font-size: var(--text-xs); color: var(--color-neutral-600); }
+.fn-row__badges { margin-top: var(--space-2); display: flex; flex-wrap: wrap; gap: .35rem; }
+
+/* -- Folders: the secondary organizer under the board -------------------------------- */
+.fn-archive, .fn-folders { margin-top: var(--space-6); }
+.fn-folder {
+  padding: var(--space-3);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background: var(--color-neutral-0);
+}
+
+/* ≥768px: the board in three columns along the funnel’s course. */
+@media (min-width: 768px) {
+  .fn__board { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* ‼️ prefers-reduced-motion: the transitions are off; my_tenders.js with this flag
+   does not animate at all — the rule below insures the CSS transitions. */
+@media (prefers-reduced-motion: reduce) {
+  .seg__item, .fn-row { transition: none; }
+}
+
+/* ==========================================================================
+   “All matches” — the archive of the feed (portal, Stage 3). The same language as the cockpit
+   and the funnel board: headings in sentence case, weight 600, tabular-nums on the numbers,
+   elevation only for the sake of hierarchy, the palette — the existing tokens.
+   ========================================================================== */
+
+/* -- The urgency sections ------------------------------------------------------- */
+.fd-group { margin-bottom: var(--space-6); }
+.fd-group__title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  letter-spacing: -.01em;
+  color: var(--color-neutral-900);
+  margin-bottom: var(--space-1);
+}
+/* The second section is quieter than the first: “Deadline soon” must win by weight. */
+.fd-group__title--quiet { font-size: var(--text-sm); color: var(--color-neutral-500); }
+.fd-group__num {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary-700);
+}
+.fd-group__title--quiet .fd-group__num { color: var(--color-neutral-500); }
+.fd-group__sub { font-size: var(--text-xs); color: var(--color-neutral-500); margin-bottom: var(--space-3); }
+.fd-list { display: flex; flex-direction: column; gap: var(--space-2); }
+
+/* -- The match card ---------------------------------------------------- */
+.fd-card {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-neutral-200);
+  border-left: 3px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background: var(--color-neutral-0);
+  transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.fd-card:hover { background: var(--color-primary-50); border-color: var(--color-primary-200); box-shadow: var(--shadow-sm); }
+/* Really burning (≤2 days) — a colored spine on the left: the urgency is visible on a
+   quick glance, before reading the badge. Only status tokens, there is no second accent. */
+.fd-card.is-urgent { border-left-color: var(--status-urgent); }
+.fd-card.is-urgent:hover { border-color: var(--status-urgent-border); border-left-color: var(--status-urgent); }
+.fd-card__head { display: flex; flex-direction: column; gap: var(--space-2); }
+.fd-card__main { min-width: 0; }
+.fd-card__title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-neutral-900);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+a.fd-card__title:hover { text-decoration: underline; }
+a.fd-card__title:focus-visible { outline: 2px solid var(--color-primary-700); outline-offset: 2px; }
+.fd-card__customer { margin-top: .15rem; font-size: var(--text-xs); color: var(--color-neutral-500); overflow-wrap: anywhere; }
+/* The profile — a NOTICEABLE tag in the brand tone (Stage 4): “which profile it matches” is the question
+   for which the feed is opened, and the neutral gray tag answered it in a whisper.
+   The tone — the existing primary tokens (we do not create a second accent:
+   the amber stays with the CTA), weight 600 and an explicit border separate the tag from the row
+   of the customer above it. The tag is clickable → it behaves as a control:
+   hover / focus-visible are mandatory. */
+/* The small interactive elements of the cabinet that have no component of their own: the links
+   “← To the panel” / “My tenders →” / “Need help?”, the button “All sections” in the
+   CPV widget and the <summary> of the statistics. All of them were 16–20px — below the invariant of
+   the tap zones (2rem). The selectors are by CONTEXT, not by Tailwind utility classes:
+   the class `text-sm text-brand` holds the color and the size, the behavior cannot be bound to it.
+   The anchor is `#main` (the page wrapper in base.html and public_base.html),
+   so that the rule does not touch the header and the footer, which have their own sizes. */
+#main a.text-brand,
+#main a.text-slate-500.underline,
+#main summary.text-xs,
+#main button.text-slate-600 {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+}
+
+.fd-card__profile {
+  /* The tap zone from 2rem: this is a filter link (“show this profile’s feed”), not a
+     caption — by the invariant of the tap zones the badge must be 32px or more (it was 25px). */
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  margin-top: var(--space-2);
+  padding: .15rem .5rem;
+  border-radius: var(--radius-sm);
+  /* The fill is primary-100, NOT primary-50: on the :hover of the card the background is exactly
+     primary-50 — a tag with the same fill would dissolve on hover. */
+  background: var(--color-primary-100);
+  border: 1px solid var(--color-primary-200);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-primary-800);
+  text-decoration: none;
+  transition: background-color .2s ease, border-color .2s ease;
+}
+a.fd-card__profile:hover { background: var(--color-primary-200); border-color: var(--color-primary-300); }
+a.fd-card__profile:focus-visible { outline: 2px solid var(--color-primary-700); outline-offset: 2px; }
+/* The lead of the page: one line, why this feed exists — under the h1, before the filters. */
+.fd-lede {
+  max-width: 62ch;
+  margin-bottom: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+  text-wrap: pretty;
+}
+.fd-card__side { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; flex: none; }
+.fd-card__sent { font-size: var(--text-xs); font-variant-numeric: tabular-nums; color: var(--color-neutral-500); }
+/* The right block of the row — two columns: the deadline | the value (the amount, the delivery date). On ≥640px
+   the column widths are fixed (see the media below), therefore the deadline badge stands in one column
+   for all rows, rather than drifting with the length of the amount (measurement tender_row_columns_probe.js: before the fix
+   the spread of the left edge of the badge was 112.7 px). An empty value — a cell of the same width.
+   On the phone the deadline column is by content: the longest badge ("submission deadline
+   passed", 172 px) was wider than half the row at 320px and overlapped the delivery date (measurement
+   fd_overlap_probe.js: 3.4 px in 6 of 12 rows); the value takes the rest, pressed to the right. */
+.fd-card__side--cols {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: var(--space-3);
+  align-items: center;
+}
+/* The value wraps if it does not fit in the rest of the row: at 320px “delivered 14.10” (83 px)
+   with a rest of 68 px overlapped the badge by 3.4 px (fd_overlap_probe.js, the en archive). */
+.fd-card__side--cols .fd-card__value { white-space: normal; }
+.fd-card__deadline { display: flex; min-width: 0; justify-self: start; }
+.fd-card__value {
+  justify-self: end;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-neutral-500);
+  white-space: nowrap;
+  text-align: right;
+}
+/* -- The AI cluster: what is ready + the entry to the analysis --------------------------------- */
+.fd-card__ai {
+  margin-top: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-neutral-100);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .35rem;
+}
+.fd-card__ready { font-size: var(--text-xs); color: var(--color-neutral-500); margin-right: .15rem; }
+.fd-card__more { font-size: var(--text-xs); font-weight: 600; color: var(--color-primary-700); text-decoration: none; margin-left: auto; }
+.fd-card__more:hover { text-decoration: underline; }
+.fd-card__more:focus-visible { outline: 2px solid var(--color-primary-700); outline-offset: 2px; }
+/* Nothing is ready — one noticeable CTA instead of a scatter of badges. */
+.fd-card__cta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  gap: .35rem;
+  padding: .3rem .7rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-primary-200);
+  background: var(--color-primary-50);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-primary-700);
+  text-decoration: none;
+  transition: background-color .2s ease, color .2s ease;
+}
+.fd-card__cta:hover { background: var(--color-primary-700); color: var(--color-neutral-0); border-color: var(--color-primary-700); }
+.fd-card__cta:focus-visible { outline: 2px solid var(--color-primary-700); outline-offset: 2px; }
+
+/* -- Pagination -------------------------------------------------------------- */
+.fd-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-neutral-200);
+}
+.fd-pager__total { font-size: var(--text-xs); color: var(--color-neutral-500); }
+.fd-pager__controls { display: flex; align-items: center; gap: var(--space-3); }
+.fd-pager__pos { font-size: var(--text-sm); color: var(--color-neutral-500); font-variant-numeric: tabular-nums; }
+.fd-pager__num {
+  font-variant-numeric: tabular-nums; font-weight: 600; color: var(--color-neutral-700);
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 2.25rem; min-height: 2.25rem; border: 1px solid transparent;
+}
+/* The current page — the brand fill, not “one more link”: white on #1f3760 (AA). */
+.fd-pager__num[aria-current="page"] { background: var(--color-primary-700); border-color: var(--color-primary-700); color: var(--color-neutral-0); }
+/* The pager at 390px: the numbers wrap onto a line, rather than pushing the page sideways. */
+.fd-pager__controls { flex-wrap: wrap; }
+.fd-pager__arrow, .fd-pager__m-only { display: none; }
+.fd-pager__jump { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.fd-pager__jump .field-control { width: 6rem; }
+.fd-pager__gap { color: var(--color-neutral-500); padding: 0 .25rem; }
+/* <640px: ONE row of numbers — a window of ±1, “““” and “””” go (there is a “Go to” form),
+   the arrows are signs ‹ ›, without words. */
+@media (max-width: 639px) {
+  .fd-pager__controls { flex-wrap: nowrap; gap: var(--space-1); }
+  .fd-pager__wide, .fd-pager__edge, .fd-pager__word { display: none; }
+  .fd-pager__arrow, .fd-pager__m-only { display: inline; }
+  .fd-pager__step { min-width: 2.25rem; padding-left: .5rem; padding-right: .5rem; }
+  .fd-pager__num { padding-left: .25rem; padding-right: .25rem; }
+}
+
+/* ≥640px: the card header in a row — the urgency badge goes to the right. */
+@media (min-width: 640px) {
+  .fd-card__head { flex-direction: row; justify-content: space-between; }
+  .fd-card__side { justify-content: flex-end; }
+  /* The deadline and value columns are fixed: 9.5rem covers the longest badge
+     (“Još 15 dana” / “Ističe danas” / a date, measurement 99 px), 7.5rem — the amount (81 px). */
+  .fd-card__side--cols { grid-template-columns: 9.5rem 7.5rem; }
+}
+
+/* ‼️ prefers-reduced-motion: the transitions are off; feed.js with this flag
+   does not animate at all — the rule below insures the CSS transitions. */
+@media (prefers-reduced-motion: reduce) {
+  .fd-card, .fd-card__cta { transition: none; }
+}
+
+/* ==========================================================================
+   Navigation of long pages (portal, Stage 9)
+   The dashboard and the feed are long: from the latest tenders to the navigation there was a "long
+   wheel scroll". Three means — the sticky header (the navigation is always
+   at hand), a “to the top” button and a smooth scroll of the anchors. Only the existing
+   tokens, not a single new dependency.
+   ========================================================================== */
+
+/* The smooth scroll of the anchors: the calendar → a tender, “Connect Telegram ↓”,
+   the sections of the AI analysis. The “to the top” button sets its own behavior. */
+html { scroll-behavior: smooth; }
+
+/* ‼️ An anchor must not slide UNDER the sticky header. The rule is on [id], not on
+   the list of sections: a new anchor gets the offset automatically, it cannot be forgotten.
+   scroll-margin affects ONLY the scroll-to-element, not the layout. */
+[id] { scroll-margin-top: calc(var(--header-h) + var(--space-4)); }
+
+/* -- Skip-link (a11y) -------------------------------------------------------- */
+/* The first focusable element of <body>: the keyboard / screen reader jumps straight to
+   #main, bypassing the header and the navigation. By default it is moved past the top edge of the screen
+   (it takes no space, is not visible to the mouse); on :focus it slides in. z-index 60 — above
+   the sticky header (50), otherwise the focus banner would hide under it. */
+.skip-link {
+  position: fixed;
+  top: 0;
+  left: var(--space-4);
+  z-index: 60;
+  transform: translateY(-120%);
+  padding: .5rem 1rem;
+  background: var(--color-primary-700);
+  color: var(--color-neutral-0);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+  transition: transform .15s ease;
+}
+.skip-link:focus { transform: translateY(0); outline: 2px solid var(--color-accent-500); outline-offset: 2px; }
+
+/* -- The sticky header ----------------------------------------------------------- */
+/* z-index 50 — above the content, the cards and the banners. The “More” dropdown (z-index
+   40) lies INSIDE the header: the header creates a stacking context, so the menu
+   floats together with it and overlaps the content, staying under the header itself.
+   The background is semi-transparent with blur — under the header one sees that the content goes on,
+   but the text does not show through. */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgb(255 255 255 / .82);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  backdrop-filter: blur(12px) saturate(180%);
+  box-shadow: var(--shadow-sm);
+}
+/* There is no backdrop-filter — a semi-transparent background would give a see-through text:
+   we give an opaque one, the header stays readable. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .site-header { background: var(--color-neutral-0); }
+}
+
+/* <640px: on the phone only 3 primary items are inline; “Plans” and “Logout”
+   go into the “More” dropdown (nav-hide-mobile hides them, nav-show-mobile
+   reveals the copies inside the menu). The tap zone of nav-link is a full 2.75rem (it was
+   ~26px, below the 44px norm). Fewer items → fewer rows, but each is taller:
+   --header-h holds ~2 rows, and the scroll-margin adds to it a buffer of space-4,
+   so that the anchors (#telegram-card, #analysis, the calendar days) do not slide under the header. */
+@media (max-width: 639px) {
+  /* Бренд+языки — первый ряд, пункты меню под ним (#581): 2 ряда (≈101px), если
+     the items fit in one (sr / en 390px, en 360px); otherwise the items wrap and
+     it comes out as 3 rows (≈145px: ru 390, sr / ru 360, 320). Measurement 03.10.2026
+     (scripts/shots, stand stand_nav, /help): 101 / 145 px. --header-h = the worst
+     case 145px → 9.1rem (146px): the scroll-margin of the anchors and the max-height of the
+     “More” menu are counted from it; the smaller case gives only a margin. */
+  :root { --header-h: 9.1rem; }
+  .site-header .nav-link {
+    min-height: 2.75rem;
+    padding: .375rem .5rem;
+    font-size: var(--text-xs);
+    display: inline-flex;
+    align-items: center;
+  }
+  .site-header .brand { font-size: var(--text-base); flex-shrink: 0; white-space: nowrap; }
+  .site-header .brand img { width: 22px; height: 22px; }
+  .site-header .nav-hide-mobile { display: none; }
+  /* The copies inside the “More” menu — the same geometry as the other items
+     (inline-flex + centring by the height 2.75rem): with display:block the text sticks
+     to the top of the row, and the gaps Cenovnik↔Izvori / Odjava↔Pomoć look uneven. */
+  .site-header .nav-show-mobile { display: inline-flex; }
+  /* The public header in one row (brand + languages + navigation) did not fit the phone
+     (scrollWidth 510 > 390 after the tap zones #446). We move it: the brand and the languages in the
+     first row, the navigation in the second, across the full width. The tap zones are not touched. */
+  .site-header--public .site-header__bar { flex-wrap: wrap; }
+  /* The second row (Tenderi / Cenovnik / Pomoć / Prijava + “Registracija”) with gap-4 gave a
+     scrollWidth of 405 > 390 — the main button was cut off on the right (measurement 30.09.2026).
+     The gap is narrowed to 0.25rem (nav-link has its own padding — the 2.75rem tap zones do
+     not change), and the wrap insures the long ru / en labels: the excess goes into a new
+     row, not beyond the viewport. */
+  .site-header--public .site-header__actions { flex-basis: 100%; justify-content: flex-start; flex-wrap: wrap; gap: .25rem; }
+  /* The ru labels (Tenderi / Tarifi / Pomoć / Vhod) are longer than sr / en: with padding .5rem
+     “Registracija” went into the third row. The 2.75rem height does not change; the width of the
+     shortest target (“Vhod”) stays above 2rem. */
+  .site-header--public .nav-link { padding-left: .375rem; padding-right: .375rem; }
+  /* The cabinet header (base.html): without flex-wrap the row did not wrap, and it squeezed
+     .brand below its max-content width — without nowrap (above) the text broke into
+     three rows (“Tender / Bot / Serbia”), the navigation floated to the right (the owner’s audit
+     03.08). The same wrapping pattern as the public header: the brand
+     takes the first row entirely, the navigation — the second, across the full width. */
+  .site-header--cabinet .site-header__bar { flex-wrap: wrap; }
+  .site-header--cabinet .site-header__actions { flex-basis: 100%; }
+  /* #581: the languages move into the brand row (on the right), the menu items stay
+     in ONE row under it — instead of three rows (brand / 3 items / 2 items + languages) there
+     will be two, if the items fit (sr 390px). The <nav> is expanded into
+     display:contents: its children become flex elements of .site-header__bar,
+     and the order is set by order — brand (0), languages (1), the line break ::after (2),
+     items (3). The items and their order in the DOM do not change. */
+  .site-header--cabinet .site-header__actions { display: contents; }
+  .site-header--cabinet .site-header__bar::after { content: ""; order: 2; flex-basis: 100%; height: 0; }
+  .site-header--cabinet .brand { order: 0; }
+  .site-header--cabinet .lang-switch { order: 1; margin-left: auto; }
+  .site-header--cabinet .site-header__actions > :not(.lang-switch) { order: 3; }
+  /* The row of items is narrow: horizontal padding .25rem instead of .5rem. The height
+     2.75rem and min-width 2rem (both axes of the tap zone) do not change. */
+  .site-header--cabinet .site-header__actions > .nav-link,
+  .site-header--cabinet .nav-more > summary { padding-left: .25rem; padding-right: .25rem; min-width: 2rem; justify-content: center; }
+  /* The “More” menu on the phone: the anchor right:0 of the <details> stands in the middle of the row, and
+     the minimal 12.5rem went beyond the left edge (measurement 390px: ru −36, sr −57,
+     en −130). We remove the positioning from the <details>, and the menu is positioned from
+     the sticky header and stretches across its width with margins — neither to the right nor to the left
+     beyond the viewport, in any language. */
+  .site-header--cabinet .nav-more { position: static; }
+  /* The row is one: the brand · “Meni ▾”. The entry to the cabinet and the badge — in the login row above. The rest (items, language, logout)
+     — inside .nav-mobile; in the header on the phone they are absent (nav-hide-mobile). */
+  .site-header--cabinet .nav-mobile { display: block; }
+  /* “Odjava” — a <button> with an inline `font:inherit`: without !important the font is larger than the neighbouring links. */
+  .site-header .nav-mobile button.nav-link { font-size: var(--text-xs) !important; }
+  .site-header--cabinet .site-header__actions > .nav-mobile { order: 1; margin-left: auto; }
+  .site-header--cabinet .nav-more__menu {
+    left: var(--space-2);
+    right: var(--space-2);
+    top: 100%;
+    min-width: 0;
+    /* A low screen (320×568, the phone sideways): the menu ≈475px + the header ≈149px do not
+       fit, and the menu is absolute inside the sticky header, the page does not
+       scroll it → the lower items are unreachable. We cut it by the viewport height and
+       give the menu its own scrolling (100vh — a fallback without dvh). */
+    max-height: calc(100vh - var(--header-h) - var(--space-2));
+    max-height: calc(100dvh - var(--header-h) - var(--space-2));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  /* The contextual “?” hints: on a narrow screen the bubble, centred on the icon
+     at the edge of the form / header, spilled over the left (/profiles/new: left −33) or
+     the right (the cockpit) edge and added horizontal scrolling. Keeping
+     the centring within the viewport without JS is impossible, therefore on the phone the bubble is
+     a bottom banner across the full width minus the margins: always fully on the screen, it does not
+     create scrolling. The arrow without an anchor to the icon is removed. */
+  .tip__bubble {
+    position: fixed;
+    left: 1rem;
+    right: 1rem;
+    top: auto;
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    transform: none;
+    width: auto;
+    max-width: none;
+  }
+  .tip__bubble::after { display: none; }
+  /* The segment control of the stage filter (my_tenders): with 5+ profiles the wrap took
+     a third of the first screen — on the phone it is a horizontal scroll tab (nowrap +
+     overflow-x), the pills do not shrink (flex:none). On the desktop the wrap is as it was. */
+  .seg { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .seg__item { flex: none; }
+  /* M-8 of the audit: 14px in .field-control is below the 16px threshold, above which iOS Safari
+     zooms the page on focusing a field. Only the font size — the width of the form container
+     (max-w-md) is not touched. */
+  .field-control { font-size: 1rem; }
+}
+
+/* -- The floating “To the top” button ---------------------------------------------- */
+/* Progressive enhancement: the markup always has the button, but the is-visible class
+   is set only by scroll_nav.js. While it is absent (the CSP stripped it, the network, an old
+   browser), visibility:hidden keeps the button both off-screen and out of the tab order —
+   without JS it is simply absent, and the markup is intact.
+   z-index 45 — above the content and the hints (30), but UNDER the header (50): when it moves away
+   the button goes under the header, not over the navigation.
+   safe-area-inset — so as not to land under the iOS system panel. */
+.to-top {
+  position: fixed;
+  right: var(--space-4);
+  bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+  z-index: 45;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 1px solid var(--color-primary-800);
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-700);
+  color: var(--color-neutral-0);
+  font-size: var(--text-lg);
+  line-height: 1;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(.5rem);
+  transition: opacity .2s ease, transform .2s ease, visibility .2s ease, background-color .15s ease;
+}
+.to-top.is-visible { opacity: 1; visibility: visible; transform: none; }
+.to-top:hover { background: var(--color-primary-800); }
+.to-top:focus-visible { outline: 2px solid var(--color-accent-500); outline-offset: 2px; }
+/* After .is-visible — otherwise transform:none would override the press. */
+.to-top:active { transform: scale(.96); }
+
+/* ‼️ prefers-reduced-motion: reduce — neither smooth scrolling nor an appearance animation.
+   scroll_nav.js with this flag scrolls with behavior:'auto'; the rule
+   below removes the CSS part (otherwise the anchors would keep “sliding”). */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .to-top { transition: none; }
+  .to-top:active { transform: none; }
+  .skip-link { transition: none; }
+}
+
+/* -- Extra Tailwind utilities outside the frozen subset (FIX-PLANS-CSS) --------
+   The classes that the templates use, but which were not in the purge subset
+   at the time of VG-28.1 (the build below). The semantics 1:1 with Tailwind v3.4; the values
+   are not changed without a check against https://tailwindcss.com/docs. -------------------- */
+.list-decimal{list-style-type:decimal}
+.relative{position:relative}
+.absolute{position:absolute}
+.cursor-default{cursor:default}
+.left-1\/2{left:50%}
+.-top-3{top:-.75rem}
+.-translate-x-1\/2{--tw-translate-x:-50%;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}
+.h-3{height:.75rem}
+.h-4{height:1rem}
+.w-3{width:.75rem}
+.w-4{width:1rem}
+.rounded-2xl{border-radius:1rem}
+.gap-1\.5{gap:.375rem}
+.gap-6{gap:1.5rem}
+.gap-y-1{row-gap:.25rem}
+.mb-5{margin-bottom:1.25rem}
+.ml-1{margin-left:.25rem}
+.pb-2{padding-bottom:.5rem}
+.pb-6{padding-bottom:1.5rem}
+.pb-14{padding-bottom:3.5rem}
+.pt-14{padding-top:3.5rem}
+.py-2\.5{padding-top:.625rem;padding-bottom:.625rem}
+.last\:pb-0:last-child{padding-bottom:0}
+.border-blue-200{--tw-border-opacity:1;border-color:rgb(191 219 254/var(--tw-border-opacity,1))}
+.border-emerald-200{--tw-border-opacity:1;border-color:rgb(167 243 208/var(--tw-border-opacity,1))}
+.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240/var(--tw-border-opacity,1))}
+.border-slate-900{--tw-border-opacity:1;border-color:rgb(15 23 42/var(--tw-border-opacity,1))}
+.text-amber-800{--tw-text-opacity:1;color:rgb(146 64 14/var(--tw-text-opacity,1))}
+.text-blue-800{--tw-text-opacity:1;color:rgb(30 64 175/var(--tw-text-opacity,1))}
+.text-emerald-500{--tw-text-opacity:1;color:rgb(16 185 129/var(--tw-text-opacity,1))}
+.text-emerald-800{--tw-text-opacity:1;color:rgb(6 95 70/var(--tw-text-opacity,1))}
+.ring-2{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000)}
+.ring-slate-900{--tw-ring-opacity:1;--tw-ring-color:rgb(15 23 42/var(--tw-ring-opacity,1))}
+
+/* ==========================================================================
+   Readability and states (contrast-pass): the htmx indicator, the single focus of the DS,
+   the tap zones, placeholders. Only tokens / existing classes; the palette is unchanged.
+   ========================================================================== */
+
+/* -- The htmx waiting indicator ------------------------------------------------
+   The templates had not a single hx-indicator, while the AI generation, the translation
+   toggle and the funnel actions are htmx POSTs: without feedback the user presses
+   again. htmx puts .htmx-request on the request element while it is in flight. */
+.htmx-request { opacity: .6; pointer-events: none; }
+button.htmx-request { position: relative; }
+button.htmx-request::after {
+  content: "";
+  display: inline-block;
+  width: .85em;
+  height: .85em;
+  margin-left: .4rem;
+  vertical-align: -.1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--radius-full);
+  animation: htmx-spin .6s linear infinite;
+}
+@keyframes htmx-spin { to { transform: rotate(360deg); } }
+/* prefers-reduced-motion: the spinner does not spin — a static ellipsis waiting. */
+@media (prefers-reduced-motion: reduce) {
+  button.htmx-request::after {
+    content: "…";
+    width: auto;
+    height: auto;
+    margin-left: .3rem;
+    border: 0;
+    animation: none;
+  }
+}
+
+/* -- The single visible focus of the basic components of the DS ----------------------------
+   The private components (ck-tile, seg, cal, fd-*, to-top, agenda) already have
+   focus-visible; the basic buttons / links / expanders do not. */
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-ghost:focus-visible,
+.btn-danger:focus-visible,
+.nav-link:focus-visible,
+.help-chip:focus-visible,
+.faq-item__q:focus-visible,
+.nav-more > summary:focus-visible {
+  outline: 2px solid var(--color-primary-700);
+  outline-offset: 2px;
+}
+/* Focus on the hidden checkbox → a visible ring on its label (otherwise the keyboard
+   “goes blind”: the checkbox is off-screen, while the focus is really on it). */
+.tp-desc__cb:focus-visible ~ .tp-desc__toggle {
+  outline: 2px solid var(--color-primary-700);
+  outline-offset: 2px;
+}
+
+/* -- The tap zones ---------------------------------------------------------------
+   The funnel badge buttons are the main working tool, now ~20px high;
+   we raise them to 32px and give a visible focus. */
+button.badge,
+summary.badge {
+  min-height: 2rem;
+  padding: .35rem .75rem;
+}
+button.badge:focus-visible,
+summary.badge:focus-visible {
+  outline: 2px solid var(--color-primary-700);
+  outline-offset: 2px;
+}
+/* The “?” hint icon is larger (1rem→1.25rem) + an invisible tap zone around it —
+   we position ::before from the icon itself (relative), not from .tip. */
+/* The tap zone ≥2rem on BOTH axes (measurement 03.08: 20×32 — the height is already held by
+   min-height, the width is not; the same class of defect as .lang-pill in #480).
+   min-width closes the second axis; justify-content centres the icon inside the
+   extended box, as for .lang-pill / footer a. */
+.tip__icon { width: 1.25rem; height: 1.25rem; min-width: 2rem; position: relative; }
+.tip__icon::before { content: ""; position: absolute; inset: -.6rem; }
+/* The footer links (Politika privatnosti / Uslovi korišćenja / Impresum and the
+   neighbours) were ~20px — bare text in the row without its own tap zone. The selector
+   is by <footer>, not by a class: the footer in base.html and public_base.html keeps a
+   different markup (div / nav), but both are inside <footer>.
+   ‼️ min-height of one axis is not enough (the same class of defect as .lang-pill in #480):
+   the measurement of 03.08 (`shot.sh`, 390×844, `?lang=en`) on /plans, /signup, /login,
+   /help gave exactly one small target per screen — the short label "Help"
+   (28×32): the height is already held by min-height, the width is not. min-width closes the
+   second axis; justify-content centres the text if the box is wider than the content
+   (short EN labels), as for .lang-pill. */
+footer a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2rem;
+  min-width: 2rem;
+}
+
+/* -- Placeholders -----------------------------------------------------------
+   the Tailwind reset sets #9ca3af (2.54 against white). The body prefix raises the
+   specificity above the reset rule, which is lower in the source of the file. */
+body input::placeholder,
+body textarea::placeholder { color: var(--color-neutral-500); }
+
+/* -- Utilities that are not in the subset but are set by a JS widget (not a template) --------
+   There is no Tailwind build: the guard test_css_template_coverage.py scanned
+   only *.html and did not see className / classList in JS — cpv_widget.js set
+   five classes that were not in the compiled CSS (ml-2 / pr-1 / truncate /
+   max-w-full silently did not apply; the CPV translation stuck to the name without a
+   space). The values — as for the neighbouring Tailwind utilities of the same step. */
+.ml-2 { margin-left: .5rem; }
+.pr-1 { padding-right: .25rem; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.max-w-full { max-width: 100%; }
+
+/* -- The operator’s console (admin navigation) ------------------------------------
+   The admin navigation row went as the second row under the white cabinet header (.site-header),
+   with the same border-b — it visually merged with it (the owner on 04.08 could not find
+   /admin/users). The dark brand container makes the operator’s outline distinguishable at
+   first glance; we do not take the roles of the status colors (orange / red —
+   only urgency / error). */
+.admin-console {
+  background: var(--color-primary-800);
+  border: 1px solid var(--color-primary-900);
+  border-radius: var(--radius-md);
+  padding: .5rem .625rem;
+}
+.admin-console__label {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-neutral-0);
+  background: var(--color-primary-600);
+  border-radius: var(--radius-sm);
+  padding: .25rem .5rem;
+  margin-right: .25rem;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+.admin-console .nav-link { color: var(--color-primary-100); }
+.admin-console .nav-link:hover { color: var(--color-neutral-0); background: var(--color-primary-700); }
+.admin-console .nav-link.is-active { color: var(--color-neutral-0); background: var(--color-primary-600); font-weight: 600; }
+/* The focus ring of the basic .nav-link (--color-primary-700) sinks into the dark background of the
+   console — here a light outline is needed. */
+.admin-console .nav-link:focus-visible { outline-color: var(--color-neutral-0); }
+
+/* -- The “limit exhausted” flash ----------------------------------------------
+   The owner’s requirement of 15.08.2026: a refusal by the limit must FLASH large and bright
+   when the AI is attempted, offer a bigger plan and go away by itself after
+   a few seconds, so as not to irritate.
+
+   ‼️ CSS only: with the CSP `script-src 'self'` inline handlers silently do not
+   run, and a timer in JS would require a vendor file with SRI. The appearance and
+   the auto-hide are done by one pair of keyframes.
+   ‼️ The flash is an ATTENTION-grabber, not a state: it disappears, and the cause of
+   the refusal stays as a permanent line in the slot itself (_ai_slot.html). Otherwise after
+   6 seconds the client would see just a non-working button — the same “silently”.
+   The color role is amber (action / upsell); orange (urgency) and red
+   (error) are not taken: they have another meaning in the system.
+   z-index 55 — above the sticky header (50), below the skip-link (60). */
+.limit-flash {
+  position: fixed;
+  left: 50%;
+  top: calc(var(--header-h) + .5rem);
+  z-index: 55;
+  width: min(30rem, calc(100vw - 1.5rem));
+  background: var(--color-accent-50);
+  border: 2px solid var(--color-accent-500);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: .875rem 1rem;
+  animation:
+    limit-flash-in .18s ease-out both,
+    limit-flash-out .45s ease-in 5.6s forwards;
+}
+.limit-flash__title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--color-accent-600);
+}
+.limit-flash__body {
+  margin-top: .25rem;
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+}
+.limit-flash__actions {
+  margin-top: .625rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  align-items: center;
+}
+@keyframes limit-flash-in {
+  from { opacity: 0; transform: translate(-50%, -.75rem) scale(.96); }
+  to   { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+@keyframes limit-flash-out {
+  from { opacity: 1; transform: translate(-50%, 0); visibility: visible; }
+  to   { opacity: 0; transform: translate(-50%, -.5rem); visibility: hidden; }
+}
+/* We respect the system setting: without motion — only a hold and a soft exit.
+   Disabling the disappearance completely is not allowed (otherwise the banner would hang over the screen),
+   so the same timing remains, but without a shift or scaling. */
+@media (prefers-reduced-motion: reduce) {
+  .limit-flash {
+    transform: translateX(-50%);
+    animation: limit-flash-out-static .3s linear 5.7s forwards;
+  }
+  @keyframes limit-flash-out-static {
+    from { opacity: 1; visibility: visible; }
+    to   { opacity: 0; visibility: hidden; }
+  }
+}
+
+
+/* ==========================================================================
+   The template creation wizard (owner 22.09.2026): three steps of one form + a live counter
+   ========================================================================== */
+
+/* The step strip is a STATUS, not navigation: there is nothing to click, therefore an <ol> with
+   labels, not buttons (the tap-zone requirement of ≥2rem applies to the interactive, not to the
+   label). Without JS it is hidden by the .hidden class: there is nothing to page through, all the steps are expanded. */
+.wizard-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+}
+.wizard-nav__item { display: inline-flex; align-items: center; gap: .375rem; }
+.wizard-nav__item + .wizard-nav__item::before {
+  content: "→";
+  margin-right: .375rem;
+  color: var(--color-neutral-300);
+}
+.wizard-nav__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--radius-full);
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-600);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+.wizard-nav__item--active { color: var(--color-primary-800); font-weight: 600; }
+.wizard-nav__item--active .wizard-nav__num {
+  background: var(--color-primary-700);
+  color: var(--color-neutral-0);
+}
+.wizard-nav__item--done .wizard-nav__num {
+  background: var(--color-primary-100);
+  color: var(--color-primary-800);
+}
+
+/* The collapsed “Additional”. ‼️ The <summary> MUST be the FIRST child of <details>;
+   the h3 heading lives INSIDE the summary — otherwise the UA hides the content entirely. */
+.form-section__summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2rem;
+  cursor: pointer;
+  list-style: none;
+}
+.form-section__summary::-webkit-details-marker { display: none; }
+.form-section__summary::after { content: "▾"; color: var(--color-neutral-500); }
+details[open] > .form-section__summary::after { content: "▴"; }
+
+/* The live step counter (“≈ N tenders in 30 days”). The figure is counted by the same
+   preview_service.preview_count that draws the showcase cards. */
+.preview-live {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-primary-200);
+  border-radius: var(--radius-md);
+  background: var(--color-primary-50);
+  transition: opacity .15s ease;
+}
+.preview-live__count {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-primary-800);
+}
+.preview-live__count--zero {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+.preview-live__hint { font-size: var(--text-xs); color: var(--color-neutral-600); }
+.preview-live__warn {
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--status-urgent);
+}
+.preview-live__forms { margin-top: var(--space-2); font-size: var(--text-xs); }
+/* The in-flight indicator of the request: the common .htmx-request dims the banner; the spinner in the corner
+   shows that the figure is being recounted, not just “faded”. */
+.preview-live.htmx-request { position: relative; }
+.preview-live.htmx-request::after {
+  content: "";
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  width: .85rem;
+  height: .85rem;
+  border: 2px solid var(--color-primary-200);
+  border-right-color: transparent;
+  border-radius: var(--radius-full);
+  animation: htmx-spin .6s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .preview-live.htmx-request::after {
+    content: "…";
+    width: auto;
+    height: auto;
+    border: 0;
+    animation: none;
+  }
+}
+
+/* The confirmation screen “what you will get” and the result screen. */
+.recap { display: grid; gap: var(--space-2); margin-top: var(--space-3); }
+.recap__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-neutral-200);
+  font-size: var(--text-sm);
+}
+.recap__row:last-child { border-bottom: 0; padding-bottom: 0; }
+.recap__key { color: var(--color-neutral-500); min-width: 9rem; }
+.recap__val { color: var(--color-neutral-800); font-weight: 500; }
+/* The examples under the counter (_preview_examples.html): the matched word — <mark> on the
+   background of the counter banner (primary-50) — an underlay one step darker, the text is its own.
+   Long Serbian compound words (“gradjevinsko-zanatskih”) at 390px
+   wrap inside the link, rather than pushing the row apart. */
+.preview-live__examples-title {
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+.preview-examples__link { overflow-wrap: anywhere; }
+/* The keywords as chips (keyword_chips.js). The field looks like .field-control,
+   the chips wrap in rows; × — a tap zone of 2rem on BOTH axes. */
+.kw-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  background: var(--color-neutral-0);
+}
+/* The input field inside without its own border — the focus is shown by the container, as for .field-control. */
+.kw-chips:focus-within {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 1px;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px var(--color-primary-200);
+}
+.kw-chips__list { display: contents; }
+.kw-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding-left: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-primary-50);
+  border: 1px solid var(--color-primary-200);
+  color: var(--color-primary-800);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+.kw-chip__remove {
+  min-width: 2rem;
+  min-height: 2rem;
+  border-radius: var(--radius-full);
+  color: var(--color-neutral-600);
+  font-size: var(--text-base);
+  line-height: 1;
+}
+.kw-chip__remove:hover { color: var(--color-neutral-800); }
+.kw-chip__remove:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: -2px; }
+/* Step 3 of the wizard: a channel is not connected — connect right on the step. Amber is not
+   taken (this is not an upsell): a neutral banner with a border. */
+.channel-connect {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  background: var(--color-neutral-50);
+}
+.channel-connect__title { font-weight: 600; font-size: var(--text-sm); color: var(--color-neutral-800); }
+.channel-connect__email { width: 100%; }
+.kw-chips__input {
+  flex: 1 1 10rem;
+  min-width: 0;
+  min-height: 2rem;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 1rem;
+}
+/* Without the wizard (editing a template) steps 1 and 2 are visible at once — the examples are shown
+   once, under the first counter; in the wizard one step is visible, and the examples are on both. */
+#profileForm:not([data-wizard]) #previewStep2 .preview-live__examples { display: none; }
+.preview-examples__link mark {
+  background: var(--color-primary-200);
+  color: inherit;
+  border-radius: var(--radius-sm);
+}
+
+/* -- The /tenderi portal: search, filters, sorting, chips (portal_filters). The form
+   GET without JS. On mobile (≤640px) — one column, tap zones ≥2rem on both axes. -- */
+.pf { margin-top: var(--space-6); }
+.pf__sr {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.pf__main { display: grid; gap: var(--space-2); grid-template-columns: 1fr; }
+.ck-teaser__search { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+.ck-teaser__search .field-control { flex: 1; min-width: 0; }
+/* Mobile: the search field — full width, the buttons below (in one row the field was squeezed to “Naslo”).
+   ‼️ The rule MUST stand AFTER the base `.field-control { flex: 1 }` above: previously it lived in the
+   dashboard block (~1873), and the base one, by order, overrode it at equal specificity. */
+@media (max-width: 639px) {
+  .ck-teaser__search { flex-wrap: wrap; }
+  .ck-teaser__search .field-control { flex: 1 1 100%; }
+}
+.ck-teaser__tabs { display: flex; gap: var(--space-2); margin: var(--space-3) 0; }
+.ck-teaser__tab {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 2rem; min-width: 2rem; padding: 0 var(--space-3);
+  border-radius: var(--radius-sm); font-size: var(--text-sm);
+  color: var(--color-neutral-500); text-decoration: none;
+}
+.ck-teaser__tab:hover { text-decoration: underline; }
+.ck-teaser__tab[aria-current] { background: var(--color-primary-200); color: inherit; font-weight: 600; }
+.ck-teaser__tab:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.pf__search { position: relative; }
+.pf__search .field-control { padding-right: 2.25rem; }
+.pf__clear {
+  position: absolute; top: 0; right: 0; display: flex; align-items: center;
+  justify-content: center; min-width: 2rem; min-height: 2.5rem; height: 100%;
+  color: var(--color-neutral-500); text-decoration: none; font-size: 1.25rem;
+}
+.pf__clear:hover { color: inherit; }
+.pf__clear:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }
+.pf__search, .pf__sort { min-width: 0; }
+.pf__submit { min-height: 2.5rem; }
+.pf__more { margin-top: var(--space-3); }
+.pf__grid { display: grid; gap: var(--space-3); grid-template-columns: 1fr; margin-top: var(--space-2); }
+.pf__grid > div { min-width: 0; }
+.pf__check { align-self: end; }
+.pf__actions { margin-top: var(--space-3); }
+.pf__status { margin-top: var(--space-4); }
+.pf__found { font-size: var(--text-sm); font-weight: 600; color: var(--color-neutral-700); }
+.pf__chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); list-style: none; }
+.pf__chip, .pf__reset {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 2rem;
+  min-width: 2rem;
+  padding: 0 .75rem;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.pf__chip { background: var(--color-neutral-100); color: var(--color-neutral-700); border: 1px solid var(--color-neutral-200); }
+.pf__chip:hover { background: var(--color-neutral-200); }
+.pf__reset { color: var(--color-primary-700); font-weight: 600; }
+.pf__reset:hover { text-decoration: underline; }
+.pf__chip:focus-visible, .pf__reset:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+@media (min-width: 640px) {
+  .pf__main { grid-template-columns: 1fr 15rem auto; }
+  .pf__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width:640px){.container{max-width:640px}}@media (min-width:768px){.container{max-width:768px}}@media (min-width:1024px){.container{max-width:1024px}}@media (min-width:1280px){.container{max-width:1280px}}@media (min-width:1536px){.container{max-width:1536px}}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:.25rem}.mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.ml-3{margin-left:.75rem}.ml-auto{margin-left:auto}.mr-2{margin-right:.5rem}.mr-3{margin-right:.75rem}.mr-4{margin-right:1rem}.mt-0\.5{margin-top:.125rem}.mt-1{margin-top:.25rem}.mt-16{margin-top:4rem}.mt-2{margin-top:.5rem}.mt-3{margin-top:.75rem}.mt-4{margin-top:1rem}.mt-5{margin-top:1.25rem}.mt-6{margin-top:1.5rem}.mt-8{margin-top:2rem}.mt-auto{margin-top:auto}.block{display:block}.inline-block{display:inline-block}.inline{display:inline}.flex{display:flex}.inline-flex{display:inline-flex}.table{display:table}.grid{display:grid}.hidden{display:none}.h-7{height:1.75rem}.max-h-40{max-height:10rem}.max-h-48{max-height:12rem}.w-7{width:1.75rem}.w-full{width:100%}.min-w-0{min-width:0}.max-w-2xl{max-width:42rem}.max-w-3xl{max-width:48rem}.max-w-4xl{max-width:56rem}.max-w-5xl{max-width:64rem}.max-w-md{max-width:28rem}.flex-1{flex:1 1 0%}.flex-none{flex:none}.flex-shrink-0,.shrink-0{flex-shrink:0}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;-moz-user-select:none;user-select:none}.list-inside{list-style-position:inside}.list-disc{list-style-type:disc}.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:.25rem}.gap-2{gap:.5rem}.gap-3{gap:.75rem}.gap-4{gap:1rem}.gap-x-4{-moz-column-gap:1rem;column-gap:1rem}.space-x-4>:not([hidden])~:not([hidden]){--tw-space-x-reverse:0;margin-right:calc(1rem*var(--tw-space-x-reverse));margin-left:calc(1rem*(1 - var(--tw-space-x-reverse)))}.space-y-1>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.25rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.25rem*var(--tw-space-y-reverse))}.space-y-2>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.5rem*var(--tw-space-y-reverse))}.space-y-3>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.75rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.75rem*var(--tw-space-y-reverse))}.space-y-4>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem*var(--tw-space-y-reverse))}.divide-y>:not([hidden])~:not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px*(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px*var(--tw-divide-y-reverse))}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.break-all{word-break:break-all}.rounded{border-radius:.25rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:.5rem}.rounded-md{border-radius:.375rem}.border{border-width:1px}.border-y{border-top-width:1px}.border-b,.border-y{border-bottom-width:1px}.border-t{border-top-width:1px}.border-amber-200{--tw-border-opacity:1;border-color:rgb(253 230 138/var(--tw-border-opacity,1))}.border-green-200{--tw-border-opacity:1;border-color:rgb(187 247 208/var(--tw-border-opacity,1))}.border-red-200{--tw-border-opacity:1;border-color:rgb(254 202 202/var(--tw-border-opacity,1))}.border-red-300{--tw-border-opacity:1;border-color:rgb(252 165 165/var(--tw-border-opacity,1))}.border-slate-300{--tw-border-opacity:1;border-color:rgb(203 213 225/var(--tw-border-opacity,1))}.bg-amber-50{--tw-bg-opacity:1;background-color:rgb(255 251 235/var(--tw-bg-opacity,1))}.bg-blue-50{--tw-bg-opacity:1;background-color:rgb(239 246 255/var(--tw-bg-opacity,1))}.bg-emerald-50{--tw-bg-opacity:1;background-color:rgb(236 253 245/var(--tw-bg-opacity,1))}.bg-green-50{--tw-bg-opacity:1;background-color:rgb(240 253 244/var(--tw-bg-opacity,1))}.bg-green-700{--tw-bg-opacity:1;background-color:rgb(21 128 61/var(--tw-bg-opacity,1))}.bg-red-50{--tw-bg-opacity:1;background-color:rgb(254 242 242/var(--tw-bg-opacity,1))}.bg-red-600{--tw-bg-opacity:1;background-color:rgb(220 38 38/var(--tw-bg-opacity,1))}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249/var(--tw-bg-opacity,1))}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252/var(--tw-bg-opacity,1))}.bg-slate-700{--tw-bg-opacity:1;background-color:rgb(51 65 85/var(--tw-bg-opacity,1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42/var(--tw-bg-opacity,1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255/var(--tw-bg-opacity,1))}.p-2{padding:.5rem}.p-3{padding:.75rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.p-8{padding:2rem}.px-1\.5{padding-left:.375rem;padding-right:.375rem}.px-2{padding-left:.5rem;padding-right:.5rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-0\.5{padding-top:.125rem;padding-bottom:.125rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}.py-12{padding-top:3rem;padding-bottom:3rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.py-8{padding-top:2rem;padding-bottom:2rem}.pb-1{padding-bottom:.25rem}.pb-12{padding-bottom:3rem}.pt-16{padding-top:4rem}.pt-3{padding-top:.75rem}.pt-4{padding-top:1rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:.75rem;line-height:1rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.italic{font-style:italic}.leading-none{line-height:1}.tracking-tight{letter-spacing:-.025em}.text-amber-600{--tw-text-opacity:1;color:rgb(217 119 6/var(--tw-text-opacity,1))}.text-amber-700{--tw-text-opacity:1;color:rgb(180 83 9/var(--tw-text-opacity,1))}.text-blue-600{--tw-text-opacity:1;color:rgb(37 99 235/var(--tw-text-opacity,1))}.text-blue-700{--tw-text-opacity:1;color:rgb(29 78 216/var(--tw-text-opacity,1))}.text-emerald-700{--tw-text-opacity:1;color:rgb(4 120 87/var(--tw-text-opacity,1))}.text-green-600{--tw-text-opacity:1;color:rgb(22 163 74/var(--tw-text-opacity,1))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68/var(--tw-text-opacity,1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38/var(--tw-text-opacity,1))}.text-red-700{--tw-text-opacity:1;color:rgb(185 28 28/var(--tw-text-opacity,1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225/var(--tw-text-opacity,1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184/var(--tw-text-opacity,1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139/var(--tw-text-opacity,1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105/var(--tw-text-opacity,1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85/var(--tw-text-opacity,1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59/var(--tw-text-opacity,1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42/var(--tw-text-opacity,1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.underline{text-decoration-line:underline}.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.last\:border-b-0:last-child{border-bottom-width:0}.hover\:bg-green-800:hover{--tw-bg-opacity:1;background-color:rgb(22 101 52/var(--tw-bg-opacity,1))}.hover\:bg-red-50:hover{--tw-bg-opacity:1;background-color:rgb(254 242 242/var(--tw-bg-opacity,1))}.hover\:bg-slate-50:hover{--tw-bg-opacity:1;background-color:rgb(248 250 252/var(--tw-bg-opacity,1))}.hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85/var(--tw-bg-opacity,1))}.hover\:bg-slate-800:hover{--tw-bg-opacity:1;background-color:rgb(30 41 59/var(--tw-bg-opacity,1))}.hover\:bg-white:hover{--tw-bg-opacity:1;background-color:rgb(255 255 255/var(--tw-bg-opacity,1))}.hover\:text-red-500:hover{--tw-text-opacity:1;color:rgb(239 68 68/var(--tw-text-opacity,1))}.hover\:text-slate-900:hover{--tw-text-opacity:1;color:rgb(15 23 42/var(--tw-text-opacity,1))}.hover\:underline:hover{text-decoration-line:underline}@media (min-width:640px){.sm\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.sm\:grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}.sm\:text-4xl{font-size:2.25rem;line-height:2.5rem}}@media (min-width:640px){
+  .sm\:flex-row{flex-direction:row}
+  .sm\:items-center{align-items:center}
+  .sm\:justify-between{justify-content:space-between}
+  .sm\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (min-width:768px){.md\:grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}}
+/* The customers “follow / exclude” (customer_picker.js, 0046). A chip — a ticked
+   checkbox with the name (without JS, unticking = removing); × and the suggestion rows —
+   a tap zone of 2rem on BOTH axes. Long names wrap rather than being cut. */
+.cust-picker { min-width: 0; }
+.cust-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-1); }
+.cust-chips:empty { display: none; }
+.cust-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding-left: var(--space-2);
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-50);
+  border: 1px solid var(--color-primary-200);
+  color: var(--color-primary-800);
+  font-size: var(--text-sm);
+}
+.cust-chip__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 2rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.cust-chip__label input { flex: none; }
+.cust-chip__remove {
+  flex: none;
+  min-width: 2rem;
+  min-height: 2rem;
+  border-radius: var(--radius-full);
+  color: var(--color-neutral-500);
+  font-size: var(--text-base);
+  line-height: 1;
+}
+.cust-chip__remove:hover { color: var(--color-neutral-800); }
+.cust-chip__remove:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: -2px; }
+.cust-search { margin-top: var(--space-2); }
+.cust-results {
+  margin-top: var(--space-1);
+  max-height: 16rem;
+  overflow-y: auto;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  background: var(--color-neutral-0);
+  font-size: var(--text-sm);
+}
+.cust-results__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 2rem;
+  padding: var(--space-1) var(--space-2);
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.cust-results__item:hover,
+.cust-results__item[aria-selected="true"] { background: var(--color-primary-50); }
+.cust-results__count { flex: none; color: var(--color-neutral-500); font-variant-numeric: tabular-nums; }
+.cust-results__empty { padding: var(--space-2); color: var(--color-neutral-500); }

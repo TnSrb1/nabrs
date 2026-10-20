@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{# The one-off login / confirmation link has already been used (or has expired).
+   We show THIS page only to an anonymous user: whoever has a live session in the browser —
+   the route redirects them with a 303 into the cabinet, showing nothing (routes_auth). Here it is not
+   an “error”, but the next step: the form to request a new link, a submit to the
+   existing POST /login. The form is ordinary (method="post"), without inline
+   handlers — the CSP script-src 'self' silently does not run them.
+   title_key / body_key are passed by the route (the keys of the CABINET catalog). #}
+{% block title %}{{ t[title_key] }}{% endblock %}
+{% block content %}
+<div class="max-w-md">
+  <h1 class="text-xl font-semibold mb-2">{{ t[title_key] }}</h1>
+  <p class="text-slate-600">{{ t[body_key] }}</p>
+  <h2 class="text-sm font-semibold mt-4 mb-2">{{ t.authm_new_link_title }}</h2>
+  <form method="post" action="/login" class="space-y-4">
+    {% if next_path %}<input type="hidden" name="next" value="{{ next_path }}">{% endif %}
+    <div>
+      <label for="email" class="block text-sm mb-1">Email</label>
+      <input type="email" name="email" id="email" required autocomplete="email" class="field-control">
+    </div>
+    <button type="submit" class="btn-primary">{{ t.authm_new_link_cta }}</button>
+  </form>
+</div>
+{% endblock %}

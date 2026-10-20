@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+{% from "_hint_tip.html" import tip with context %}
+{% block title %}{{ t.pf_title_edit if profile_id is defined else t.pf_title_new }}{% endblock %}
+{% block content %}
+{% set pf = profile or {} %}
+{# helpers: get field from ORM object or dict.
+   ‼️ None is rendered as an empty string, and NOT as “None”: the key of the nullable field
+   (min_amount_eur / max_amount_eur / min_days_until_deadline) is present with the
+   value None → `{{ None }}` would give value="None", the submit would send the string
+   “None” → _to_decimal would fail with “a number is expected”. One point fixes all the
+   nullable inputs of the form. The guard — tests/api/test_profile_form_null_render.py. #}
+{% macro val(key, default='') %}
+  {%- set v = pf.get(key, default) if pf is mapping else (pf[key] if pf[key] is defined else default) -%}
+  {{- '' if v is none else v -}}
+{% endmacro %}
+{% macro checked(key) %}{% if pf is mapping %}{% if pf.get(key) %}checked{% endif %}{% else %}{% if pf[key] is defined and pf[key] %}checked{% endif %}{% endif %}{% endmacro %}
+{% macro in_list(key, item) %}{% if pf is mapping %}{% if item in (pf.get(key) or []) %}checked{% endif %}{% else %}{% if pf[key] is defined and item in (pf[key] or []) %}checked{% endif %}{% endif %}{% endmacro %}
+{# Customer lists of the profile (ORM or dict) — for chips. #}
+{% set cust_lists = {
+  'customers_include': ((pf.get('customers_include') if pf is mapping else pf.customers_include) or []),
+  'customers_exclude': ((pf.get('customers_exclude') if pf is mapping else pf.customers_exclude) or []),
+} %}
+{# The customers “follow” / “exclude” (0046). The selected ones — ticked checkboxes
+   name=<field>: without JS, unticking = removing the customer on saving. The search with a
+   suggestion (customer_picker.js) adds the same checkboxes; the names from the response
+   are inserted via textContent. The search has no name — it does not travel into the POST and the preview. #}
+{% macro customer_picker(field, label, hint, aria) %}
+<fieldset class="cust-picker" data-cust-picker data-field="{{ field }}"
+          data-suggest-url="/profiles/customer-suggest{% if profile_id is defined %}?profile_id={{ profile_id }}{% endif %}"
+          data-nothing-found="{{ t.pf_cust_nothing_found }}" data-remove-label="{{ t.pf_cust_remove }}">
+  <legend class="field__label">{{ label }}</legend>
+  <p class="field__hint">{{ hint }}</p>
+  {# The field is always in the POST (an empty value is discarded by the parsing) — as for
+     regions on the confirmation screen: the set of form fields does not depend on the choice. #}
+  <input type="hidden" name="{{ field }}" value="">
+  <ul class="cust-chips" data-cust-list>
+    {% for name in cust_lists[field] %}
+    <li class="cust-chip"><label class="cust-chip__label"><input type="checkbox" name="{{ field }}" value="{{ name }}" checked> <span>{{ name }}</span></label></li>
+    {% endfor %}
+  </ul>
+  {% if cust_lists[field] %}<p class="field__hint" data-cust-nojs>{{ t.pf_cust_nojs_hint }}</p>{% endif %}
+  <div class="cust-search hidden" data-cust-search>
+    <input type="text" id="pf-{{ field }}-search" class="field-control" data-no-preview autocomplete="off"
+           role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="pf-{{ field }}-results"
+           placeholder="{{ t.pf_cust_search_ph }}" aria-label="{{ aria }}">
+    <ul id="pf-{{ field }}-results" class="cust-results hidden" role="listbox" aria-label="{{ aria }}" data-cust-results></ul>
+  </div>
+</fieldset>
+{% endmacro %}
+{# gate hint: a field unavailable on the plan stays visible + a CTA to /plans #}
+{% macro gate_note(text) %}
+<p class="gate-note">🔒 {{ text }} <a href="/plans">{{ t.pf_plans_link }}</a></p>
+{% endmacro %}
+{# The live counter of the step: the place where htmx puts the fragment _preview_count.html.
+   Until the first answer (and in general without JS) there is a caption “what this figure is” here —
+   an empty place would be read as “the counter is broken”. #}
+{% macro preview_slot(step) %}
+<div id="previewStep{{ step }}" class="preview-live" role="status" aria-live="polite">
+  <p class="preview-live__hint">{{ t.pf_preview_hint }}</p>
+</div>
+{% endmacro %}
+{% set action = ('/profiles/' ~ profile_id) if profile_id is defined else '/profiles' %}
+{# The wizard (three steps, one per screen) is switched on ONLY at creation and only
+   when the form did not come back with errors: when editing an existing template and when
+   parsing errors, the client needs the whole form at once, rather than paging through it. #}
+   ‼️ The steps themselves are sections of ONE form and one POST: there are no server-side steps with an intermediate
+   state; parse_profile_form gets all 18 fields at once. #}
+{% set wizard = profile_id is not defined and not errors %}
+
+<div class="flex flex-col gap-2 items-start sm:flex-row sm:items-center sm:justify-between mb-4">
+  <h1 class="text-xl font-semibold">{{ t.pf_title_edit if profile_id is defined else t.pf_h1_new }}</h1>
+  <a href="/help#start" class="text-sm text-slate-500 underline hover:text-slate-900">{{ t.pf_need_help }}</a>
+</div>
+
+{# The strip “what the template is assembled from” (owner): the client who came from the showcase must
+   see WHAT was substituted and that this can be changed — otherwise the form looks like a set of
+   words and codes from nowhere. The strip is in view, not in a hint:
+   the complaint was exactly “I do not see which template is in effect”. #}
+{% if prefill_source %}
+<div class="prefill-note max-w-2xl">
+  <p class="prefill-note__title">
+    {%- if prefill_source.kind == 'all' -%}
+      {{ t.pf_prefill_all_title }}
+    {%- elif prefill_source.kind == 'package' -%}
+      {{ t.pf_prefill_package_title.format(name=prefill_source.name) }}
+    {%- else -%}
+      {{ t.pf_prefill_template_title.format(name=prefill_source.name) }}
+    {%- endif -%}
+  </p>
+  <p class="prefill-note__text">
+    {%- if prefill_source.kind == 'all' -%}
+      {{ t.pf_prefill_all_body }}
+    {%- else -%}
+      {{ t.pf_prefill_body.format(kw=plural(lang, "keywords_count", prefill_source.keywords), cpv=plural(lang, "cpv_count", prefill_source.cpv)) }}
+    {%- endif -%}
+  </p>
+</div>
+{% endif %}
+
+{% if profile_id is not defined and is_first_profile %}
+<div class="onboard-tip max-w-2xl">
+  <p class="onboard-tip__title">{{ t.pf_onb_title }}</p>
+  <p class="onboard-tip__text">
+    {{ t.pf_onb_body }}
+  </p>
+</div>
+{% endif %}
+
+{% if errors %}
+{# errors — the KEYS of the catalog from profile_service (err_profile_*), resolved through `t`.
+   forms.py (the form parser) still returns raw ru validation strings — `t.get(e, e)`
+   passes them through as is; the remainder on forms.py — see REPORT. #}
+<div class="mb-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded p-3 max-w-2xl">
+  <p class="font-medium mb-1">{{ t.pf_errors_title }}</p>
+  <ul class="list-disc list-inside">{% for e in errors %}<li>{{ t.get(e, e) }}{% if e == 'err_profile_limit' %} <a href="/cabinet/account" class="underline font-medium hover:text-slate-900">{{ t.acct_link_cta }}</a>{% endif %}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+{# Step strip. Hidden without JS: nothing to page through, all sections are expanded anyway. #}
+{% if wizard %}
+<ol id="wizardNav" class="wizard-nav hidden max-w-2xl" data-wizard-nav>
+  <li class="wizard-nav__item" data-nav-step="1"><span class="wizard-nav__num">1</span> {{ t.pf_sec_what }}</li>
+  <li class="wizard-nav__item" data-nav-step="2"><span class="wizard-nav__num">2</span> {{ t.pf_step_where }}</li>
+  <li class="wizard-nav__item" data-nav-step="3"><span class="wizard-nav__num">3</span> {{ t.pf_step_deliver }}</li>
+</ol>
+{% endif %}
+
+<form method="post" action="{{ action }}" id="profileForm" class="space-y-4 max-w-2xl"{% if wizard %} data-wizard="1"{% endif %}>
+
+  {# === STEP 1: WHAT TO SEARCH FOR === #}
+  <section class="form-section" data-step="1">
+    <h2 class="form-section__title">{% if wizard %}1. {% endif %}{{ t.pf_sec_what }} {{ tip(t.pf_sec_what_tip, t.tip_what) }}</h2>
+    <p class="form-section__desc">{{ t.pf_sec_what_desc }}</p>
+    {{ preview_slot(1) }}
+    <div class="form-section__body">
+      <div>
+        <label class="field__label" for="pf-name">{{ t.pf_name_label }}</label>
+        <input id="pf-name" name="name" value="{{ val('name') }}" class="field-control"
+               placeholder="{{ t.pf_name_ph }}">
+        <p class="field__hint">{{ t.pf_name_optional_hint }}</p>
+      </div>
+      {# The mode “All tenders” (0043). It stands FIRST among the selection fields, because
+         it answers the same question before the keywords: select by topic
+         or take the whole stream. Before 0043 the second variant came out as a silent
+         emptiness of the form and was indistinguishable from an abandoned setup. #}
+      <label class="field-check match-all" title="{{ t.pf_match_all_title }}">
+        <input type="checkbox" name="match_all" id="pf-match-all" {{ checked('match_all') }}>
+        <span>
+          {{ t.pf_match_all_label }}
+          <span class="field__hint">{{ t.pf_match_all_hint }}</span>
+        </span>
+      </label>
+      {# The keywords as chips (keyword_chips.js): Enter / comma — a chip, × — remove,
+         “+” inside a chip — the words together. The source of truth — the textarea in the former
+         server format; without JS it is visible and the hint about the lines
+         (data-kw-nojs), the chips and their hint (data-kw-chips-only) are hidden. #}
+      <div>
+        <label class="field__label" for="pf-kw-inc">{{ t.pf_kw_label }}</label>
+        <div class="kw-chips hidden" data-kw-chips data-for="pf-kw-inc" data-remove-label="{{ t.pf_kw_chip_remove }}">
+          <ul class="kw-chips__list" data-kw-chips-list></ul>
+          <input type="text" id="pf-kw-chip-input" class="kw-chips__input" data-kw-chips-input data-no-preview
+                 autocomplete="off" placeholder="{{ t.pf_kw_chip_ph }}">
+        </div>
+        <textarea id="pf-kw-inc" name="keywords_include" rows="3" class="field-control font-mono">{{ keywords_include_text or '' }}</textarea>
+        <p class="field__hint">{{ t.pf_kw_hint_stem }}</p>
+        <p class="field__hint hidden" data-kw-chips-only>{{ t.pf_kw_hint1 }}</p>
+        <div data-kw-nojs>
+          <p class="field__hint">{{ t.pf_kw_hint_lines }}</p>
+          <p class="field__hint">{{ t.pf_kw_hint2 | safe }}</p>
+        </div>
+      </div>
+      <label class="field-check" title="{{ t.pf_kwdict_title }}">
+        <input type="checkbox" name="keyword_dict" id="keywordDictCheck" {{ checked('keyword_dict') }}>
+        <span>{{ t.pf_kwdict_label }} <span class="field__hint">{{ t.pf_kwdict_hint }}</span></span>
+      </label>
+      <div>
+        <label class="field__label" for="pf-kw-exc">{{ t.pf_stop_label }}</label>
+        <input id="pf-kw-exc" name="keywords_exclude" value="{{ keywords_exclude_text or '' }}" class="field-control"
+               placeholder="{{ t.pf_stop_ph }}">
+      </div>
+
+      <div>
+        <label class="field__label">{{ t.pf_cpv_inc_label }}</label>
+        <p class="field__hint mb-1">{{ t.pf_cpv_hint }}</p>
+        <div class="border rounded p-3 bg-white" id="cpvIncludeWidget" data-field="cls_include" data-cpv-src="{{ static_url('cpv_codes.json') }}"
+             data-cpv-i18n='{{ {"nothing_found": t.cpv_nothing_found, "nothing_selected": t.cpv_nothing_selected, "browse_root": t.cpv_browse_root, "add": t.cpv_add, "remove": t.cpv_remove}|tojson }}'>
+          <div class="flex gap-2 mb-2">
+            <input type="text" id="cpvIncludeSearch" data-no-preview placeholder="{{ t.pf_cpv_search_ph }}" aria-label="{{ t.pf_cpv_search_inc_aria }}" class="field-control flex-1">
+            <button type="button" data-cpv-clear="include" class="btn-ghost text-xs">{{ t.pf_clear }}</button>
+          </div>
+          <div id="cpvIncludeResults" class="max-h-48 overflow-y-auto border rounded bg-slate-50 text-sm hidden"></div>
+          <div id="cpvIncludeList" class="max-h-40 overflow-y-auto border rounded bg-white mt-2 text-sm"></div>
+          <textarea name="cls_include" id="cpvIncludeHidden" class="hidden">{{ cls_include_text or '' }}</textarea>
+        </div>
+      </div>
+      <details class="border rounded">
+        <summary class="px-3 py-2 text-sm cursor-pointer select-none text-slate-600">{{ t.pf_cpv_exc_summary }}</summary>
+        <div class="p-3" id="cpvExcludeWidget" data-field="cls_exclude"
+             data-cpv-i18n='{{ {"nothing_found": t.cpv_nothing_found, "nothing_selected": t.cpv_nothing_selected, "browse_root": t.cpv_browse_root, "add": t.cpv_add, "remove": t.cpv_remove}|tojson }}'>
+          <div class="flex gap-2 mb-2">
+            <input type="text" id="cpvExcludeSearch" data-no-preview placeholder="{{ t.pf_cpv_search_ph }}" aria-label="{{ t.pf_cpv_search_exc_aria }}" class="field-control flex-1">
+            <button type="button" data-cpv-clear="exclude" class="btn-ghost text-xs">{{ t.pf_clear }}</button>
+          </div>
+          <div id="cpvExcludeResults" class="max-h-48 overflow-y-auto border rounded bg-slate-50 text-sm hidden"></div>
+          <div id="cpvExcludeList" class="max-h-40 overflow-y-auto border rounded bg-white mt-2 text-sm"></div>
+          <textarea name="cls_exclude" id="cpvExcludeHidden" class="hidden">{{ cls_exclude_text or '' }}</textarea>
+        </div>
+      </details>
+    </div>
+    {% if wizard %}
+    <div class="form-actions hidden" data-wizard-actions>
+      <button type="button" class="btn-primary" data-wizard-go="2">{{ t.pf_step_next }}</button>
+    </div>
+    {% endif %}
+  </section>
+
+  {# === STEP 2: WHERE AND HOW MUCH === #}
+  <section class="form-section" data-step="2">
+    <h2 class="form-section__title">{% if wizard %}2. {% endif %}{{ t.pf_step_where }} {{ tip(t.pf_sec_filters_tip, t.tip_what) }}</h2>
+    <p class="form-section__desc">{{ t.pf_step_where_desc }}</p>
+    {{ preview_slot(2) }}
+    <div class="form-section__body">
+      {# SRC-0b (R6): the subscriber picks the sources themselves. The list is from the registry
+         {# SRC-0b (R6): the subscriber chooses the platforms themselves. The list — from the registry `sources`
+         the item stays ticked with a mark, owner 30.09 evening item 3). The target
+         of the click is the whole row `label` (w-full), not the checkbox square.
+         An empty selection is not saved (profile_service.SOURCES_REQUIRED_ERROR) —
+         the error is shown HERE, at the field, not only in the list above. #}
+      <fieldset id="pf-sources">
+        <legend class="field__label">{{ t.pf_sources_label }}</legend>
+        <p class="field__hint">{{ t.pf_sources_desc }}</p>
+        {% if errors and 'err_sources_required' in errors %}
+        <p class="text-sm text-red-700 font-medium" role="alert">{{ t.err_sources_required }}</p>
+        {% endif %}
+        {# Under the source — what it gives (the adapter’s declaration, as on /izvori) and
+           a “more” link to its anchor. The link is OUTSIDE the <label>: interactive content
+           inside interactive content is invalid, and the click target of the checkbox is the whole
+           label. A disabled source is not on /izvori — we do not give the link. #}
+        {% for src in source_choices %}
+          <div>
+          <label class="field-check w-full items-start">
+            <input type="checkbox" name="enabled_source_keys" value="{{ src.key }}" {{ in_list('enabled_source_keys', src.key) }}>
+            <span>
+              {{ src.label }}
+              {%- if src.countries %} <span class="field__hint">· {% for c in src.countries %}{{ t.get('country_' ~ c, c) }}{% if not loop.last %}, {% endif %}{% endfor %}</span>{% endif %}
+              {%- if src.paused %} <span class="field__hint">· {{ t.src_paused }}</span>{% endif %}
+            </span>
+          </label>
+          {% if src.caps_short or not src.paused %}
+          <p class="field__hint" style="margin-top: 0; padding-left: 1.5rem">
+            {%- for k in src.caps_short %}{{ t[k] }}{% if not loop.last %} · {% endif %}{% endfor %}
+            {%- if not src.paused %}{% if src.caps_short %} · {% endif %}<a href="/izvori#{{ src.key }}" class="underline">{{ t.cap_more }}</a>{% endif %}
+          </p>
+          {% endif %}
+          </div>
+        {% endfor %}
+        <p class="field__hint">{{ t.pf_sources_since_hint }}</p>
+      </fieldset>
+      {# SITE-14: the region filter is switched on (#364 lifted the NUTS→district blocker). Not a single
+         checkbox ticked = all regions — as it was before the switch on. #}
+      {% if region_choices %}
+      <div>
+        <label class="field__label">{{ t.pf_regions_label }}</label>
+        <p class="field__hint">{{ t.pf_regions_hint1 }}</p>
+        <p class="field__hint">{{ t.pf_regions_hint2 }}</p>
+        <div class="flex flex-wrap gap-x-4 gap-y-1">
+        {% for code, label in region_choices %}
+          <label class="field-check"><input type="checkbox" name="regions" value="{{ code }}" {{ in_list('regions', code) }}> {{ label }}</label>
+        {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class="field__label" for="pf-min">{{ t.pf_min_label }}</label>
+          <input id="pf-min" name="min_amount_eur" value="{{ val('min_amount_eur') }}" class="field-control" placeholder="{{ t.pf_no_limit_ph }}">
+        </div>
+        <div>
+          <label class="field__label" for="pf-max">{{ t.pf_max_label }}</label>
+          <input id="pf-max" name="max_amount_eur" value="{{ val('max_amount_eur') }}" class="field-control" placeholder="{{ t.pf_no_limit_ph }}">
+        </div>
+      </div>
+      <label class="field-check" title="{{ t.pf_no_amount_title }}">
+        <input type="checkbox" name="include_no_amount" {{ checked('include_no_amount') }}>
+        <span>{{ t.pf_no_amount_label }}</span>
+      </label>
+      {# Subject type (0046): no checkbox ticked = all types, as with regions. #}
+      <fieldset>
+        <legend class="field__label">{{ t.pf_ct_label }}</legend>
+        <p class="field__hint">{{ t.pf_ct_hint }}</p>
+        <div class="flex flex-wrap gap-x-4 gap-y-1">
+        {% for code in ('goods', 'services', 'works') %}
+          <label class="field-check"><input type="checkbox" name="contract_types" value="{{ code }}" {{ in_list('contract_types', code) }}> {{ t['pf_ct_' ~ code] }}</label>
+        {% endfor %}
+        </div>
+      </fieldset>
+      {{ customer_picker('customers_include', t.pf_cust_follow_label, t.pf_cust_follow_hint, t.pf_cust_search_follow_aria) }}
+      {{ customer_picker('customers_exclude', t.pf_cust_exclude_label, t.pf_cust_exclude_hint, t.pf_cust_search_exclude_aria) }}
+      {% if gate_starter is defined and not gate_starter %}
+      {{ gate_note(t.pf_gate_customers) }}
+      {% endif %}
+    </div>
+    {% if wizard %}
+    <div class="form-actions hidden" data-wizard-actions>
+      <button type="button" class="btn-ghost" data-wizard-go="1">{{ t.pf_step_back }}</button>
+      <button type="button" class="btn-primary" data-wizard-go="3">{{ t.pf_step_next }}</button>
+    </div>
+    {% endif %}
+  </section>
+
+  {# === STEP 3: WHERE TO SEND === #}
+  <section class="form-section" data-step="3">
+    <h2 class="form-section__title">{% if wizard %}3. {% endif %}{{ t.pf_step_deliver }}</h2>
+    <p class="form-section__desc">{{ t.pf_step_deliver_desc }}</p>
+    <div class="form-section__body">
+      <div>
+        <label class="field__label">{{ t.pf_channels_label }}</label>
+        <div class="flex flex-wrap gap-x-4 gap-y-1">
+        {% for v, lbl in channel_choices %}
+          <label class="field-check"><input type="checkbox" name="delivery_channels" value="{{ v }}" {{ in_list('delivery_channels', v) }}> {{ lbl }}</label>
+        {% endfor %}
+        </div>
+        {% if delivery_daily_cap() > 0 %}
+        <p class="field__hint" data-delivery-cap>{{ common_t(lang, 'cap_help_line').format(cap=delivery_daily_cap()) }}</p>
+        {% endif %}
+        {% if gate_lite is defined and gate_lite %}
+        {{ gate_note(t.pf_gate_channels) }}
+        {% endif %}
+      </div>
+      {# The channel is not connected — connect right on the step (the existing routes
+         /cabinet/telegram/link and /cabinet/email/link). The fields and the buttons are bound by the
+         form= attribute to SEPARATE forms after #profileForm (nested forms
+         are invalid): they do not get into the POST of the template, and the answer opens in a new
+         tab — the unsaved template stays in place. Without JS. #}
+      {% if no_live_channels is defined and no_live_channels %}
+      <div class="channel-connect" role="group" aria-labelledby="pf-ch-none-title">
+        <p id="pf-ch-none-title" class="channel-connect__title">{{ t.pf_ch_none_title }}</p>
+        <p class="field__hint">{{ t.pf_ch_none_body }}</p>
+        <button type="submit" form="pfTgLinkForm" class="btn-secondary">{{ t.pf_ch_tg_btn }}</button>
+        <div class="channel-connect__email">
+          <label class="field__label" for="pf-ch-email">{{ t.pf_ch_email_label }}</label>
+          <div class="flex flex-wrap gap-2">
+            <input id="pf-ch-email" name="email" type="email" form="pfEmailLinkForm" required
+                   autocomplete="email" data-no-preview class="field-control flex-1">
+            <button type="submit" form="pfEmailLinkForm" class="btn-secondary">{{ t.pf_ch_email_btn }}</button>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      <div>
+        <label class="field__label" for="pf-sched">{{ t.pf_sched_label }}</label>
+        <select id="pf-sched" name="delivery_schedule" class="field-control">
+          {% for v, lbl in schedule_choices %}
+          <option value="{{ v }}" {% if val('delivery_schedule') == v %}selected{% endif %}>{{ t[lbl] }}</option>
+          {% endfor %}
+        </select>
+        {% if gate_pro is defined and not gate_pro %}
+        {{ gate_note(t.pf_gate_sched) }}
+        {% endif %}
+      </div>
+    </div>
+    {% if wizard %}
+    <div class="form-actions hidden" data-wizard-actions>
+      <button type="button" class="btn-ghost" data-wizard-go="2">{{ t.pf_step_back }}</button>
+    </div>
+    {% endif %}
+  </section>
+
+  {# === ADDITIONAL (collapsed) ===
+     ‼️ <summary> is the FIRST child of <details>, otherwise the UA hides the content entirely.
+     Collapsed, but NOT hidden: the fields of the plan gate and “do not analyze with AI”
+     must remain visible with one click. #}
+  <details class="form-section" data-step="3" id="advancedBlock">
+    <summary class="form-section__summary"><h3 class="form-section__title">{{ t.pf_step_advanced }}</h3></summary>
+    <p class="form-section__desc">{{ t.pf_step_advanced_desc }}</p>
+    <div class="form-section__body">
+      <div>
+        <label class="field__label" for="pf-days">{{ t.pf_min_days_label }}</label>
+        <input id="pf-days" name="min_days_until_deadline" value="{{ val('min_days_until_deadline') }}" class="field-control" type="number" min="0"
+               placeholder="{{ t.pf_min_days_ph }}">
+        {% if gate_starter is defined and not gate_starter %}
+        {{ gate_note(t.pf_gate_min_days) }}
+        {% endif %}
+      </div>
+      {# The automatic analysis of the stream came back as ONE mode with an honest label
+         (15.08.2026, the owner’s decision). The former select of four levels lied: from
+         the labels “Quick / Standard / Deep” it did not follow that EVERY delivered tender
+         is analyzed and that this is a paid call for each. Now
+         the choice is binary, the label names the price of the action (pf_ai_auto_note), and
+         the remainder of the limit is visible right here — “nothing switches off silently”.
+         The button analyzes (verdict, checklist, draft) — another axis and other
+         limits; there is a separate label about them below. #}
+      <div>
+        <label class="field__label" for="pf-ai">{{ t.pf_ai_label }}</label>
+        <select id="pf-ai" name="ai_analysis_level" class="field-control">
+          {% for v, lbl in ai_level_choices %}
+          <option value="{{ v }}" {% if val('ai_analysis_level') == v %}selected{% endif %}>{{ t[lbl] }}</option>
+          {% endfor %}
+        </select>
+        <p class="field__hint">{{ t.pf_ai_auto_note }}</p>
+        {# The mode “All tenders” forcibly switches the level off (parse_profile_form,
+           the invariant of 0043): ~170 notices a day — analyzing each one is direct
+           money. Without this label the client chose “Analyze each”, saved, and
+           silently got “Do not analyze” — the same “switched off silently”, only in the form. #}
+        {% if checked('match_all') %}
+        <p class="field__hint">{{ t.pf_ai_match_all_off }}</p>
+        {% endif %}
+        {% if ai_auto_usage %}
+        <p class="field__hint">
+          {% if ai_auto_usage.scope == 'trial' %}{{ t.pf_ai_left_demo.format(used=ai_auto_usage.used, limit=ai_auto_usage.limit) }}
+          {%- elif ai_auto_usage.limit is none %}{{ t.pf_ai_left_unlimited }}
+          {%- elif ai_auto_usage.state == 'unavailable' %}{{ t.pf_ai_left_unavailable }}
+          {%- else %}{{ t.pf_ai_left_month.format(used=ai_auto_usage.used, limit=ai_auto_usage.limit) }}{% endif %}
+        </p>
+        {% endif %}
+        {% if gate_lite is defined and gate_lite %}
+        {{ gate_note(t.pf_gate_ai_lite) }}
+        {% endif %}
+        <p class="field__hint">{{ t.pf_ai_on_demand_note }}</p>
+      </div>
+      <label class="field-check" title="{{ t.pf_active_title }}">
+        <input type="checkbox" name="is_active" {% if profile_id is not defined %}checked{% else %}{{ checked('is_active') }}{% endif %}>
+        <span>{{ t.pf_active_label }} <span class="field__hint">{{ t.pf_active_hint }}</span></span>
+      </label>
+      <label class="field-check" title="{{ t.pf_debug_title }}">
+        <input type="checkbox" name="debug_match" {{ checked('debug_match') }}>
+        <span>{{ t.pf_debug_label }} <span class="field__hint">{{ t.pf_debug_hint }}</span></span>
+      </label>
+    </div>
+  </details>
+
+  <div class="form-actions" data-form-submit>
+    <button type="submit" class="btn-primary">{{ t.pf_save_btn }}</button>
+    <a href="/app" class="btn-ghost">{{ t.pf_cancel }}</a>
+  </div>
+</form>
+
+{% if no_live_channels is defined and no_live_channels %}
+<form id="pfTgLinkForm" method="post" action="/cabinet/telegram/link#kanali" target="_blank"></form>
+<form id="pfEmailLinkForm" method="post" action="/cabinet/email/link" target="_blank"></form>
+{% endif %}
+
+{# The live counter: ONE request to the existing GET /profiles/preview-count on
+   a change of any field, with a delay of 600 ms. The driver stands OUTSIDE the form on purpose —
+   for an element inside the form htmx could add the values of the form a second time
+   on top of hx-include, and the multi-value fields (regions, channels) would go as duplicates.
+   The indicator — hx-indicator on both banners: .htmx-request in app.css dims them
+   during the flight; “the figure silently went stale” is a separate class of defect.
+   The answer comes as a fragment (_preview_count.html): step 1 — into hx-target,
+   step 2 — out-of-band by the id. There is no new endpoint; the count is the same
+   preview_service.preview_count as for the showcase cards. #}
+<div id="previewDriver" class="hidden"
+     hx-get="/profiles/preview-count"
+     hx-include="#profileForm"
+     hx-target="#previewStep1"
+     hx-swap="innerHTML"
+     hx-indicator=".preview-live"
+     hx-trigger="load, input from:#profileForm delay:600ms, change from:#profileForm delay:600ms"></div>
+
+<script src="{{ static_url('js/cpv_widget.js') }}" integrity="sha384-WOAow7u6q3ph0ePJjyt4nhb2ar5qyKIQf8fWnD9ZaFre41/Xblypho7gU9kYi9bT" crossorigin="anonymous"></script>
+<script src="{{ static_url('js/keyword_chips.js') }}" integrity="sha384-umjSlK4346gvT1HsAtUy/Gm3RHB0E75kFWceKfxYQXoVEPP9XmeWfexqYf11aZcA" crossorigin="anonymous"></script>
+<script src="{{ static_url('js/customer_picker.js') }}" integrity="sha384-nGo81YNvjJvSt8WkC7tKrDR0JIaqBUh5a7sBrJYiGsgL6V1UccUW8LaUMfQAIIjR" crossorigin="anonymous"></script>
+<script src="{{ static_url('js/profile_wizard.js') }}" integrity="sha384-J3OuNdmJXG+vChSN18ZRQFm/Giqw+r5/UiTBNjFTimJ1ul/llxqpAk6C6wO9XGPJ" crossorigin="anonymous"></script>
+{% endblock %}

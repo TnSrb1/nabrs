@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+{% block title %}{{ t.acct_title }}{% endblock %}
+{% block content %}
+{# “My account” (owner 20.09.2026 + additional owner 22.09.2026 + fix 23.09.2026): everything
+   that used to be spread over five screens (header / subscription / dashboard / channels /
+   library) — in one place. The management of a template in the row — THREE separate
+   actions, three existing routes (a CSP-safe data-confirm instead of an inline
+   onsubmit): “Disable” / “Enable” (POST /profiles/{id}/deactivate|activate,
+   reversible, the is_active axis) and “Delete” (POST /profiles/{id}/delete, the
+   deleted_at axis, irreversible). Until the fix of 23.09 the “Deactivate” button called
+   /delete — the client thought they were switching it off, while the template disappeared forever. The reason:
+   the client ran into “Profile limit reached” and could not find what to delete:
+   there was no “my profiles” page at all. #}
+
+{# The hub “Moj kabinet” (owner 10.10.2026): one page instead of four (the account,
+   Telegram, Email, the subscription). Sections, not tabs: the anchors `#status` `#kanali`
+   `#sabloni` `#pretplata` `#nalog`, the navigation — ordinary <a href="#…"> (a GET here
+   mutates, we do not make ?tab=). The old addresses /cabinet/telegram|email|subscription
+   answer 303 here. scroll-margin-top — under the sticky header (--header-h). #}
+{% set _anchor = "scroll-margin-top: calc(var(--header-h, 4rem) + .5rem)" %}
+
+<h1 class="text-xl font-semibold mb-4">{{ t.acct_title }}</h1>
+
+{# There is a template but no delivery — above the Status and Šabloni sections. #}
+{% include "_delivery_warning.html" %}
+
+<nav class="mb-6 flex flex-wrap gap-2" aria-label="{{ t.hub_nav_label }}">
+  <a href="#status" class="btn-secondary">{{ t.hub_nav_status }}</a>
+  <a href="#kanali" class="btn-secondary">{{ t.hub_nav_channels }}</a>
+  <a href="#sabloni" class="btn-secondary">{{ t.hub_nav_templates }}</a>
+  <a href="#pretplata" class="btn-secondary">{{ t.hub_nav_subscription }}</a>
+  <a href="#podrska" class="btn-secondary">{{ t.hub_nav_support }}</a>
+  <a href="#nalog" class="btn-secondary">{{ t.hub_nav_account }}</a>
+</nav>
+
+{# 1. STATUS — one card: the plan and the term (the same partial `_access_badge.html`
+   as in the header), the templates “N of M in use”, the channels ✓ / ⏳. When frozen the button
+   “Produži besplatno” is ONE — in the banner of base.html on every cabinet page; here
+   we do not duplicate it. #}
+<section class="card mb-6" id="status" style="{{ _anchor }}" aria-labelledby="acct-status-title">
+  <div class="flex flex-wrap items-center gap-2">
+    <h2 class="ck-section__title" id="acct-status-title">{{ t.hub_status_title }}</h2>
+    {% include "_access_badge.html" %}
+  </div>
+  <dl class="mt-2 text-sm space-y-1">
+    <div class="flex justify-between gap-2">
+      <dt class="text-slate-500">{{ t.subp_your_plan }}</dt>
+      <dd class="font-medium">{% if is_trial %}{{ t.subp_plan_trial }}{% else %}{{ plan_key | capitalize }}{% endif %}</dd>
+    </div>
+    <div class="flex justify-between gap-2">
+      <dt class="text-slate-500">{{ t.subp_access_until_hint }}</dt>
+      {% if access_days.days is none %}
+      <dd class="font-medium">{{ t.subp_unlimited }}</dd>
+      {% elif access_days.days <= 0 %}
+      <dd class="font-medium text-red-700">{{ t.subp_expired }}{% if access_days.until %} ({{ access_days.until | d_local }}){% endif %}</dd>
+      {% else %}
+      <dd class="font-medium">{{ access_days.until | d_local }} <span class="text-slate-500">({{ access_days.days }} {{ plural(lang, "access_days_left", access_days.days) }})</span></dd>
+      {% endif %}
+    </div>
+    <div class="flex justify-between gap-2">
+      <dt class="text-slate-500">{{ t.acct_section_profiles }}</dt>
+      <dd class="font-medium">{% if profile_limit is none %}{{ t.acct_profiles_unlimited }}{% else %}{{ t.acct_profiles_used.format(used=profile_used, limit=profile_limit) }}{% endif %}</dd>
+    </div>
+    <div class="flex justify-between gap-2">
+      <dt class="text-slate-500">{{ t.acct_section_channels }}</dt>
+      <dd class="font-medium">
+        <a href="#kanali" class="underline" data-status-channel="telegram">Telegram {{ '✓' if telegram_linked else '✗' }}</a>
+        · <a href="#kanali" class="underline" data-status-channel="email">Email {{ '✓' if email_linked else ('⏳' if email_pending else '✗') }}</a>
+      </dd>
+    </div>
+  </dl>
+  {%- set _ast = access_status.state -%}
+  {% if _ast != 'active' %}
+  {% if _ast == 'pending' %}{% set _alabel = t.access_pending %}
+  {% elif _ast == 'rejected' %}{% set _alabel = t.access_rejected %}
+  {% elif _ast == 'expired' %}{% set _alabel = t.access_expired %}
+  {% else %}{% set _alabel = t.access_none %}{% endif %}
+  <p class="mt-2 text-sm text-slate-600">{{ t.trial_status_prefix }} {{ _alabel }}</p>
+  {% endif %}
+  {# The test-access request — an action with the account; when frozen, instead of it —
+     the only renewal button in the banner. #}
+  {% if access_status.can_request and not access_frozen %}
+  <form method="post" action="/cabinet/trial/request" class="mt-3 space-y-2">
+    <label class="block text-sm font-medium" for="trial-comment">{{ t.trial_title }}</label>
+    <input type="text" name="comment" id="trial-comment" maxlength="500"
+           placeholder="{{ t.trial_comment_ph }}"
+           class="w-full border rounded px-3 py-2 text-sm">
+    <button type="submit" class="btn-primary">{{ t.trial_request_btn }}</button>
+  </form>
+  {% endif %}
+</section>
+
+{# 2. KANALI — Telegram and Email inside the page. The forms are the former POST routes;
+   after the POST of email a 303 returns here (#kanali), the POST of Telegram answers with the hub
+   itself with the ready link to the bot (we do not put the token into the redirect URL). The flashes of
+   errors / confirmations — the CATALOGUE KEYS from the allow-list of prefixes. #}
+<section class="card mb-6" id="kanali" style="{{ _anchor }}" aria-labelledby="acct-channels-title">
+  <h2 class="ck-section__title" id="acct-channels-title">{{ t.acct_section_channels }}</h2>
+  {% if delivery_daily_cap() > 0 %}<p class="mt-2 text-sm text-slate-600" data-delivery-cap>{{ common_t(lang, 'cap_help_line').format(cap=delivery_daily_cap()) }}</p>{% endif %}
+
+  {% if channel_error_key.startswith('emp_err_') and channel_error_key in t or channel_error_key == 'emp_confirm_invalid' %}
+  <div class="mt-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded p-3" role="alert" data-channel-flash="error">{{ t[channel_error_key] }}</div>
+  {% endif %}
+  {% if channel_notice_key == 'emp_confirm_ok' %}
+  <div class="mt-3 text-sm text-emerald-800 bg-emerald-50 border border-emerald-200 rounded p-3" role="status" data-channel-flash="notice">{{ t[channel_notice_key] }}</div>
+  {% endif %}
+
+  <div class="mt-3" id="kanal-telegram">
+    <div class="flex items-center justify-between gap-2">
+      <h3 class="font-medium">Telegram</h3>
+      <span class="badge {{ 'badge-success' if telegram_linked else 'badge-expired' }}">{{ t.tgp_badge_linked if telegram_linked else t.badge_not_connected }}</span>
+    </div>
+    {% if telegram_linked %}
+    <p class="text-sm text-slate-600 mt-1">{{ t.tgp_linked_body }}</p>
+    {% if bot_username %}
+    <p class="mt-3"><a href="https://t.me/{{ bot_username }}" class="btn-primary">{{ t.tgp_open_chat }}</a></p>
+    {% endif %}
+    {% elif tg_link %}
+    <p class="text-sm text-slate-600 mt-1">{{ t.tgl_instructions }}</p>
+    <p class="mt-3"><a href="{{ tg_link }}" class="btn-primary">{{ t.tgl_open_bot }}{{ bot_username }}</a></p>
+    <p class="text-xs text-slate-500 break-all mt-2">{{ tg_link }}</p>
+    {% else %}
+    <p class="text-sm text-slate-600 mt-1">{{ t.tgp_unlinked_body }}</p>
+    <form method="post" action="/cabinet/telegram/link#kanali" class="mt-3">
+      <button type="submit" class="btn-primary">{{ t.tg_connect }}</button>
+    </form>
+    {% endif %}
+    <details class="mt-3 text-sm">
+      <summary class="cursor-pointer font-medium" style="min-height:2rem">{{ t.tgp_commands_title }}</summary>
+      <ul class="space-y-1 mt-2">
+        <li><span class="font-mono text-slate-700">/start</span> — {{ t.tgp_cmd_start }}</li>
+        <li><span class="font-mono text-slate-700">/help</span> — {{ t.tgp_cmd_help }}</li>
+        <li><span class="font-mono text-slate-700">/profile</span> — {{ t.tgp_cmd_profile }}</li>
+        <li><span class="font-mono text-slate-700">/reset</span> — {{ t.tgp_cmd_reset }}</li>
+        <li><span class="font-mono text-slate-700">/watching</span> — {{ t.tgp_cmd_watching }}</li>
+        <li><span class="font-mono text-slate-700">/list</span> — {{ t.tgp_cmd_list }}</li>
+        <li><span class="font-mono text-slate-700">/status</span> — {{ t.tgp_cmd_status }}</li>
+      </ul>
+      <h4 class="font-medium mt-3 mb-1 text-slate-700">{{ t.tgp_on_card_title }}</h4>
+      <ul class="space-y-1 text-slate-600">
+        <li>{{ t.tgp_act_analysis }}</li>
+        <li>{{ t.tgp_act_bid }}</li>
+        <li>{{ t.tgp_act_checklist }}</li>
+        <li>{{ t.tgp_act_draft }}</li>
+        <li>{{ t.tgp_act_analytics }}</li>
+      </ul>
+    </details>
+  </div>
+
+  <div id="kanal-email" class="border-t mt-4 pt-4">
+    <div class="flex items-center justify-between gap-2">
+      <h3 class="font-medium">Email</h3>
+      <span class="badge {{ 'badge-success' if email_linked else ('badge-urgent' if email_pending else 'badge-expired') }}">
+        {{ t.emp_badge_confirmed if email_linked else (t.emp_badge_pending if email_pending else t.badge_not_connected) }}
+      </span>
+    </div>
+    {% if email_linked %}
+    <p class="text-sm text-slate-600 mt-1">{{ t.emp_confirmed_pre }}<span class="font-mono text-slate-700">{{ email_masked }}</span>{{ t.emp_confirmed_post }}</p>
+    {% elif email_pending %}
+    <p class="text-sm text-slate-600 mt-1">{{ t.emp_pending_pre }}<span class="font-mono text-slate-700">{{ email_masked }}</span>{{ t.emp_pending_post }}</p>
+    {% else %}
+    <p class="text-sm text-slate-600 mt-1">{{ t.emp_unlinked_body }}</p>
+    <p class="text-sm text-slate-500 mt-1">{{ t.emp_unlinked_hint }}</p>
+    {% endif %}
+    {% if email_pending %}
+    <form method="post" action="/cabinet/email/resend" class="mt-3">
+      <button type="submit" class="btn-primary">{{ t.emp_resend_btn }}</button>
+    </form>
+    {% endif %}
+    <form method="post" action="/cabinet/email/link" class="mt-3 space-y-2">
+      <label for="email-address" class="text-sm text-slate-600">{% if email_linked or email_pending %}{{ t.emp_change_addr }}{% else %}{{ t.emp_addr_label }}{% endif %}</label>
+      <input id="email-address" name="email" type="email" required
+             placeholder="name@example.com" class="field-control">
+      <button type="submit" class="btn-primary">{% if email_linked or email_pending %}{{ t.emp_save_addr }}{% else %}{{ t.emp_connect }}{% endif %}</button>
+    </form>
+    {% if email_linked or email_pending %}
+    <form method="post" action="/cabinet/email/unlink" class="mt-3">
+      <button type="submit" class="btn-secondary">{{ t.emp_unlink_btn }}</button>
+    </form>
+    {% endif %}
+    <p class="text-sm text-slate-600 mt-3">{{ t.emp_footer_hint }}</p>
+  </div>
+</section>
+
+{# 3. ŠABLONI — "used X of Y" BEFORE a refusal + a list with controls. #}
+<div id="sabloni" style="{{ _anchor }}">
+{# The refusal to enable a template over the limit: it comes as a ONE-OFF flag
+   ?limit=profiles after POST /profiles/{id}/activate with next=/cabinet/account
+   (the same flag and the same banner as on the dashboard — the refusal must be visible
+   there where the request came from, not a silent no-op). #}
+{% if profile_limit_notice %}
+<section class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6" role="alert">
+  <p class="font-semibold text-amber-800">{{ t.dash_limit_title }}</p>
+  <p class="text-sm text-amber-700 mt-1">{{ t.dash_limit_body.format(limit=profile_limit) }}</p>
+  <a href="/plans" class="btn-primary inline-block mt-3">{{ t.acct_profiles_limit_cta }}</a>
+</section>
+{% endif %}
+
+{# The profile limit BEFORE the refusal — “X of Y in use” is visible always, not only at
+   the moment of refusal (the owner: “nothing must switch off silently”). #}
+<section class="card mb-6" aria-labelledby="acct-limit-title">
+  <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+    <h2 class="ck-section__title" id="acct-limit-title">{{ t.acct_section_profiles }}</h2>
+    {# The template creation lives HERE (owner 22.09), therefore “X of Y in use” is here too —
+       next to the button: the remainder is visible BEFORE the refusal at the place of the action. The same
+       figure on the dashboard is a deliberate repetition of the status, see TESTING_dashboard. #}
+    <div class="flex items-center gap-3">
+      <p class="text-sm font-medium">
+        {% if profile_limit is none %}
+        {{ t.acct_profiles_unlimited }}
+        {% else %}
+        {{ t.acct_profiles_used.format(used=profile_used, limit=profile_limit) }}
+        {% endif %}
+      </p>
+      <a href="/profiles/new" class="btn-primary shrink-0">{{ t.profiles_new }}</a>
+    </div>
+  </div>
+  {% if profile_limit_reached %}
+  <div class="mt-3 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">
+    <p>{{ t.acct_profiles_limit_reached }}</p>
+    <a href="/plans" class="inline-block mt-2 font-semibold text-amber-800 underline hover:text-slate-900">{{ t.acct_profiles_limit_cta }}</a>
+  </div>
+  {% endif %}
+</section>
+
+{% macro profile_row(row) %}
+<li class="card" id="profile-row-{{ row.id }}">
+  <div class="flex flex-col gap-2 items-start sm:flex-row sm:items-center sm:justify-between">
+    <div class="min-w-0">
+      <a href="/profiles/{{ row.id }}" class="font-medium hover:underline">{{ row.name or t.profile_untitled }}</a>
+      <p class="text-xs text-slate-500 mt-1">
+        {% if row.match_all %}{{ t.acct_profile_all }}
+        {% elif row.keyword_terms %}{{ row.keyword_terms | join(', ') }}{% if row.keyword_extra %} +{{ row.keyword_extra }}{% endif %}
+        {% else %}{{ t.acct_profile_no_filter }}{% endif %}
+        {% if row.regions %} · {{ row.regions | map('okrug_label') | join(', ') }}{% else %} · {{ t.pd_all_regions }}{% endif %}
+      </p>
+    </div>
+    {# The badge “active / disabled” and “delivered: N” — the status, it is on the dashboard.
+       Here the group “Active / Deactivated” already says the state; the row
+       keeps the settings and the management: “Disable” / “Enable” (reversible,
+       is_active) — reuses the keys and the routes of the dashboard toggle with the same
+       meaning, plus a separate “Delete” (irreversible, deleted_at). Both forms of the
+       toggle carry next=/cabinet/account, to return HERE, and not to the
+       dashboard. #}
+    <div class="flex items-center gap-2 shrink-0">
+      <a href="/profiles/{{ row.id }}/edit" class="btn-secondary">{{ t.profile_edit }}</a>
+      {% if row.is_active %}
+      <form method="post" action="/profiles/{{ row.id }}/deactivate" data-confirm="{{ t.dash_profile_disable_confirm }}">
+        <input type="hidden" name="next" value="/cabinet/account">
+        <button type="submit" class="btn-secondary">{{ t.dash_profile_disable }}</button>
+      </form>
+      {% else %}
+      <form method="post" action="/profiles/{{ row.id }}/activate">
+        <input type="hidden" name="next" value="/cabinet/account">
+        <button type="submit" class="btn-secondary">{{ t.dash_profile_enable }}</button>
+      </form>
+      {% endif %}
+      <form method="post" action="/profiles/{{ row.id }}/delete" data-confirm="{{ t.pd_delete_confirm }}">
+        <button type="submit" class="btn-danger">{{ t.pd_delete }}</button>
+      </form>
+    </div>
+  </div>
+</li>
+{% endmacro %}
+
+{% if not active_rows and not inactive_rows %}
+<section class="card mb-6">
+  <p class="text-sm text-slate-600">{{ t.acct_no_profiles }}</p>
+</section>
+{% else %}
+
+<section class="mb-6" aria-labelledby="acct-active-title">
+  <h3 class="ck-section__title" id="acct-active-title">{{ t.acct_profiles_active_title }} ({{ active_rows | length }})</h3>
+  {% if active_rows %}
+  <ul class="space-y-3 mt-3">
+    {% for row in active_rows %}{{ profile_row(row) }}{% endfor %}
+  </ul>
+  {% else %}
+  <p class="text-sm text-slate-500 mt-2">{{ t.acct_no_profiles }}</p>
+  {% endif %}
+</section>
+
+{% if inactive_rows %}
+<details class="ck-more mb-6">
+  <summary>{{ t.acct_profiles_inactive_title }} ({{ inactive_rows | length }})</summary>
+  <p class="text-xs text-slate-500 mt-3">{{ t.acct_profiles_reactivate_hint }}</p>
+  <ul class="space-y-3 mt-3">
+    {% for row in inactive_rows %}{{ profile_row(row) }}{% endfor %}
+  </ul>
+</details>
+{% endif %}
+{% endif %}
+
+</div>
+
+{# 4. PRETPLATA I LIMITI — the blocks of the former /cabinet/subscription (the partials
+   `_sub_*.html`). The short part (the details + the decision on the request) is visible at once; the heavy one
+   (the AI limits, “what the plan gives”, the upgrade) — under <details>; the <summary> first. #}
+<div id="pretplata" style="{{ _anchor }}">
+  <h2 class="ck-section__title mb-3">{{ t.hub_sub_title }}</h2>
+  {% include "_sub_details.html" %}
+  {# The remaining AI limits are ALWAYS visible (BEFORE a refusal), hence not under <details>. #}
+  {% include "_sub_ai_limits.html" %}
+  {% if current_features or upgrades %}
+  <details class="ck-more mb-6" id="plan-details">
+    <summary>{{ t.subp_plan_gives_title }}</summary>
+    {% include "_sub_plan.html" %}
+  </details>
+  {% endif %}
+</div>
+
+{# 5. PODRŠKA — “Contact us”: the same partial as on /kontakt and in “Help”;
+   the request goes to POST /kontakt with source=cabinet, the email is substituted from the session. #}
+<section class="card mb-6" id="podrska" style="{{ _anchor }}" aria-labelledby="acct-support-title">
+  <h2 class="ck-section__title" id="acct-support-title">{{ t.hub_support_title }}</h2>
+  <p class="mt-2 text-sm text-slate-600">{{ contact_ui(lang).intro }}</p>
+  {% with form_source="cabinet", mailto=true %}{% include "_contact_form.html" %}{% endwith %}
+  {% include "_tg_channel.html" %}
+</section>
+
+{# 6. NALOG — who I am, language, sign out, account deletion. #}
+<section class="card mb-6" id="nalog" style="{{ _anchor }}" aria-labelledby="acct-who-title">
+  <h2 class="ck-section__title" id="acct-who-title">{{ t.hub_nalog_title }}</h2>
+  <dl class="mt-2 text-sm space-y-1">
+    <div class="flex justify-between gap-2">
+      <dt class="text-slate-500">{{ t.acct_who_email_label }}</dt>
+      <dd class="font-medium text-right">{{ whoami_email or "—" }}</dd>
+    </div>
+    {% if whoami_tenant_name %}
+    <div class="flex justify-between gap-2">
+      <dt class="text-slate-500">{{ t.acct_who_tenant_label }}</dt>
+      <dd class="font-medium text-right">{{ whoami_tenant_name }}</dd>
+    </div>
+    {% endif %}
+  </dl>
+  {% if lang_names %}
+  <form method="post" action="/cabinet/locale" class="lang-switch mt-3" aria-label="{{ t.aria_lang }}">
+    <input type="hidden" name="return_to" value="/cabinet/account">
+    {% for code, name in lang_names.items() %}
+    {% if code == lang %}
+    <span class="lang-pill is-active" aria-current="true">{{ name }}</span>
+    {% else %}
+    <button type="submit" name="lang" value="{{ code }}" class="lang-pill">{{ name }}</button>
+    {% endif %}
+    {% endfor %}
+  </form>
+  {% endif %}
+  <form method="post" action="/logout" class="mt-3">
+    <input type="hidden" name="csrf" value="{{ csrf_token }}">
+    <button type="submit" class="btn-secondary">{{ t.nav_logout }}</button>
+  </form>
+  <ul class="mt-3 space-y-1 text-sm">
+    <li><a href="/library" class="underline hover:text-slate-900">{{ t.nav_library }}</a></li>
+    <li><a href="/plans" class="underline hover:text-slate-900">{{ t.nav_plans }}</a></li>
+  </ul>
+</section>
+
+{# Export of one’s own data (LEG-06, owner 14.10). POST + CSRF, not a link: the file with
+   personal data is not given out by GET / prefetch. #}
+<section class="card mt-6" id="acct-export" aria-labelledby="acct-export-title">
+  <h2 class="ck-section__title" id="acct-export-title">{{ t.exp_title }}</h2>
+  {% if export_error_key %}<p class="text-sm text-red-700 mt-2" role="alert">{{ t[export_error_key] }}</p>{% endif %}
+  <p class="text-sm text-slate-600 mt-2">{{ t.exp_intro }}</p>
+  <ul class="list-disc list-inside mt-1 text-sm text-slate-600 space-y-1">
+    <li>{{ t.exp_li_account }}</li>
+    <li>{{ t.exp_li_channels }}</li>
+    <li>{{ t.exp_li_content }}</li>
+    <li>{{ t.exp_li_history }}</li>
+  </ul>
+  <p class="text-sm text-slate-600 mt-2">{{ t.exp_li_excluded }}</p>
+  <form method="post" action="/cabinet/account/export" class="mt-3">
+    <input type="hidden" name="csrf" value="{{ csrf_token }}">
+    <button type="submit" class="btn-secondary">{{ t.exp_btn }}</button>
+  </form>
+</section>
+
+{# The self-deletion of the account (LEG-06). ATTENTION: the forms /profiles/{id}/delete above
+   delete TEMPLATES, not the account. The confirmation — entering one’s own email; the CSRF token of the
+   session; data-confirm (inline JS is forbidden by the CSP). #}
+<section class="card mt-6" id="acct-delete" aria-labelledby="acct-delete-title">
+  <h2 class="ck-section__title" id="acct-delete-title">{{ t.del_title }}</h2>
+  {% if delete_error_key %}<p class="text-sm text-red-700 mt-2" role="alert">{{ t[delete_error_key] }}</p>{% endif %}
+  <p class="text-sm text-slate-600 mt-2">{{ t.del_intro }}</p>
+  <ul class="list-disc list-inside mt-1 text-sm text-slate-600 space-y-1">
+    <li>{{ t.del_li_access }}</li>
+    <li>{{ t.del_li_channels }}</li>
+    <li>{{ t.del_li_data }}</li>
+    <li>{{ t.del_li_kept }}</li>
+    <li>{{ t.del_li_team }}</li>
+  </ul>
+  <form method="post" action="/cabinet/account/delete" class="mt-3 space-y-2" data-confirm="{{ t.del_confirm_js }}">
+    <input type="hidden" name="csrf" value="{{ csrf_token }}">
+    <label class="block text-sm font-medium" for="del-confirm-email">{{ t.del_confirm_label.format(email=whoami_email or '') }}</label>
+    <input type="email" name="confirm_email" id="del-confirm-email" required autocomplete="off"
+           class="w-full border rounded px-3 py-2 text-sm">
+    <button type="submit" class="btn-danger">{{ t.del_btn }}</button>
+  </form>
+</section>
+{% endblock %}

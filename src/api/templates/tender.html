@@ -1,0 +1,296 @@
+{% extends "public_base.html" %}
+{# web-ux-6: the public tender card — an entry / growth point. Only presentation
+   on top of tenders_normalized (public data, not tenant-scoped). The AI analysis —
+   only to the logged-in user for their own tenant (RLS in the route). The body of the tender (title /
+   description) is not translated; the chrome / copyright — sr / ru / en (t = TENDER[lang]). #}
+{# The Excel back-fill of June 2026 left _x000D_ in part of title / customer_name —
+   we clean it at the render, tenders_normalized is not touched (CLAUDE.md). #}
+{% set _title = (tender.title | clean_seo) or ui.brand %}
+{% set _customer = tender.customer_name | clean_seo %}
+{# SEO tail from the tender data: amount + deadline enrich the search snippet #}
+{% set _seo_bits = [] %}
+{% if _customer %}{% set _ = _seo_bits.append(_customer) %}{% endif %}
+{% if tender.amount_eur %}{% set _ = _seo_bits.append('€' ~ '{:,.0f}'.format(tender.amount_eur).replace(',', ' ')) %}
+{% elif tender.amount_original and tender.currency_original %}{% set _ = _seo_bits.append('{:,.0f}'.format(tender.amount_original).replace(',', ' ') ~ ' ' ~ tender.currency_original) %}{% endif %}
+{% if tender.deadline_at %}{% set _ = _seo_bits.append(t.deadline ~ ': ' ~ (tender.deadline_at | d_local)) %}{% endif %}
+{% set _seo_tail = _seo_bits | join(' · ') %}
+{% block title %}{{ _title }} — {{ ui.brand }}{% endblock %}
+{% block meta_description %}{{ _title }}{% if _seo_tail %} · {{ _seo_tail }}{% endif %} — {{ t.meta_tail }}{% endblock %}
+{% block og_title %}{{ _title }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_description %}{{ _title }}{% if _seo_tail %} · {{ _seo_tail }}{% endif %} — {{ t.meta_tail }}{% endblock %}
+{% block head_extra %}
+{% if robots_noindex %}<meta name="robots" content="noindex,follow">{% endif %}
+<link rel="canonical" href="{{ canonical_url }}">
+<meta property="og:url" content="{{ canonical_url }}">
+{% for ld in (json_ld or []) %}
+<script type="application/ld+json">{{ ld | tojson_ld }}</script>
+{% endfor %}
+{% endblock %}
+{% block content %}
+
+{# Deadline urgency — a single calculation for the badge and the field accent #}
+{% set days = tender.deadline_at | days_left %}
+{% set is_expired = days is not none and days < 0 %}
+{% set is_urgent = days is not none and 0 <= days <= 7 %}
+
+<div class="mx-auto max-w-3xl px-4 py-8">
+  <a href="/" class="tp-back">← {{ t.back }}</a>
+
+  <article class="tp-card mt-4">
+    <div class="tp-card__head">
+      {% if is_expired %}
+      <span class="badge badge-expired">{{ t.badge_expired }}</span>
+      {% elif is_urgent %}
+      <span class="badge badge-urgent">⏰ {{ t.badge_urgent }}</span>
+      {% elif days is not none %}
+      {# The label “new” — the publication metadata, not urgency: blue carries the role
+         “there is still time” (the deadline scale). The attention to fresh tenders is given by
+         the sorting of the feed, not by the color of the label. #}
+      <span class="badge badge-muted">{{ t.badge_new }}</span>
+      {% endif %}
+    </div>
+
+    <h1 class="tp-title">{{ _title }}</h1>
+    {% if _customer %}
+    <p class="tp-customer">🏛 <span>{{ _customer }}</span></p>
+    {% endif %}
+    {% if alts and alts > 0 %}
+    {# "probably" — a link scoring 2–3 points (src/dedup/cross_source.py, 0047) #}
+    {% set _alts_text = t.also_on_probable if tender.canonical_confidence == 'probable' else t.also_on %}
+    <p class="tp-alts">🔁 {{ _alts_text.format(n=alts) }}</p>
+    {% endif %}
+
+    {# --- Key facts -------------------------------------------------- #}
+    <dl class="tp-facts">
+      <div class="tp-fact {% if is_urgent or is_expired %}tp-fact--accent{% endif %}">
+        <dt class="tp-fact__label">{{ t.deadline }}</dt>
+        <dd class="tp-fact__value">
+          {% if tender.deadline_at %}
+            {{ tender.deadline_at | dl_local(tender.source_key, lang) }}
+            <small>
+              {%- if is_expired %}{{ t.deadline_expired }}
+              {%- elif days == 0 %}{{ t.deadline_today }}
+              {%- elif days == 1 %}{{ t.deadline_tomorrow }}
+              {%- else %}{{ plural(lang, 'deadline_days_left', days) }}{% endif -%}
+            </small>
+            {# Deadline in the future (days ≥ 0; a past one is negative): "Add to calendar". #}
+            {% if days is not none and days >= 0 %}
+            <a href="/tender/{{ tender.id }}.ics" class="btn-secondary mt-2">{{ t.add_to_calendar }}</a>
+            {% endif %}
+          {% else %}{{ t.deadline_none }}{% endif %}
+        </dd>
+      </div>
+      <div class="tp-fact">
+        <dt class="tp-fact__label">{{ t.amount }}</dt>
+        <dd class="tp-fact__value">
+          {% if tender.amount_eur %}€{{ '{:,.0f}'.format(tender.amount_eur).replace(',', ' ') }}{% if tender.is_amount_estimated %}<small>{{ t.amount_estimated }}</small>{% endif %}{% elif tender.amount_original and tender.currency_original %}{{ '{:,.0f}'.format(tender.amount_original).replace(',', ' ') }} {{ tender.currency_original }}{% if tender.is_amount_estimated %}<small>{{ t.amount_estimated }}</small>{% endif %}{% else %}{{ t.amount_none }}{% endif %}
+        </dd>
+      </div>
+      {# The status is written once at intake and is not updated: for an expired tender
+         “active” lies next to the “Closed” banner — the row is hidden (the same is_expired).
+         Without a deadline and older than 30 days (no_deadline_fresh) “active” is not asserted either:
+         the status is not confirmed, rather than “Aktivan”. #}
+      {% if tender.status and not is_expired %}
+      <div class="tp-fact">
+        <dt class="tp-fact__label">{{ t.status }}</dt>
+        <dd class="tp-fact__value">{% if tender.deadline_at or no_deadline_fresh %}{{ tender.status | status_label(lang) }}{% else %}{{ t.status_unconfirmed }}{% endif %}</dd>
+      </div>
+      {% endif %}
+      {% if tender.regions %}
+      <div class="tp-fact">
+        <dt class="tp-fact__label">{{ t.regions }}</dt>
+        <dd class="tp-fact__value">{% for code in tender.regions %}<span title="{{ code }}">{{ code | okrug_label }}</span>{% if not loop.last %}, {% endif %}{% endfor %}</dd>
+      </div>
+      {% endif %}
+      {% if tender.procedure_type %}
+      <div class="tp-fact">
+        <dt class="tp-fact__label">{{ t.procedure }}</dt>
+        <dd class="tp-fact__value">{{ tender.procedure_type | procedure_label(lang) }}</dd>
+      </div>
+      {% endif %}
+      {% if source_name %}
+      <div class="tp-fact">
+        <dt class="tp-fact__label">{{ t.source_fact }}</dt>
+        <dd class="tp-fact__value">{% if tender.source_key %}<a href="/izvori#{{ tender.source_key | urlencode }}" class="underline">{{ source_name }}</a>{% else %}{{ source_name }}{% endif %}{% if foreign_country %} <small>{{ foreign_country }}</small>{% endif %}</dd>
+      </div>
+      {% endif %}
+    </dl>
+
+    {# --- CPV / planning period ------------------------------------------ #}
+    {% if tender.classifications %}
+    <div class="tp-tags">
+      {% for c in tender.classifications if c is mapping %}
+        {% if c.scheme == 'CPV' and c.code %}
+        <span class="tp-cpv"><span class="tp-cpv__code">{{ c.code }}</span>{{ c.label }}</span>
+        {% elif c.scheme == 'PLAN' and (c.quarter or c.year) %}
+        <span class="tp-cpv">{{ t.plan_period }}: {{ c.quarter or '' }} {{ c.year or '' }}</span>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {# --- Award decision (only if present; without a winner we do not render) -- #}
+    {% if awards %}
+    <section class="tp-section">
+      <h2 class="tp-section__title">{{ t.awards_title }}</h2>
+    {% for a in awards %}
+      <dl class="tp-facts">
+        {# Each decision gets a discriminator if there is more than one: the lot number or a sequence number #}
+        {% if awards | length > 1 %}
+        <div class="tp-fact">
+          {% if a.lot_number %}
+          <dt class="tp-fact__label">{{ t.awards_lot }} {{ a.lot_number }}</dt>
+          {% else %}
+          <dt class="tp-fact__label">{{ t.awards_item }} {{ loop.index }}</dt>
+          {% endif %}
+          <dd class="tp-fact__value">{{ a.lot_title or '' }}</dd>
+        </div>
+        {% endif %}
+        <div class="tp-fact">
+          <dt class="tp-fact__label">{{ t.awards_winner }}</dt>
+          <dd class="tp-fact__value">{{ a.winner_name }}</dd>
+        </div>
+        {% if a.award_amount_eur %}
+        <div class="tp-fact">
+          <dt class="tp-fact__label">{{ t.awards_amount }}</dt>
+          <dd class="tp-fact__value">€{{ '{:,.0f}'.format(a.award_amount_eur).replace(',', ' ') }}</dd>
+        </div>
+        {% endif %}
+        <div class="tp-fact">
+          <dt class="tp-fact__label">{{ t.awards_date }}</dt>
+          <dd class="tp-fact__value">{{ a.decision_date.strftime('%d.%m.%Y') }}</dd>
+        </div>
+      </dl>
+    {% endfor %}
+    </section>
+    {% endif %}
+
+    {# --- Description / specification (disclosure, if long) ------------------------- #}
+    {# The body of the description: a clamp of the long text + the ordinary view. One macro for both
+       places (the collapsed block “Iz dokumentacije” and the ordinary one) — not two copies.
+       A CSS-only checkbox hack (not <details>): the specification text is an ordinary <div>, not
+       an interactive <summary>. Otherwise the whole text would be one button:
+       a mouse selection would collapse the block, the screen reader would announce all of
+       the description as a “button”, and keyboard focus would land on the element on the screen. The checkbox
+       is visually hidden (opacity:0, NOT display:none — it stays focusable),
+       the clamp / expansion and the switching of the labels — by the cascade `~`. There is no JS (CSP
+       script-src 'self'); it degrades correctly: without CSS the whole text is visible. #}
+    {% macro desc_body() %}
+        {% if tender.description | length > 360 %}
+        <div class="tp-desc--clamp">
+          <input type="checkbox" id="tp-desc-more" class="tp-desc__cb">
+          <div class="tp-desc tp-desc__full">{{ tender.description | description_html }}</div>
+          <label for="tp-desc-more" class="tp-desc__toggle">
+            <span class="tp-desc__hint tp-desc__more">{{ t.desc_more }}</span>
+            <span class="tp-desc__hint tp-desc__less">{{ t.desc_less }}</span>
+          </label>
+        </div>
+        {% else %}
+        <div class="tp-desc">{{ tender.description | description_html }}</div>
+        {% endif %}
+    {% endmacro %}
+    <section class="tp-section">
+      <h2 class="tp-section__title">{{ t.desc_title }}</h2>
+      {# ‼️ The guard by BLOCKS, not by the raw string: a description made only of service
+         markers gives neither a block nor an empty div. #}
+      {% if tender.description | description_blocks %}
+      {% if tender.description | description_docs_only %}
+      {# The description = only the extracts of the procurement files: the subject is in the heading; the text of the
+         documents has its place under the collapsed block (F-05 of the UX audit of 10.10). #}
+      <details class="tp-docs">
+        <summary>{{ t.desc_from_docs }}</summary>
+        {{ desc_body() }}
+      </details>
+      {% else %}
+        {{ desc_body() }}
+      {% endif %}
+      {% else %}
+        <p class="tp-desc-none">{{ t.desc_none }}</p>
+      {% endif %}
+    </section>
+
+    {% if tender.source_url %}
+    <p class="tp-source">
+      <a href="{{ tender.source_url }}" class="btn-secondary" target="_blank" rel="noopener nofollow">{% if source_name %}{{ t.source_open.format(name=source_name) }}{% else %}{{ t.source }}{% endif %} ↗</a>
+    </p>
+    {% endif %}
+
+    {# --- Cross-linking to the /tenderi sections (TASK geo_landings, step 5) ------ #}
+    {% if related_links %}
+    <nav class="tp-section flex flex-wrap gap-3 text-sm" aria-label="{{ ui.nav_tenderi }}">
+      {% for link in related_links %}
+      <a href="{{ link.url }}" class="hover:text-slate-900 underline">{{ link.label }}</a>
+      {% endfor %}
+    </nav>
+    {% endif %}
+
+    {# --- Trust: source transparency and how we compute urgency ----------- #}
+    <section class="tp-trust" aria-label="{{ t.trust_title }}">
+      <p class="tp-trust__title">{{ t.trust_title }}</p>
+      <ul class="tp-trust__list">
+        <li class="tp-trust__item"><span class="tp-trust__ico" aria-hidden="true">🔒</span>{{ t.trust_source }}</li>
+        <li class="tp-trust__item"><span class="tp-trust__ico" aria-hidden="true">⏰</span>{{ t.trust_urgency }}</li>
+        <li class="tp-trust__item"><span class="tp-trust__ico" aria-hidden="true">🔄</span>{{ t.trust_updated }}</li>
+      </ul>
+      <p class="tp-trust__more"><a href="/help">{{ t.trust_how_link }} →</a></p>
+    </section>
+
+    {# --- AI analysis: only for a logged-in user, only under their own tenant -------- #}
+    {% if analysis %}
+    <section class="tp-ai">
+      {% set out = analysis.output or {} %}
+      <h2 class="tp-ai__title">🧠 {{ t.ai_title }}</h2>
+      {% if out.match_score is defined and out.match_score is not none %}
+      <div class="mb-3">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="text-sm font-medium text-slate-700">{{ t.ai_relevance }}</span>
+          <span class="badge badge-new">{{ out.match_score }}/5</span>
+        </div>
+        <div class="bar-track" style="max-width: 12rem"><div class="bar-fill" style="width: {{ (out.match_score / 5 * 100) | round | int }}%"></div></div>
+      </div>
+      {% endif %}
+      {% if out.summary %}<p class="text-sm text-slate-700 mb-2">{{ out.summary }}</p>{% endif %}
+      {% if out.red_flags %}
+      <div class="reason-panel reason-panel--risk mt-3">
+        <p class="reason-panel__title">🚩</p>
+        <ul>{% for f in out.red_flags %}<li>{{ f }}</li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+      <p class="mt-3 text-xs text-amber-700 italic">⚠️ {{ t.ai_disclaimer }}</p>
+    </section>
+    {% elif authed %}
+    <p class="tp-desc-none tp-section">{{ t.ai_pending }}</p>
+    {% endif %}
+  </article>
+
+  {# --- Conversion CTA — the main one for growth (anonymous and logged in) ---- #}
+  <section class="tp-cta">
+    <h2 class="tp-cta__title">{{ t.cta_title }}</h2>
+    <p class="tp-cta__subtitle">{{ t.cta_subtitle }}</p>
+    <div class="tp-cta__grid">
+      <div class="tp-cta__item">
+        <p class="tp-cta__item-title">🎯 {{ t.cta_b1_t }}</p>
+        <p class="tp-cta__item-desc">{{ t.cta_b1_d }}</p>
+      </div>
+      <div class="tp-cta__item">
+        <p class="tp-cta__item-title">📋 {{ t.cta_b2_t }}</p>
+        <p class="tp-cta__item-desc">{{ t.cta_b2_d }}</p>
+      </div>
+      <div class="tp-cta__item">
+        <p class="tp-cta__item-title">📝 {{ t.cta_b3_t }}</p>
+        <p class="tp-cta__item-desc">{{ t.cta_b3_d }}</p>
+      </div>
+    </div>
+    <div class="tp-cta__actions">
+      {% if authed %}
+      <a href="/app" class="btn-primary">{{ t.cta_cabinet }}</a>
+      {% else %}
+      <a href="/signup" class="btn-primary">{{ t.cta_primary }}</a>
+      {% endif %}
+      <a href="/plans" class="btn-secondary">{{ t.cta_secondary }}</a>
+    </div>
+    {% if not authed %}<p class="tp-cta__trust">{{ t.cta_trust }}</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

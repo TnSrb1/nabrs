@@ -1,0 +1,45 @@
+{# The fragment of the live counter of the template form: the response of GET /profiles/preview-count to an
+   htmx request (the HX-Request header). The JSON branch of the same route remains — this is
+   the contract, not a second implementation: the figure is counted by one
+   preview_service.preview_count, the same one that draws the showcase cards of /library.
+
+   The fragment goes into TWO places of one form: step 1 (hx-target) and step 2
+   (out-of-band by the id previewStep2). The figure is one in both places — the fields of both steps
+   narrow ONE selection, not two.
+
+   The captions are localised by the cabinet catalog (`t`), the number is `plural(lang, …)` by the same
+   key `tenders_30d` as the showcase card: “≈ 83 tenders in 30 days” on the card
+   and in the form must read the same, otherwise the figure stops being trusted.
+
+   Under the figure — up to 5 fresh found tenders (_preview_examples.html) from THE SAME
+   pass of preview_count: any filter of the form (words, CPV, sources, district,
+   amount) recounts the figure and the examples in one query. #}
+{% macro count_line() %}
+{#- SRC-0b: no sources at all — 0 for an understandable reason, not "nothing here". -#}
+{%- if no_sources -%}
+<p class="preview-live__count preview-live__count--zero">{{ t.pf_preview_zero }}</p>
+<p class="preview-live__hint">{{ t.pf_preview_no_sources }}</p>
+{%- elif count -%}
+<p class="preview-live__count">≈ {{ plural(lang, "tenders_30d", count) }}</p>
+{%- else -%}
+<p class="preview-live__count preview-live__count--zero">{{ t.pf_preview_zero }}</p>
+<p class="preview-live__hint">{{ t.pf_preview_zero_hint }}</p>
+{%- endif -%}
+{% endmacro %}
+{{ count_line() }}
+{% include "_preview_examples.html" %}
+{% if unfound %}
+<p class="preview-live__warn">{{ t.pf_preview_unfound.format(terms=unfound | join(', ')) }}</p>
+{% endif %}
+{% if include_forms or exclude_forms %}
+<div class="preview-live__forms">{% include "_kw_forms.html" %}</div>
+{% endif %}
+{# Step 2 (“Where and at what price”) — the same figure and window, plus the warning about the coverage
+   of the district: the district filter lives exactly there. #}
+<div id="previewStep2" class="preview-live" role="status" aria-live="polite" hx-swap-oob="innerHTML">
+  {{ count_line() }}
+  {% if region_warn %}
+  <p class="preview-live__warn">{{ t.pf_preview_region.format(pct=region_coverage_pct) }}{% if hidden_by_region %} {{ t.pf_preview_region_hidden.format(n=hidden_by_region) }}{% endif %}</p>
+  {% endif %}
+  {% include "_preview_examples.html" %}
+</div>

@@ -1,0 +1,30 @@
+{# The contact form “Contact us” — ONE on /kontakt, a block in “Help” (/help) and in the cabinet hub.
+   Without JS: a plain POST to /kontakt (the single receiver); CSP script-src 'self'.
+   Input: lang (the page language), form_source (help | cabinet | plans | kontakt), values
+   (email / name / message), error, mailto (true — the address as a mailto: link, otherwise as text).
+   The email without values is substituted by whoami_email (the logged-in user in the cabinet). #}
+{% set ct = contact_ui(lang) %}
+{% set v = values or {} %}
+{% if error %}<p id="contact-error" role="alert" class="mt-4 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm">{{ error }}</p>{% endif %}
+<form method="post" action="/kontakt" class="mt-6 space-y-4">
+  <input type="hidden" name="source" value="{{ form_source or 'kontakt' }}">
+  <div>
+    <label for="email" class="block text-sm font-medium text-slate-900">{{ ct.email }}</label>
+    <input type="email" name="email" id="email" required maxlength="254" autocomplete="email" value="{{ v.email or whoami_email or '' }}" class="field-control">
+  </div>
+  <div>
+    <label for="name" class="block text-sm font-medium text-slate-900">{{ ct.name }}</label>
+    <input type="text" name="name" id="name" maxlength="200" autocomplete="organization" value="{{ v.name or '' }}" class="field-control">
+  </div>
+  <div>
+    <label for="message" class="block text-sm font-medium text-slate-900">{{ ct.message }}</label>
+    <textarea name="message" id="message" required maxlength="{{ contact_message_max }}" rows="6" class="field-control">{{ v.message or '' }}</textarea>
+  </div>
+  {# Honeypot: hidden from sight and from tabbing; a human will not fill it in. #}
+  <div style="position:absolute;left:-10000px" aria-hidden="true">
+    <label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+  </div>
+  <button type="submit" class="btn-primary">{{ ct.submit }}</button>
+</form>
+<p class="mt-6 text-sm text-slate-600">{{ ct.fallback }} {% if mailto %}<a href="mailto:{{ contact_email }}" class="font-medium text-slate-900 underline">{{ contact_email }}</a>{% else %}<span class="font-medium text-slate-900">{{ contact_email }}</span>{% endif %}</p>
+<p class="mt-4 text-sm text-slate-600">{{ ct.privacy_text }} <a href="/legal/privacy" class="underline text-slate-900">{{ ct.privacy_link }}</a></p>

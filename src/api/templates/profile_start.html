@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "_tpl_cards.html" import sector_nav, sector_sections, howto with context %}
+{% block title %}{{ t.pf_title_new }}{% endblock %}
+{% block content %}
+{# The first screen of “Create template” (template_wizard, owner 30.09.2026): first
+   “what are you engaged in” — the package tiles (the same cards and figures as on
+   /library, routes_library.showcase), then the questionnaire. “Sam ću podesiti”
+   leads to the former wizard (/profiles/new?manual=1). The prefill entries of the showcase
+   (from_package / from_template / preset) bypass this screen. #}
+<div class="tpl-intro">
+  <h1 class="text-xl font-semibold mb-1">{{ t.ps_title }}</h1>
+  <p class="text-sm text-slate-500">{{ t.ps_lede }}</p>
+  {# The manual path is visible at once: on 390px the card “Sam ću podesiti” at the bottom — after
+     2.6 screens of packages (measurement scripts/shots, 01.10). #}
+  {% if not profile_limit_reached %}
+  <p class="mt-2"><a href="/profiles/new?manual=1" class="btn-ghost">{{ t.ps_manual_cta }}</a></p>
+  {% endif %}
+  {% if profile_limit is not none %}
+  <p class="tpl-meta{% if profile_limit_reached %} text-amber-700 font-medium{% endif %}">
+    {{ t.acct_profiles_used.format(used=profile_used, limit=profile_limit) }}
+    {% if profile_limit_reached %} — <a href="/cabinet/account" class="underline hover:text-slate-900">{{ t.acct_link_cta }}</a>{% endif %}
+  </p>
+  {% endif %}
+</div>
+
+{{ howto(profile_used) }}
+
+{# The same layout by industries as /library (library_sectors): the package of the industry as a
+   tile, the narrow templates — under <details>, so that the selection screen stays
+   short. An industry without a package shows the templates at once. #}
+{% if sectors %}
+{{ sector_nav(sectors) }}
+{{ sector_sections(sectors, profile_limit_reached, collapse_templates=True) }}
+{% endif %}
+
+<article class="tpl-card tpl-card--all">
+  <div class="tpl-card__body">
+    <p class="tpl-card__title">{{ t.ps_manual_title }}</p>
+    <p class="tpl-card__desc">{{ t.ps_manual_desc }}</p>
+  </div>
+  <a href="{% if profile_limit_reached %}/cabinet/account{% else %}/profiles/new?manual=1{% endif %}" class="btn-secondary tpl-card__cta">{{ t.ps_manual_cta }}</a>
+</article>
+
+{% if templates_total %}
+<p class="text-sm mt-4"><a href="/library" class="underline hover:text-slate-900">{{ t.ps_library_link }}</a> <span class="tpl-meta">· {{ plural(lang, "templates_count", templates_total) }}</span></p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,52 @@
+{# The Serbian word forms of the keywords in the profile preview.
+   ‼️ The forms are DATA (they come from keyword_dict.json as is), not chrome:
+   they do NOT react to the interface language (the content is “as is”, the sr canon). The captions
+   around them come from the cabinet catalog (`t.kwf_*`, `t.pf_kw_label`, `t.pf_stop_label`).
+   `forms_en` — English forms for English-language sources (World Bank, EBRD).
+   It is rendered by the server both in the preview and as a fragment — one source of the markup;
+   when rendering bypassing the `t` context processor, the calling code passes it. #}
+{% macro _forms_block(items, title) %}
+  {% if items %}
+  <div class="mb-2">
+    <p class="font-medium text-slate-700 mb-1">{{ title }}</p>
+    <ul class="space-y-1">
+      {% for it in items %}
+      <li>
+        <span class="font-mono text-slate-800">{{ it.term }}</span>
+        {% if not keyword_dict_enabled %}
+          <span class="text-slate-500">{{ t.kwf_off }}</span>
+        {% elif it.forms or it.forms_en %}
+          <span class="text-slate-500">→</span>
+          {% if not it.forms %}
+          {% elif it.forms|length <= 4 %}
+            <span class="text-slate-700">{{ it.forms|join(', ') }}</span>
+          {% else %}
+            <span class="text-slate-700">{{ it.forms[:4]|join(', ') }}</span>
+            <details class="inline">
+              <summary class="cursor-pointer text-slate-500 underline">{{ t.kwf_more.format(n=it.forms|length - 4) }}</summary>
+              <span class="text-slate-700">{{ it.forms[4:]|join(', ') }}</span>
+            </details>
+          {% endif %}
+          {% if it.forms_en %}
+            <span class="text-slate-500">{{ t.kwf_en_label }}</span>
+            <span class="text-slate-700">{{ it.forms_en|join(', ') }}</span>
+          {% endif %}
+        {% else %}
+          <span class="text-amber-700">{{ t.kwf_none }}</span>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+{% endmacro %}
+
+{% if include_forms or exclude_forms %}
+{% if keyword_dict_enabled %}
+<p class="text-slate-600 mb-1">{{ t.kwf_intro_on }}</p>
+{% else %}
+<p class="text-slate-600 mb-1">{{ t.kwf_intro_off }}</p>
+{% endif %}
+{{ _forms_block(include_forms, t.pf_kw_label) }}
+{{ _forms_block(exclude_forms, t.pf_stop_label) }}
+{% endif %}

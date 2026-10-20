@@ -1,0 +1,29 @@
+{# --- AI limits: how much is already spent and how much is left. ---------------
+   The owner’s requirement of 15.08.2026: "make a counter for the trial and for the other plans;
+   nothing must switch off silently — the subscriber must see that they have exhausted
+   the limit". The figures are taken by THE SAME predicate as the gates (src.ai.usage.used_count
+   via usage_snapshot), therefore “0 left” here and the refusal on the button are one
+   and the same number, not two similar ones. #}
+{% if ai_limits and ai_limits.rows %}
+<section class="card mb-6" id="ai-limits" >
+  <h2 class="ck-section__title">{{ t.subp_ai_limits_title }}</h2>
+  <p class="text-sm text-slate-600 mb-3">{{ t.subp_ai_limits_hint.format(period=ai_limits.period) }}</p>
+  <ul class="space-y-2 text-sm">
+    {% for row in ai_limits.rows %}
+    <li class="flex flex-wrap justify-between gap-2 border-b pb-2">
+      <span>{{ t['ai_level_name_' ~ row.level] }}{% if row.scope == 'trial' %} <span class="badge badge-muted">{{ t.subp_ai_demo_badge }}</span>{% endif %}</span>
+      <span>
+        {% if row.state == 'unavailable' %}
+        <span class="text-slate-500">{{ t.subp_ai_not_in_plan }}</span> <a href="/plans" class="text-brand underline">{{ t.see_plans }}</a>
+        {%- elif row.limit is none %}
+        <span class="text-slate-500">{{ t.subp_no_limit }}</span>
+        {%- else %}
+        <span class="font-medium text-slate-900">{{ t.subp_ai_used_of.format(used=row.used, limit=row.limit) }}</span>
+        {% if row.state != 'ok' %}<span class="badge badge-expired">{{ t.subp_ai_exhausted }}</span>{% endif %}
+        {%- endif %}
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}

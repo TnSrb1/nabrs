@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{# GET /logout does not log out — it only shows this form (GET does not mutate with us).
+   Logout = POST + the session CSRF token (security.csrf_token). #}
+{% block title %}{{ t.logout_title }}{% endblock %}
+{% block content %}
+<div class="max-w-md">
+  <h1 class="text-xl font-semibold mb-2">{{ t.logout_title }}</h1>
+  <p class="text-slate-600">{{ t.logout_body }}</p>
+  <form method="post" action="/logout" class="mt-4">
+    <input type="hidden" name="csrf" value="{{ csrf_token }}">
+    <button type="submit" class="btn-primary">{{ t.logout_btn }}</button>
+  </form>
+</div>
+{% endblock %}

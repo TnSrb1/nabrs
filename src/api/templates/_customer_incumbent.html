@@ -1,0 +1,58 @@
+{# The incumbent (A4): who won from this customer earlier — the feed of the latest
+   decisions (the winner · the amount · the date). Context: incumbent — IncumbentView.
+   It supplements the “Customer analytics” (_customer_analytics.html): there the aggregate "who
+   and how many", here — the concrete latest decisions. Both sections are keyed by ONE
+   normalized predicate by the customer’s name, therefore they do not contradict each other.
+
+   The gate / the freeze come as a status from the common pass (get_narucilac_analytics)
+   — here we draw only success. The other statuses (gate_pro / frozen / no_*) are already
+   explained to the user by the analytics section above, and repeating the same banner
+   a second time in a row is noise: the block simply is not shown.
+
+   A collapsible <details> (open by default) — like the FAQ in plans.html; JS is not
+   needed. The body — ru (the cabinet language). The classes — only those that exist in app.css (there is no
+   Tailwind build; the SRI is fixed). #}
+{% if incumbent is not none and incumbent.status == 'success' %}
+<section id="customer-incumbent" class="card mb-6">
+  <details open>
+    <summary class="cursor-pointer text-lg font-semibold">{{ t.inc_h }}</summary>
+
+    <p class="mt-3 text-sm text-slate-600">
+      {{ t.inc_lede_pre }} <span class="font-medium text-slate-800">{{ incumbent.customer_name }}</span> {{ t.inc_lede_post }}
+    </p>
+
+    <div class="mt-3 overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-slate-200 text-left text-xs text-slate-500">
+            <th class="py-2">{{ t.th_winner }}</th>
+            <th class="py-2 text-right">{{ t.th_sum }}</th>
+            <th class="py-2 text-right">{{ t.th_decision }}</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          {% for it in incumbent.items %}
+          <tr>
+            <td class="py-2">
+              <span class="text-slate-800">{{ it.winner_name }}</span>
+              {% if it.is_joint %}<span class="badge">{{ t.inc_consortium }}</span>{% endif %}
+              {% if it.lots > 1 %}<span class="text-xs text-slate-500">· {{ it.lots }} {{ t.inc_lots }}</span>{% endif %}
+              {% if it.pib %}<div class="text-xs text-slate-500">PIB {{ it.pib }}</div>{% endif %}
+            </td>
+            <td class="py-2 text-right">
+              {% if it.sum_rsd_fmt %}<span class="text-slate-800">{{ it.sum_rsd_fmt }}</span>
+              {% else %}<span class="text-xs text-slate-500">{{ t.inc_sum_hidden }}</span>{% endif %}
+            </td>
+            <td class="py-2 text-right text-slate-600">
+              {% if it.date_fmt %}{{ it.date_fmt }}{% else %}<span class="text-xs text-slate-500">{{ t.inc_date_unknown }}</span>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <p class="mt-3 text-xs text-slate-400 italic">{{ t.inc_note }}</p>
+  </details>
+</section>
+{% endif %}

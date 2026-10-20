@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% from "_hint_tip.html" import tip with context %}
+{% block title %}{{ t.nav_dashboard }}{% endblock %}
+{% block content %}
+{# The dashboard cockpit v2 (owner 13.10). The frame: ≥1024px — the main column 2/3 + the right
+   1/3 (sticky: the mini-calendar, Vesti under it); <1024 — one column in the order
+   “alert → hero → ROKOVI → NOVO → VESTI → TEMPLATES → the calendar”.
+   The DOM — by columns (main: ROKOVI, NOVO, TEMPLATES; side: the calendar, VESTI);
+   the mobile order is set by the CSS `order` with `display: contents` on the wrappers
+   `.dash-main` / `.dash-side` (below 1024px); on the desktop they are the real columns.
+   The containers — THREE kinds: `.card`, `.alert` (tones error / warn / info), `.ck-hero`;
+   one radius (`--radius-container`), one gap between the sections (the gap `.dash`).
+   Removed (owner): “Do now” (merged into ROKOVI), the teaser tab "nearest
+   deadlines“, the tile / badge of the term in the hero and the ”Subscription" strip (the term is the header badge),
+   “Platform statistics”, the top “New” banner (the mark is on the Vesti heading).
+   Tenders as a catalog do not hang on the dashboard: the full list is on /app/feed (owner). #}
+<div class="dash">
+
+{# The single alert banner (the priority is inside the partial) and the strip “subscription term”
+   (only ≤7 days / expired). The rest of the “noisy” stuff does not come onto the screen. #}
+{% include "_dash_alert.html" %}
+{% include "_dash_sub_strip.html" %}
+
+{% set _onb_profile_done = (profiles | length) > 0 %}
+{% set _onb_channel_done = has_live_channel %}
+{% set _onb_feed_done = (feed_items | length) > 0 %}
+
+{# 1. Hero: the page’s only <h1> — comes BEFORE onboarding (<h2>). #}
+{% include "_cockpit_hero.html" %}
+
+{% if not (_onb_profile_done and _onb_channel_done and _onb_feed_done) %}
+{% set onboarding_steps = [
+  {"num": 1, "title": t.onb_step1_title, "done": _onb_profile_done, "cta_href": "/profiles/new", "cta_label": t.cta_create_profile, "hint": none, "help_href": none},
+  {"num": 2, "title": t.onb_step2_title, "done": _onb_channel_done, "cta_href": "/cabinet/account#kanali", "cta_label": t.tg_connect, "cta2_href": "/cabinet/account#kanali", "cta2_label": t.onb_step2_cta2, "hint": t.onb_step2_hint, "help_href": none},
+  {"num": 3, "title": t.onb_step3_title, "done": _onb_feed_done, "cta_href": none, "cta_label": none, "hint": t.onb_step3_hint, "help_href": "/help#start"},
+] %}
+{% set onboarding_total = onboarding_steps | length %}
+{% set onboarding_done_count = onboarding_steps | selectattr("done") | list | length %}
+{% include "_onboarding_steps.html" %}
+{% endif %}
+
+<div class="dash__body">
+  <div class="dash-main">
+    {# 2. ROKOVI — a single agenda with 7/30 d. tabs. #}
+    {% include "_rokovi.html" %}
+
+    {# 3. NOVO ZA VAS: the search + the latest deliveries; the banner "hidden by the district
+       filter" — above them, in this same block (the order on mobile does not break). #}
+    <div class="dash-novo">
+      {% include "_region_hidden_banner.html" %}
+      {# A source that is missing in some of the templates: enable it in all of them with one click. #}
+      {% include "_source_banner.html" %}
+      {% include "_cockpit_feed_teaser.html" %}
+    </div>
+
+    {# 4. The templates — the essence of the cockpit (“what we search for you”), always visible;
+       compact, one row per template. #}
+    <section class="card dash-tpl" id="profiles" aria-labelledby="profiles-title">
+  <div class="dash-head">
+    <h2 class="ck-section__title" id="profiles-title">{{ t.profiles_title }} {{ tip(t.profiles_tip, label=t.tip_what) }}</h2>
+    {# The creation / edit / deletion of a template — on the templates page of the cabinet
+       (owner 22.09: the dashboard is the overview, the management is in the cabinet). Here only the entry. #}
+    <a href="/cabinet/account#acct-active-title" class="btn-secondary shrink-0">{{ t.dash_profiles_manage }}</a>
+  </div>
+  {# The template limit — “X of Y in use” (it used to live in the “Subscription” strip; the figures are the same,
+     as on /cabinet/account: one resolve_plan_key and tiers.profile_limit). #}
+  <p class="dash-tpl__limit">
+    {%- if profile_limit is none -%}
+    {{ t.acct_profiles_unlimited }}
+    {%- else -%}
+    {{ t.dash_acct_profiles_used.format(used=plural(lang, "templates_count", profile_used), limit=profile_limit) }}
+    {%- endif -%}
+  </p>
+  {% if profiles %}
+  {% set _delivered = {} %}
+  {% for d in tenant_stats.by_profile %}{% set _ = _delivered.update({d.profile_id: d.count}) %}{% endfor %}
+  <ul class="dash-tpl__list">
+    {% for p in profiles %}
+    {% set _cnt = _delivered.get(p.id|string, 0) %}
+    <li class="dash-tpl__row">
+      {# One row: name · delivered N · status · toggle. The toggle — “works / does not work”
+         (owner 22.09); CSP `script-src 'self'`: only a POST form, the confirmation via
+         data-confirm and ONLY on disabling. #}
+      <div class="dash-tpl__line">
+        <a href="/profiles/{{ p.id }}" class="dash-tpl__name">{{ p.name or t.profile_untitled }}</a>
+        <span class="dash-tpl__count">{% if _cnt %}{{ t.profile_delivered }} {{ _cnt }}{% elif open_now_hints.get(p.id|string) %}<a href="/profiles/{{ p.id }}?updated=1" class="text-brand font-medium hover:underline">{{ t.open_now_hint.format(matches=plural(lang, "open_now_matches", open_now_hints[p.id|string])) }}</a>{% else %}{{ t.profile_no_deliveries }}{% endif %}</span>
+        <span class="badge {{ 'badge-success' if p.is_active else 'badge-expired' }}">{{ t.profile_active if p.is_active else t.profile_inactive }}</span>
+        {% if p.is_active %}
+        <form method="post" action="/profiles/{{ p.id }}/deactivate" data-confirm="{{ t.dash_profile_disable_confirm }}">
+          <button type="submit" class="btn-secondary">{{ t.dash_profile_disable }}</button>
+        </form>
+        {% else %}
+        <form method="post" action="/profiles/{{ p.id }}/activate">
+          <button type="submit" class="btn-secondary">{{ t.dash_profile_enable }}</button>
+        </form>
+        {% endif %}
+      </div>
+      {# A profile without a topic and without the “All tenders” mode will find nothing. A silent
+         the client reads the profile as “no tenders”, so we say it straight and
+         lead to the edit, rather than leave them to guess from the delivery counter. #}
+      {% if p.id|string in silent_profiles %}
+      <div class="profile-silent">
+        <p class="font-medium">{{ t.profile_silent_title }}</p>
+        <p>{{ t.profile_silent_body }}</p>
+        <a href="/profiles/{{ p.id }}/edit">{{ t.profile_silent_cta }}</a>
+      </div>
+      {% endif %}
+      {% set notice = notices.get(p.id|string) %}
+      {% if notice %}
+      <div class="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
+        <p class="font-medium">{{ t.profile_locked_title }}</p>
+        {# notice — the KEYS of the catalog from gate_profile (gate_sup_*); we resolve them through `t`.
+           `t.get(n, n)` — the fallback for legacy / test raw strings. #}
+        <ul class="list-disc list-inside">{% for n in notice %}<li>{{ t.get(n, n) }}</li>{% endfor %}</ul>
+        <a href="/plans" class="inline-block mt-2 font-semibold text-amber-800 underline hover:text-slate-900">{{ t.profile_locked_cta }}</a>
+      </div>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  {% set empty_state_title = t.profiles_empty_title %}
+  {% set empty_state_hint = t.profiles_empty_hint %}
+  {# The first step is made a CHOICE, not a setup from scratch: on the showcase every template
+     has a live figure, and there is also the entry “show all”. The manual setup has not gone anywhere —
+     the “New profile” button in the header of the section. #}
+  {% set empty_state_cta_href = "/library" %}
+  {% set empty_state_cta_label = t.profiles_empty_library %}
+  {% set empty_state_secondary_href = "/profiles/new?preset=all" %}
+  {% set empty_state_secondary_label = t.profiles_empty_all %}
+  {% include "_empty_state.html" %}
+  {% endif %}
+    </section>
+  </div>
+
+  <div class="dash-side">
+    {# 5. Right column: mini calendar (a click on a date filters ROKOVI) and Vesti. #}
+    {% include "_calendar.html" %}
+    {% include "_vesti.html" %}
+  </div>
+</div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+{# Its own initialization of the cockpit animations — ONLY by an external file: inline JS
+   is forbidden by the CSP. GSAP is attached in base.html (a local file, 'self'). #}
+<script src="{{ static_url('js/cockpit.js') }}" integrity="sha384-U7qETknBu3fHr7ilAcww32w3MiDTER7UELU34mR7HnwunWep5BhmknlgvFhyD0y+" crossorigin="anonymous" defer></script>
+{# The calendar interactivity (Stage 7) — a separate file: it has its own responsibility
+   (the date↔tenders link), and GSAP is not needed for it, so it works even under
+   reduced-motion, when cockpit.js exits at once. #}
+<script src="{{ static_url('js/cockpit_calendar.js') }}" integrity="sha384-B/IYHdcVMWSk2GJhUnFsJ2Gmwk3QANo9Pxap2Qw/kzm3NXtacLCYhi+d3kIVsd/4" crossorigin="anonymous" defer></script>
+{% endblock %}

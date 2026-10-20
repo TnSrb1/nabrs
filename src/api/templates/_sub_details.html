@@ -1,0 +1,116 @@
+{# The “Pretplata i limiti” section of the hub: the subscription data (billing_subscriptions) +
+   the last decision on the request. The context — routes_subscription.build_subscription_context.
+   ‼️ TWO DIFFERENT dates, which must not be merged: `access_days` (tenants.access_until —
+   until when the access works) and `subscription.current_period_end` (when billing
+   will charge the next payment). #}
+{% if subscription %}
+{% set plan_name = (sub_plan.key | capitalize) if sub_plan else (subscription.plan_key | capitalize if subscription.plan_key else "—") %}
+{% elif is_trial %}
+{% set plan_name = t.subp_plan_trial %}
+{% else %}
+{% set plan_name = current_key | capitalize %}
+{% endif %}
+{# The last decision on the request — a reliable reply independent of Telegram (0035).
+   The subscriber sees the approval / the refusal and the operator’s comment here, even if TG is not
+   connected. #}
+{% if last_decision %}
+<section class="card mb-6 border {% if last_decision.approved %}border-emerald-200{% else %}border-amber-200{% endif %}" >
+  <div class="flex flex-wrap items-center gap-2 mb-1">
+    {% if last_decision.approved %}
+    <span class="badge badge-success">{{ t.subp_req_approved }}</span>
+    {% if last_decision.plan %}<span class="badge badge-muted">{{ last_decision.plan | capitalize }}</span>{% endif %}
+    {% else %}
+    <span class="badge badge-expired">{{ t.subp_req_rejected }}</span>
+    {% endif %}
+    {% if last_decision.decided_at %}
+    <span class="text-xs text-slate-500">{{ last_decision.decided_at | d_local }}</span>
+    {% endif %}
+  </div>
+  <p class="text-sm text-slate-600">
+    {% if last_decision.approved %}
+    {% if last_decision.plan %}{{ t.subp_sub_activated_pre }}{{ last_decision.plan | capitalize }}{{ t.subp_sub_activated_post }}{% else %}{{ t.subp_trial_opened }}{% endif %} {{ t.subp_details_below }}
+    {% else %}
+    {{ t.subp_req_rejected_body }}
+    {% endif %}
+  </p>
+  {% if last_decision.comment %}
+  <p class="mt-2 text-sm text-slate-700"><span class="text-slate-500">{{ t.subp_comment_prefix }}</span> {{ last_decision.comment }}</p>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="card mb-6" >
+  <h2 class="ck-section__title">{{ t.subp_details_title }}</h2>
+
+  <div class="ck-chips mb-4">
+    {% if subscription %}
+    {% if subscription.status == "active" %}
+    <span class="badge badge-success">{{ t.subp_st_active }}</span>
+    {% elif subscription.status == "past_due" %}
+    <span class="badge badge-urgent">{{ t.subp_st_past_due }}</span>
+    {% elif subscription.status == "canceled" %}
+    <span class="badge badge-expired">{{ t.subp_st_canceled }}</span>
+    {% else %}
+    <span class="badge">{{ subscription.status }}</span>
+    {% endif %}
+    {% elif is_trial %}
+    <span class="badge badge-muted">Trial</span>
+    {% elif current_key == "free" %}
+    <span class="badge">{{ t.subp_st_free }}</span>
+    {# Plan without a subscription row (granted manually): the plan — as in Status (current_key). #}
+    {% else %}
+    <span class="badge">{{ plan_name }}</span>
+    {% endif %}
+  </div>
+
+  {% if subscription %}
+  <dl class="space-y-2 text-sm">
+    <div class="flex justify-between border-b pb-2">
+      <dt class="text-slate-500">{{ t.subp_plan_label }}</dt>
+      <dd class="font-medium text-slate-900">{{ plan_name }}</dd>
+    </div>
+    <div class="flex justify-between border-b pb-2">
+      <dt class="text-slate-500">
+        {% if subscription.status == "canceled" %}{{ t.subp_active_until }}{% else %}{{ t.subp_renewal }}{% endif %}
+      </dt>
+      <dd class="font-medium text-slate-900">
+        {% if subscription.current_period_end %}{{ subscription.current_period_end | d_local }}{% else %}—{% endif %}
+      </dd>
+    </div>
+    <div class="flex justify-between{% if access_days.until %} border-b pb-2{% endif %}">
+      <dt class="text-slate-500">{{ t.subp_provider }}</dt>
+      <dd class="font-medium text-slate-700">{{ subscription.provider | capitalize }}</dd>
+    </div>
+    {% if access_days.until %}
+    <div class="flex justify-between">
+      <dt class="text-slate-500">{{ t.subp_access_open_until }}</dt>
+      <dd class="font-medium text-slate-900">{{ access_days.until | d_local }}</dd>
+    </div>
+    {% endif %}
+  </dl>
+
+  {% if subscription.status in ["past_due", "canceled"] %}
+  <div class="mt-5">
+    <a href="/plans" class="btn-primary">{{ t.subp_update_sub }}</a>
+  </div>
+  {% endif %}
+
+  {% else %}
+  {# No paid subscription — Free, trial access or a manually granted plan. #}
+  {% if is_trial or current_key == "free" %}
+  <p class="text-sm text-slate-600 prose-measure">
+    {% if is_trial %}
+    {{ t.subp_trial_body }}
+    {% else %}
+    {{ t.subp_free_body }}
+    {% endif %}
+  </p>
+  <div class="mt-5">
+    <a href="/plans" class="btn-primary">{{ t.subp_choose_plan_btn }}</a>
+  </div>
+  {% else %}
+  {# Plan changes are handled by support — we do not offer plan selection buttons here. #}
+  <p class="text-sm text-slate-600 prose-measure">{{ t.subp_manual_body }}</p>
+  {% endif %}
+  {% endif %}
+</section>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ ui.brand }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ ui.brand }}{% endblock %}">
+  <link rel="icon" href="{{ static_url('favicon.svg') }}" type="image/svg+xml">
+  <meta property="og:title" content="{% block og_title %}{{ ui.brand }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{{ ui.brand }}{% endblock %}">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:site_name" content="{{ ui.brand }}">
+  <meta property="og:image" content="{{ og_image_url() }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="{{ og_image_url() }}">
+  {% if seo_canonical_url %}
+  <link rel="canonical" href="{{ seo_canonical_url }}">
+  {% endif %}
+  {% for hl_code, hl_url in (seo_hreflang_links or []) %}
+  <link rel="alternate" hreflang="{{ hl_code }}" href="{{ hl_url }}">
+  {% endfor %}
+  {% for ld in (json_ld_list or []) %}
+  <script type="application/ld+json">{{ ld | tojson_ld }}</script>
+  {% endfor %}
+  {% block head_extra %}{% endblock %}
+  <link rel="stylesheet" href="{{ static_url('css/app.css') }}" integrity="sha384-kV5xCIiMWFNIK88aRXtndv9eH6fTCNm10mvKC4VsMUzmfsbH3kxDqLUDLzEw17Wz" crossorigin="anonymous">
+  {# The “To the top” button (Stage 9) — the same file as in the cabinet: the landing and the plans are also
+     long, the behavior is uniform. The stickiness of the header is given by .site-header from
+     app.css; a separate markup for it is not needed. #}
+  <script src="{{ static_url('js/scroll_nav.js') }}" integrity="sha384-6go7ejTmYNuDDnZ0c8BKXaPsfXodJY0EByN24bCvPZ5+4RW/y+aUo5bCd0v8uLaG" crossorigin="anonymous" defer></script>
+</head>
+<body class="bg-white text-slate-800">
+  {# The skip-link (a11y): the first focusable element, it leads to the content past the header.
+     The style of .skip-link in app.css (moved off the screen, returns on :focus). #}
+  <a href="#main" class="skip-link">{{ ui.skip_link }}</a>
+  {# A logged-in user sees the same header as in the cabinet (_cabinet_nav.html), otherwise
+     “Plans” / “Help” would throw them out of the cabinet (owner 02.10.2026). `t` in the partial is
+     the cabinet catalog (nav_t from templating._auth_context), not the route’s catalog.
+     The fallback of the `ui.nav_cabinet` link is not needed: an authed user without nav_t is impossible. #}
+  {% if authed %}
+  {% with t=nav_t %}{% include "_cabinet_nav.html" %}{% endwith %}
+  {% else %}
+  <header class="site-header site-header--public">
+    <div class="site-header__bar mx-auto max-w-5xl px-4 py-3 flex items-center justify-between gap-4">
+      <a href="/" class="brand">
+        <img src="{{ static_url('favicon.svg') }}" alt="">
+        {{ ui.brand }}
+      </a>
+      {# The languages — a separate row on the phone (see .site-header--public in app.css):
+         moved out of the navigation block, so that the header wraps predictably. #}
+      <nav class="lang-switch" aria-label="{{ ui.aria_lang }}">
+        {% for code, name in lang_names.items() %}
+        <a href="{{ lang_switch_href(request, code) }}"{% if code == lang %} aria-current="true"{% endif %} class="lang-pill{% if code == lang %} is-active{% endif %}">{{ name }}</a>
+        {% endfor %}
+      </nav>
+      <div class="site-header__actions flex items-center gap-4 text-sm">
+        <a href="/tenderi" class="nav-link{% if request.url.path.startswith('/tenderi') %} is-active{% endif %}">{{ ui.nav_tenderi }}</a>
+        {# Secondary: hidden below 640px (the row is full anyway, measured at 390px) — there "Sources" stay in the footer and on /tenderi. #}
+        <a href="/izvori" class="nav-link nav-hide-mobile{% if request.url.path == '/izvori' %} is-active{% endif %}">{{ ui.nav_sources }}</a>
+        <a href="/cpv-kodovi" class="nav-link nav-hide-mobile{% if request.url.path == '/cpv-kodovi' %} is-active{% endif %}">{{ ui.nav_cpv }}</a>
+        <a href="/plans" class="nav-link{% if request.url.path == '/plans' %} is-active{% endif %}">{{ ui.nav_plans }}</a>
+        <a href="/help" class="nav-link{% if request.url.path == '/help' %} is-active{% endif %}">{{ ui.nav_help }}</a>
+        <a href="/login" class="nav-link{% if request.url.path == '/login' %} is-active{% endif %}">{{ ui.nav_login }}</a>
+        <a href="/signup" class="btn-primary">{{ ui.nav_signup }}</a>
+      </div>
+    </div>
+  </header>
+  {% endif %}
+  {# --header-h from the actual header height (header_h.js): synchronously RIGHT after the header — before the content is painted, no jump. Without JS the CSS fallback remains. #}
+  <script src="{{ static_url('js/header_h.js') }}" integrity="sha384-hG7hRIseacP9iCcxO0k7CbX59QjVI42iqc21YWWyAB5ox5T3ecJ5hKNp5hsC82cE" crossorigin="anonymous"></script>
+  <main id="main">{% block content %}{% endblock %}</main>
+  <footer class="border-t mt-16">
+    <div class="mx-auto max-w-5xl px-4 py-8 text-sm text-slate-500 flex flex-wrap items-center justify-between gap-3">
+      <span>&copy; {{ ui.brand }}. {{ ui.footer_rights }}</span>
+      {# The captions of the legal links — from the UI catalog (public.i18n), and not an inline
+         dictionary in the template: the chrome of the public frame lives in one place
+         (M-7 of the audit 2026-08-02), and no raw Cyrillic remains in the template. #}
+      <nav class="flex flex-wrap items-center gap-4">
+        <a href="/tenderi" class="hover:text-slate-900">{{ ui.nav_tenderi }}</a>
+        <a href="/izvori" class="hover:text-slate-900">{{ ui.nav_sources }}</a>
+        <a href="/cpv-kodovi" class="hover:text-slate-900">{{ ui.nav_cpv }}</a>
+        <a href="/statistika" class="hover:text-slate-900">{{ ui.nav_stats }}</a>
+        <a href="/novosti" class="hover:text-slate-900">{{ ui.nav_news }}</a>
+        <a href="/plans" class="hover:text-slate-900">{{ ui.nav_plans }}</a>
+        <a href="/help" class="hover:text-slate-900">{{ ui.nav_help }}</a>
+        <a href="/kontakt" class="hover:text-slate-900">{{ ui.nav_contact }}</a>
+        <a href="{{ tg_channel_url }}" target="_blank" rel="noopener" class="hover:text-slate-900">{{ contact_ui(lang).tg_channel }}</a>
+        <a href="/legal/privacy" class="hover:text-slate-900">{{ ui.footer_privacy }}</a>
+        <a href="/legal/terms" class="hover:text-slate-900">{{ ui.footer_terms }}</a>
+        <a href="/legal/impressum" class="hover:text-slate-900">{{ ui.footer_impressum }}</a>
+      </nav>
+    </div>
+  </footer>
+  {# “To the top” — see base.html: the is-visible class is set by scroll_nav.js, without JS
+     the button is hidden and does not get into the tab order. #}
+  <button type="button" class="to-top" data-scroll-top aria-label="{{ ui.to_top }}" title="{{ ui.to_top }}">
+    <span aria-hidden="true">↑</span>
+  </button>
+</body>
+</html>

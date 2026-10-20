@@ -1,0 +1,72 @@
+{% extends "admin_base.html" %}
+{% block title %}Модерация — Админ{% endblock %}
+{% block admin_content %}
+<div class="flex items-center justify-between gap-3 flex-wrap mb-6">
+  <h1 class="text-xl font-semibold">Модерация</h1>
+  {% if pending %}
+  <span class="badge badge-urgent">Ожидают: {{ pending | length }}</span>
+  {% endif %}
+</div>
+
+{% if pending %}
+<div class="space-y-4">
+  {% for t in pending %}
+  <div class="card">
+    <div class="flex items-start justify-between gap-4 mb-3">
+      <div class="flex-1 min-w-0">
+        <p class="font-medium">{{ t.name }}</p>
+        {% if t.description %}
+        <p class="text-sm text-slate-500 mt-0.5">{{ t.description }}</p>
+        {% endif %}
+        <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-400 mt-2">
+          {% if t.activity_kind %}
+          <span class="badge badge-muted">{{ t.activity_kind }}</span>
+          {% endif %}
+          <span>от {{ t.created_by_user_id or '—' }}</span>
+          <span>{{ t.created_at.strftime('%d.%m.%Y %H:%M') if t.created_at else '—' }}</span>
+        </div>
+      </div>
+      <div class="flex gap-2 shrink-0">
+        <form method="post" action="/admin/moderation/{{ t.id }}/approve">
+          <button type="submit" class="btn-primary">Одобрить</button>
+        </form>
+        <form method="post" action="/admin/moderation/{{ t.id }}/reject">
+          <button type="submit" class="btn-danger" data-confirm="Отклонить шаблон?">Отклонить</button>
+        </form>
+      </div>
+    </div>
+    <!-- An inline edit of name / description before publication -->
+    <details class="border-t pt-3 mt-1">
+      <summary class="text-xs text-slate-500 cursor-pointer select-none">Редактировать перед публикацией</summary>
+      <form method="post" action="/admin/moderation/{{ t.id }}/edit" class="mt-2 space-y-2">
+        <input type="text" name="name" value="{{ t.name }}" required
+               class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm" placeholder="Название">
+        <textarea name="description" rows="2"
+                  class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm" placeholder="Описание">{{ t.description or '' }}</textarea>
+        {# The showcase translations (0036). The admin stays the ru-interface — these are the
+           input fields, not the localisation of the admin itself. Empty = there is no translation; the showcase
+           shows the Russian original (the fallback). #}
+        {% for code, label in [("sr", "Сербский"), ("en", "Английский")] %}
+        {% set tr = (t.i18n or {}).get(code) or {} %}
+        <fieldset class="border border-slate-200 rounded-md px-3 py-2">
+          <legend class="text-xs text-slate-500">{{ label }}</legend>
+          <input type="text" name="name_{{ code }}" value="{{ tr.get('name') or '' }}"
+                 class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm mb-2"
+                 placeholder="Название ({{ code }})">
+          <textarea name="description_{{ code }}" rows="2"
+                    class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm"
+                    placeholder="Описание ({{ code }})">{{ tr.get('description') or '' }}</textarea>
+        </fieldset>
+        {% endfor %}
+        <button type="submit" class="btn-secondary">Сохранить правку</button>
+      </form>
+    </details>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+{% set empty_state_title = "Очередь модерации пуста" %}
+{% set empty_state_hint = "Новые предложения шаблонов появятся здесь по мере поступления." %}
+{% include "_empty_state.html" %}
+{% endif %}
+{% endblock %}

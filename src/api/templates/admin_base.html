@@ -1,0 +1,31 @@
+{# The frame of the admin console (VG-29.1): inherits the common base.html and adds
+   the operator’s secondary navigation. The active item is highlighted by the key
+   active_nav ('users' | 'requests' | 'moderation' | 'templates' | 'health'),
+   that the route puts into the context. The pages inherit this template and define the
+   block admin_content. #}
+{% extends "base.html" %}
+{% block content %}
+<nav class="admin-console flex flex-wrap items-center gap-1 mb-6" aria-label="Админ-консоль">
+  <span class="admin-console__label">АДМИН</span>
+  <a href="/admin/users" class="nav-link{% if active_nav == 'users' %} is-active{% endif %}">Пользователи</a>
+  <a href="/admin/requests" class="nav-link{% if active_nav == 'requests' %} is-active{% endif %}">Заявки</a>
+  <a href="/admin/moderation" class="nav-link{% if active_nav == 'moderation' %} is-active{% endif %}">Модерация</a>
+  <a href="/admin/templates" class="nav-link{% if active_nav == 'templates' %} is-active{% endif %}">Шаблоны</a>
+  <a href="/admin/sources" class="nav-link{% if active_nav == 'sources' %} is-active{% endif %}">Источники</a>
+  <a href="/admin/health" class="nav-link{% if active_nav == 'health' %} is-active{% endif %}">Здоровье</a>
+  <a href="/admin/audit" class="nav-link{% if active_nav == 'audit' %} is-active{% endif %}">Аудит</a>
+</nav>
+{# The banner of a silent source (owner 30.09 evening, item 4c): the same predicate as the alert of the
+   worker (src.domain.source_silence); the route puts silent_sources into the context. #}
+{% if silent_sources %}
+<div class="card mb-6 border-red-300" role="alert" data-silent-banner>
+  <p class="font-medium text-red-700">Источник молчит: проверить</p>
+  <ul class="mt-2 text-sm text-slate-700">
+    {% for s in silent_sources %}
+    <li>{{ s.label }} — {% if s.silent_hours is none %}нет отсчёта{% else %}{{ '%.0f'|format(s.silent_hours) }} ч{% endif %} без новых тендеров (порог {{ '%.0f'|format(s.threshold_hours) }} ч) · <a href="/admin/sources" class="underline">Источники</a></li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% block admin_content %}{% endblock %}
+{% endblock %}

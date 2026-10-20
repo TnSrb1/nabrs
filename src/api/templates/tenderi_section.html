@@ -1,0 +1,98 @@
+{% extends "public_base.html" %}
+{# GEO-2: the section /tenderi/{cpv,region}/{code} — h1 + three figures + the list of open tenders
+   (pagination) + the tail of the latest closed ones + the neighbouring sections (routes_geo).
+   kind resolves only the label of the CPV code (cpv_code_label) — the markup itself
+   is identical for cpv / region, therefore one template for both kinds of section. #}
+{% block title %}{{ title }} — {{ ui.brand }}{% endblock %}
+{% block meta_description %}{{ intro }}{% endblock %}
+{% block og_title %}{{ title }}{% endblock %}
+{% block og_description %}{{ intro }}{% endblock %}
+{% block head_extra %}{% if noindex %}<meta name="robots" content="noindex,follow">{% endif %}{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-5xl px-4 py-8">
+  <a href="/tenderi" class="tp-back">{{ t.back_to_hub }}</a>
+  {% if crumbs %}
+  <nav class="mt-2 text-sm text-slate-500" aria-label="{{ t.breadcrumb_hub }}">
+    {% for href, name in crumbs %}<a href="{{ href }}" class="hover:text-slate-900">{{ name }}</a> <span aria-hidden="true">›</span> {% endfor %}<span aria-current="page">{{ code }}</span>
+  </nav>
+  {% endif %}
+
+  <h1 class="mt-4 text-2xl font-semibold text-slate-900">
+    {{ title }}{% if kind == 'cpv' %} <span class="text-slate-400">{{ t.cpv_code_label }} {{ code }}</span>{% endif %}
+  </h1>
+  <p class="mt-2 text-slate-600 max-w-2xl">{{ intro }}</p>
+
+  <dl class="mt-6 grid gap-3 sm:grid-cols-3">
+    <div class="card">
+      <dt class="text-sm text-slate-500">{{ t.stat_total }}</dt>
+      <dd class="mt-1 text-xl font-semibold text-slate-900">{{ stats.total }}</dd>
+    </div>
+    <div class="card">
+      <dt class="text-sm text-slate-500">{{ t.stat_open }}</dt>
+      <dd class="mt-1 text-xl font-semibold text-slate-900">{{ stats.open }}</dd>
+    </div>
+    <div class="card">
+      <dt class="text-sm text-slate-500">{{ t.stat_sum }}</dt>
+      <dd class="mt-1 text-xl font-semibold text-slate-900">
+        {% if stats.open_sum_eur %}€{{ '{:,.0f}'.format(stats.open_sum_eur).replace(',', ' ') }}{% else %}—{% endif %}
+      </dd>
+    </div>
+  </dl>
+
+  {% include "_portal_filters.html" %}
+
+  <section class="mt-8">
+    <h2 class="text-xl font-semibold text-slate-900">{{ t.results_heading if pf.active else t.open_heading }}</h2>
+    {% if open_rows %}
+    <div class="mt-4 fd-list">
+      {% for row in open_rows %}
+      {% include "_geo_tender_row.html" %}
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="mt-4 text-slate-600">{{ (t.query_timeout if timed_out else t.empty_results) if pf.active else t.empty_open }}</p>
+    {% endif %}
+
+    {% from "_pager.html" import pager with context %}
+    {% macro sect_href(n) -%}{{ section_path }}{{ pf.query(page=n) }}{%- endmacro %}
+    {{ pager(page, total_pages, sect_href, t.pager_page, section_path) }}
+  </section>
+
+  {% if page == 1 and not pf.active %}
+  <section class="mt-8">
+    <h2 class="text-xl font-semibold text-slate-900">{{ t.closed_heading }}</h2>
+    {% if closed_rows %}
+    <div class="mt-4 fd-list">
+      {% for row in closed_rows %}
+      {% include "_geo_tender_row.html" %}
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="mt-4 text-slate-600">{{ t.empty_closed }}</p>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {% if child_groups %}
+  <section class="mt-8">
+    <h2 class="text-xl font-semibold text-slate-900">{{ t.groups_heading }}</h2>
+    <ul class="mt-4 grid gap-2 sm:grid-cols-2">
+      {% for g, label, n in child_groups %}
+      <li><a href="/tenderi/cpv/{{ g }}" class="hover:text-slate-900"><span class="text-slate-500">{{ g }}</span> {{ label }} <span class="text-slate-500">({{ n }})</span></a></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if prev_section or next_section %}
+  <nav class="mt-8 flex flex-wrap items-center justify-between gap-3 text-sm" aria-label="{{ t.hub_title }}">
+    {% if prev_section %}
+    <a href="/tenderi/{{ kind }}/{{ prev_section[0] }}" class="hover:text-slate-900">{{ t.prev_link.format(name=prev_section[1]) }}</a>
+    {% else %}<span></span>{% endif %}
+    {% if next_section %}
+    <a href="/tenderi/{{ kind }}/{{ next_section[0] }}" class="hover:text-slate-900">{{ t.next_link.format(name=next_section[1]) }}</a>
+    {% endif %}
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}

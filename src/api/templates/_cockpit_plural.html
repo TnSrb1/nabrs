@@ -1,0 +1,12 @@
+{# The Russian declension of the noun by number — for the cockpit, where the figure and
+   the word stand next to each other (“1 day”, “2 days”, “5 days”). Without it the dashboard would write
+   “1 tenders in work” — a trifle by which the product’s quality is judged.
+   The rule is standard: 11–14 is always “many”, otherwise by the last digit. #}
+{% macro pl(n, one, few, many) -%}
+{%- set n = n | abs -%}
+{%- if n % 100 >= 11 and n % 100 <= 14 -%}{{ many }}
+{%- elif n % 10 == 1 -%}{{ one }}
+{%- elif n % 10 >= 2 and n % 10 <= 4 -%}{{ few }}
+{%- else -%}{{ many }}
+{%- endif -%}
+{%- endmacro %}

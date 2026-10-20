@@ -1,0 +1,171 @@
+{% extends "admin_base.html" %}
+{% block title %}Здоровье ingest — Админ{% endblock %}
+{% block admin_content %}
+<h1 class="text-xl font-semibold mb-6">Здоровье ingest</h1>
+
+{% if health.is_empty %}
+{% set empty_state_title = "Данных ingest пока нет" %}
+{% set empty_state_hint = "Здесь появится свежесть и объём притока тендеров и наград, когда воркеры начнут наполнять базу." %}
+{% include "_empty_state.html" %}
+{% else %}
+
+<!-- Freshness of the inflow — with status badges -->
+<section class="card mb-6">
+  <h2 class="text-lg font-semibold mb-3">Свежесть</h2>
+  <div class="flex flex-wrap gap-2">
+    {% if health.tender_status == 'success' %}
+    <span class="badge badge-success">Тендеры: приток в норме · {{ health.tender_age_label }}</span>
+    {% elif health.tender_status == 'urgent' %}
+    <span class="badge badge-urgent">Тендеры: пропущено ночное поступление · {{ health.tender_age_label }}</span>
+    {% else %}
+    <span class="badge badge-error">Тендеры: приток остановлен · {{ health.tender_age_label }}</span>
+    {% endif %}
+    {% if health.last_award_at %}
+    <span class="badge badge-success">Награды: {{ health.award_age_label }}</span>
+    {% else %}
+    <span class="badge badge-expired">Награды: нет данных</span>
+    {% endif %}
+  </div>
+</section>
+
+<!-- The volume of the tender inflow — as cards (like the stats on /admin/users) -->
+<h2 class="text-lg font-semibold mb-3">Приток тендеров</h2>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+  <div class="card text-center">
+    <p class="text-2xl font-semibold">{{ health.tenders_1h }}</p>
+    <p class="text-xs text-slate-500 mt-1">за 1 час</p>
+  </div>
+  <div class="card text-center">
+    <p class="text-2xl font-semibold">{{ health.tenders_24h }}</p>
+    <p class="text-xs text-slate-500 mt-1">за 24 часа</p>
+  </div>
+  <div class="card text-center">
+    <p class="text-2xl font-semibold">{{ health.tenders_7d }}</p>
+    <p class="text-xs text-slate-500 mt-1">за 7 дней</p>
+  </div>
+  <div class="card text-center">
+    <p class="text-2xl font-semibold">{{ health.tender_age_label }}</p>
+    <p class="text-xs text-slate-500 mt-1">последний тендер</p>
+  </div>
+</div>
+
+{% if health.sources %}
+<!-- The breakdown of the inflow by the enabled sources (SRC-0d) -->
+<h2 class="text-lg font-semibold mb-3">По источникам</h2>
+<div class="border rounded-lg bg-white overflow-x-auto mb-6">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-50 border-b">
+      <tr>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">Источник</th>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">Статус</th>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">За 24 ч</th>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">За 7 дн</th>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">Последний тендер</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      {% for src in health.sources %}
+      <tr data-inflow-row="{{ src.source_key }}">
+        <td class="px-4 py-3">{{ src.label }}</td>
+        <td class="px-4 py-3">
+          {% if src.status == 'success' %}<span class="badge badge-success">в норме</span>
+          {% elif src.status == 'urgent' %}<span class="badge badge-urgent">пропущено ночное окно</span>
+          {% else %}<span class="badge badge-error">молчит</span>{% endif %}
+        </td>
+        <td class="px-4 py-3">{{ src.tenders_24h }}</td>
+        <td class="px-4 py-3">{{ src.tenders_7d }}</td>
+        <td class="px-4 py-3">{{ src.age_label }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<!-- The volume of the award inflow -->
+<h2 class="text-lg font-semibold mb-3">Приток наград</h2>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+  <div class="card text-center">
+    <p class="text-2xl font-semibold">{{ health.awards_24h }}</p>
+    <p class="text-xs text-slate-500 mt-1">за 24 часа</p>
+  </div>
+  <div class="card text-center">
+    <p class="text-2xl font-semibold">{{ health.awards_7d }}</p>
+    <p class="text-xs text-slate-500 mt-1">за 7 дней</p>
+  </div>
+  <div class="card text-center">
+    <p class="text-2xl font-semibold">{{ health.award_age_label }}</p>
+    <p class="text-xs text-slate-500 mt-1">последняя награда</p>
+  </div>
+</div>
+
+<p class="text-xs text-slate-400">Только публичные (НЕ-RLS) таблицы притока.</p>
+{% endif %}
+
+<!-- The delivery / the queue (VG-29.3) — aggregates via SECURITY DEFINER (FORCE RLS) -->
+<h1 class="text-xl font-semibold mb-6 mt-8">Доставка и очередь</h1>
+
+{% if delivery.is_empty %}
+{% set empty_state_title = "Доставок пока нет" %}
+{% set empty_state_hint = "Здесь появится бэклог очереди доставки и свежесть фоновых воркеров, когда пойдут первые уведомления." %}
+{% include "_empty_state.html" %}
+{% else %}
+
+<!-- The state of the queue — with a status badge -->
+<section class="card mb-6">
+  <h2 class="text-lg font-semibold mb-3">Очередь доставки</h2>
+  <div class="flex flex-wrap gap-2">
+    {% if delivery.backlog_status == 'success' %}
+    <span class="badge badge-success">Очередь в норме · доставка {{ delivery.delivery_age_label }}</span>
+    {% elif delivery.backlog_status == 'urgent' %}
+    <span class="badge badge-urgent">Есть сбои доставки за сутки: {{ delivery.failed_24h }}</span>
+    {% else %}
+    <span class="badge badge-error">Очередь встала · {{ delivery.pending_total }} ждут · доставка {{ delivery.delivery_age_label }}</span>
+    {% endif %}
+    {% if delivery.failed_24h and delivery.backlog_status != 'urgent' %}
+    <span class="badge badge-urgent">Сбоев за 24ч: {{ delivery.failed_24h }}</span>
+    {% endif %}
+  </div>
+</section>
+
+<!-- The queue backlog — as cards -->
+<h2 class="text-lg font-semibold mb-3">Бэклог</h2>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+  <div class="card text-center">
+    <p class="text-2xl font-semibold">{{ delivery.pending_total }}</p>
+    <p class="text-xs text-slate-500 mt-1">ждут доставки</p>
+  </div>
+  <div class="card text-center">
+    <p class="text-2xl font-semibold">{{ delivery.sent_1h }}</p>
+    <p class="text-xs text-slate-500 mt-1">доставлено за 1 час</p>
+  </div>
+  <div class="card text-center">
+    <p class="text-2xl font-semibold">{{ delivery.sent_24h }}</p>
+    <p class="text-xs text-slate-500 mt-1">доставлено за 24 часа</p>
+  </div>
+  <div class="card text-center">
+    <p class="text-2xl font-semibold">{{ delivery.failed_24h }}</p>
+    <p class="text-xs text-slate-500 mt-1">сбоев за 24 часа</p>
+  </div>
+</div>
+
+<!-- The freshness of the background workers -->
+<h2 class="text-lg font-semibold mb-3">Свежесть воркеров</h2>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+  <div class="card text-center">
+    <p class="text-2xl font-semibold">{{ delivery.delivery_age_label }}</p>
+    <p class="text-xs text-slate-500 mt-1">последняя доставка</p>
+  </div>
+  <div class="card text-center">
+    <p class="text-2xl font-semibold">{{ delivery.deadline_reminder_label }}</p>
+    <p class="text-xs text-slate-500 mt-1">напоминание о дедлайне</p>
+  </div>
+  <div class="card text-center">
+    <p class="text-2xl font-semibold">{{ delivery.subscription_reminder_label }}</p>
+    <p class="text-xs text-slate-500 mt-1">напоминание о подписке</p>
+  </div>
+</div>
+
+<p class="text-xs text-slate-400">Кросс-тенантные агрегаты очереди — только COUNT/MAX через SECURITY DEFINER (FORCE RLS), без данных тенантов.</p>
+{% endif %}
+{% endblock %}

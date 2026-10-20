@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ profile.name or t.pd_title_fallback }}{% endblock %}
+{% block content %}
+{% set ai_labels = {'none': t.pd_ai_none, 'quick': t.pd_ai_quick, 'standard': t.pd_ai_standard, 'deep': t.pd_ai_deep} %}
+{% set sched_labels = {'immediate': t.pd_sched_immediate, 'digest_morning': t.pd_sched_morning, 'digest_evening': t.pd_sched_evening, 'digest_custom': t.pd_sched_custom} %}
+{% set chan_labels = {'email':'Email','telegram':'Telegram'} %}
+{% include "_delivery_warning.html" %}
+
+<div class="flex flex-col gap-3 items-start sm:flex-row sm:items-center sm:justify-between mb-4">
+  <div class="flex items-center gap-3 min-w-0">
+    <h1 class="text-xl font-semibold">{{ profile.name or t.profile_untitled }}</h1>
+    <span class="badge {{ 'badge-success' if profile.is_active else 'badge-expired' }}">{{ t.profile_active if profile.is_active else t.profile_inactive }}</span>
+  </div>
+  <div class="flex items-center gap-2 shrink-0">
+    <a href="/profiles/{{ profile.id }}/edit" class="btn-secondary">{{ t.pd_edit }}</a>
+    <form method="post" action="/profiles/{{ profile.id }}/delete" class="inline" data-confirm="{{ t.pd_delete_confirm }}">
+      <button type="submit" class="btn-danger">{{ t.pd_delete }}</button>
+    </form>
+  </div>
+</div>
+
+{% if suppressed %}
+{# suppressed — the KEYS of the catalog from tiers.gate_profile (gate_sup_*); we resolve with `t`.
+   `t.get(s, s)` — the fallback for legacy / test raw strings. #}
+<div class="mb-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">
+  <p class="font-medium mb-1">{{ t.profile_locked_title }}</p>
+  <ul class="list-disc list-inside">{% for s in suppressed %}<li>{{ t.get(s, s) }}</li>{% endfor %}</ul>
+  <a href="/plans" class="inline-block mt-2 font-semibold text-amber-800 underline hover:text-slate-900">{{ t.profile_locked_cta }}</a>
+</div>
+{% endif %}
+
+<dl class="card grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+  <div><dt class="text-slate-500">{{ t.pf_ai_label }}</dt><dd class="font-medium">{{ ai_labels.get(profile.ai_analysis_level, profile.ai_analysis_level or t.pd_ai_none) }}</dd></div>
+  <div><dt class="text-slate-500">{{ t.pf_regions_label }}</dt><dd class="font-medium">{{ (profile.regions or [])|join(', ') or t.pd_all_regions }}</dd></div>
+  {# Filters 0046 — as a line, only if set (empty = no restriction). #}
+  {% if profile.contract_types %}<div><dt class="text-slate-500">{{ t.pf_ct_label }}</dt><dd class="font-medium">{% for c in profile.contract_types %}{{ t.get('pf_ct_' ~ c, c) }}{% if not loop.last %}, {% endif %}{% endfor %}</dd></div>{% endif %}
+  {% if profile.customers_include %}<div><dt class="text-slate-500">{{ t.pf_cust_follow_label }}</dt><dd class="font-medium">{{ profile.customers_include|join('; ') }}</dd></div>{% endif %}
+  {% if profile.customers_exclude %}<div><dt class="text-slate-500">{{ t.pf_cust_exclude_label }}</dt><dd class="font-medium">{{ profile.customers_exclude|join('; ') }}</dd></div>{% endif %}
+  <div><dt class="text-slate-500">{{ t.pd_channels_label }}</dt><dd class="font-medium">{% for c in profile.delivery_channels or [] %}{{ chan_labels.get(c, c) }}{% if not loop.last %}, {% endif %}{% else %}—{% endfor %}</dd></div>
+  <div><dt class="text-slate-500">{{ t.pf_sched_label }}</dt><dd class="font-medium">{{ sched_labels.get(profile.delivery_schedule, profile.delivery_schedule or t.pd_sched_immediate) }}</dd></div>
+</dl>
+
+{# Template sources: what is enabled and what to add with one click (SRC-0b). #}
+{% include "_profile_sources.html" %}
+
+{# After an edit (?updated=1): what is open now under the updated template. #}
+{% if open_now is defined and request.query_params.get('updated') == '1' %}
+<div class="mt-6">
+  {% include "_open_now.html" %}
+</div>
+{% endif %}
+
+<div class="mt-6 pt-4 border-t">
+  <form method="post" action="/profiles/{{ profile.id }}/propose"
+        data-confirm="{{ t.pd_propose_confirm }}">
+    <button type="submit" class="btn-ghost border border-slate-300">{{ t.pd_propose }}</button>
+  </form>
+  <p class="field__hint">{{ t.pd_propose_hint }}</p>
+</div>
+
+<p class="mt-4"><a href="/app" class="text-slate-600 underline hover:text-slate-900">{{ t.pd_back_list }}</a></p>
+{% endblock %}

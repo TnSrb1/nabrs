@@ -1,0 +1,90 @@
+{% extends "admin_base.html" %}
+{% block title %}Аудит — Админ{% endblock %}
+{% block admin_content %}
+{# The immutable journal of privileged actions (VG-29.4). Read-only under
+   require_admin. The data — via the SECURITY DEFINER app_admin_list_audit (0030). #}
+<h1 class="text-xl font-semibold mb-2">Аудит действий</h1>
+<p class="text-sm text-slate-500 mb-6">
+  Кто, что и когда менял в админке — неизменяемая история для подотчётности и
+  разбора инцидентов.
+</p>
+
+{% set action_labels = {
+  'grant_access': 'Выдан доступ',
+  'revoke_access': 'Отозван доступ',
+  'set_tier': 'Смена тарифа',
+  'source_enable': 'Источник включён',
+  'source_disable': 'Источник выключен',
+} %}
+
+{% if rows %}
+<div class="border rounded-lg bg-white overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-50 border-b">
+      <tr>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">Время</th>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">Актор</th>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">Действие</th>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">Цель</th>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">Детали</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      {% for r in rows %}
+      <tr class="hover:bg-slate-50">
+        <td class="px-4 py-3 text-slate-500">
+          {{ r.at.strftime('%d.%m.%Y %H:%M') if r.at else '—' }}
+        </td>
+        <td class="px-4 py-3">{{ r.actor_email }}</td>
+        <td class="px-4 py-3">
+          <span class="badge badge-muted">{{ action_labels.get(r.action, r.action) }}</span>
+        </td>
+        <td class="px-4 py-3 font-mono text-xs text-slate-500">
+          {% if r.target_user_id %}
+            <a href="/admin/users/{{ r.target_user_id }}" class="text-brand hover:underline">
+              {{ r.target_user_id[:8] }}…
+            </a>
+          {% elif r.target_tenant_id %}
+            {{ r.target_tenant_id[:8] }}…
+          {% else %}—{% endif %}
+        </td>
+        <td class="px-4 py-3 text-xs text-slate-600">
+          {% if r.details %}
+            {% for k, v in r.details.items() %}
+            <div class="text-xs">
+              <span class="text-slate-400">{{ k }}:</span>
+              <span class="font-mono break-all">{{ v if v is not none else '—' }}</span>
+            </div>
+            {% endfor %}
+          {% else %}—{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="flex items-center justify-between gap-3 flex-wrap mt-3">
+  <p class="text-xs text-slate-400">Всего: {{ total }}</p>
+  {% if total_pages > 1 %}
+  <div class="flex items-center gap-3">
+    {% if page > 1 %}
+    <a href="?page={{ page - 1 }}" class="btn-secondary">← Назад</a>
+    {% else %}
+    <span class="btn-ghost cursor-default text-slate-500">← Назад</span>
+    {% endif %}
+    <span class="text-sm text-slate-500">стр. {{ page }} / {{ total_pages }}</span>
+    {% if page < total_pages %}
+    <a href="?page={{ page + 1 }}" class="btn-secondary">Вперёд →</a>
+    {% else %}
+    <span class="btn-ghost cursor-default text-slate-500">Вперёд →</span>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% else %}
+{% set empty_state_title = "Журнал пуст" %}
+{% set empty_state_hint = "Здесь появятся привилегированные действия операторов: выдача/отзыв доступа, смена тарифа." %}
+{% include "_empty_state.html" %}
+{% endif %}
+{% endblock %}

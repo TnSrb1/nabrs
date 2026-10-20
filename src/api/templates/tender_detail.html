@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% from "_hint_tip.html" import tip with context %}
+{# The content “as is” (the owner’s decision): the card opens on the ORIGINAL, the model on
+   the render is not called. The heading and the description are translated ONLY by the button — by the same
+   htmx toggle as in the feed (_card_title.html), and the button at the description
+   (_tender_description.html). The original in the DB is NOT overwritten by the translation. #}
+{% block title %}{{ data.title }}{% endblock %}
+{% block content %}
+{# The AI artifacts of the tender. The view of what is already generated (web-ai-1) + the start
+   of the generation of bid / checklist / draft / deep right from the cabinet (web-ai-2): each section
+   of these levels is the swap container _ai_slot.html (button → hx-post → background task
+   → HTMX polling of the status). The server-side render from the output JSON (the body — sr, we do not
+   translate). The specification analysis: standard / quick come by the auto pipeline, deep (Pro+) — by button, as bid / checklist / draft. #}
+<div class="mb-4">
+  <p class="mb-2"><a href="/app" class="text-slate-600 underline">{{ t.td_back_to_feed }}</a></p>
+  {# The heading “as is” + the translation toggle — the same _card_title.html as in the
+     feed (view="detail": a text heading, not a link). There is no second mechanism. #}
+  {% with tender_id=data.tender_id, profile_id=data.profile_id, view="detail",
+          view_title=data.title, title_url="", title_class="text-xl font-semibold",
+          title_blank=false, show_original=true, unavailable=false, original_lang=original_lang %}
+  {% include "_card_title.html" %}
+  {% endwith %}
+  <div class="mt-2 flex flex-wrap gap-3 text-sm text-slate-500">
+    {% if data.customer_name %}<span>🏛 {{ data.customer_name }}</span>{% endif %}
+    {% if data.source_label %}<span>🌐 {{ t.src_label }}: {{ data.source_label }}</span>{% endif %}
+    {% if data.deadline_at %}<span>⏰ {{ t.td_deadline }} {{ data.deadline_at | dl_local(data.source_key, lang) }}</span>{% endif %}
+    {% set _dl = data.deadline_at | days_left %}
+    {% if _dl is not none and _dl >= 0 %}<a href="/tender/{{ data.tender_id }}.ics" class="btn-secondary">{{ t.add_to_calendar }}</a>{% endif %}
+    <span>{{ t.profile_prefix }} {{ data.profile_name }}</span>
+  </div>
+  {% with also_on_n=data.also_on_n, also_on_conf=data.canonical_confidence, also_on_class="mt-2 text-sm text-slate-500" %}{% include "_also_on.html" %}{% endwith %}
+  {% if data.source_url %}
+  <p class="mt-2 text-sm"><a href="{{ data.source_url }}" target="_blank" rel="noopener" class="text-brand underline">{{ t.td_open_source }}</a></p>
+  {% endif %}
+  {% if wf_state is not none %}
+  {% with tender_id=data.tender_id, state=wf_state, folders=wf_folders %}
+  {% include "_tender_actions.html" %}
+  {% endwith %}
+  {% endif %}
+</div>
+
+{% if not data.has_any %}
+{% set empty_state_title = t.td_empty_title %}
+{% set empty_state_hint = t.td_empty_hint %}
+{% set empty_state_cta_href = none %}
+{% set empty_state_cta_label = none %}
+{% set empty_state_secondary_href = none %}
+{% set empty_state_secondary_label = none %}
+{% include "_empty_state.html" %}
+{% endif %}
+
+{# ---------------------------------------------- Tender description #}
+{# Guard by blocks (not by the raw string): a description of service markers only — no section. #}
+{% if data.description | description_blocks %}
+<section id="description" class="card mb-6">
+  <h2 class="text-lg font-semibold mb-3">{{ t.td_desc_h }} {{ tip(t.td_desc_tip, label=t.tip_what) }}</h2>
+  {# ‼️ The original is rendered at once, WITHOUT a model call. The translation — by the button inside the
+     partial (the same _tender_description.html that the htmx fragment gives), there is no skeleton
+     on the load. Progressive enhancement: without JS the button is inert, but the original is visible. #}
+  {% with tender_id=data.tender_id, profile_id=data.profile_id,
+          description=data.description, machine=false, unavailable=false,
+          original_lang=original_lang %}
+  {% include "_tender_description.html" %}
+  {% endwith %}
+</section>
+{% endif %}
+
+{# ---------------------------------------------------------------- Verdict #}
+<section id="bid" class="card mb-6">
+  <h2 class="text-lg font-semibold mb-3">{{ t.td_bid_h }} {{ tip(t.td_bid_tip, label=t.tip_what) }}</h2>
+  {% with level='bid', mode='content', output=data.bid, tender_id=data.tender_id, profile_id=data.profile_id %}
+  {% include "_ai_slot.html" %}
+  {% endwith %}
+</section>
+
+{# --------------------------------------------------------------- Checklist #}
+<section id="checklist" class="card mb-6">
+  <h2 class="text-lg font-semibold mb-3">{{ t.td_checklist_h }} {{ tip(t.td_checklist_tip, label=t.tip_what) }}</h2>
+  {% with level='checklist', mode='content', output=data.checklist, tender_id=data.tender_id, profile_id=data.profile_id %}
+  {% include "_ai_slot.html" %}
+  {% endwith %}
+</section>
+
+{# ---------------------------------------------------------------- Draft #}
+<section id="draft" class="card mb-6">
+  <h2 class="text-lg font-semibold mb-3">{{ t.td_draft_h }} {{ tip(t.td_draft_tip, label=t.tip_what) }}</h2>
+  {% with level='draft', mode='content', output=data.draft, tender_id=data.tender_id, profile_id=data.profile_id %}
+  {% include "_ai_slot.html" %}
+  {% endwith %}
+</section>
+
+{# ------------------------------------------------------------ Specification analysis #}
+<section id="analysis" class="card mb-6">
+  <h2 class="text-lg font-semibold mb-3">{{ t.td_analysis_h }} {{ tip(t.td_analysis_tip, label=t.tip_what) }}</h2>
+  {% from "_ai_artifact.html" import render as render_artifact with context %}
+  {% set deep = data.deep_analysis %}
+  {% if deep %}
+  {{ render_artifact('deep', deep) }}
+  {% elif auto_analysis is defined and auto_analysis and auto_analysis.state != 'ok' %}
+  {# The profile asked to analyze the stream, but this tender came WITHOUT an analysis:
+     the limit / the demo is exhausted or the plan no longer gives the auto analysis. We show the reason
+     and the figures instead of an empty “will appear automatically” — a promise
+     that in this state will not come true. #}
+  {% with level='standard', mode='auto_skipped', auto=auto_analysis,
+          tender_id=data.tender_id, profile_id=data.profile_id %}
+  {% include "_ai_slot.html" %}
+  {% endwith %}
+  {% else %}
+  {% set empty_state_title = t.td_analysis_empty_title %}
+  {% set empty_state_hint = t.td_analysis_empty_hint %}
+  {% set empty_state_cta_href = none %}
+  {% set empty_state_cta_label = none %}
+  {% set empty_state_secondary_href = none %}
+  {% set empty_state_secondary_label = none %}
+  {% include "_empty_state.html" %}
+  {% endif %}
+  {# The deep analysis (deep, Pro+) — by button, common per tender; the same swap container
+     as bid / checklist / draft (the gate, the remainder, the limit flash — are in it). The ready deep
+     is already shown above; the button is needed only while it is absent. #}
+  {% if not data.has_deep %}
+  <div class="mt-4">
+  {% with level='deep', mode='content', output=none, tender_id=data.tender_id, profile_id=data.profile_id %}
+  {% include "_ai_slot.html" %}
+  {% endwith %}
+  </div>
+  {% endif %}
+</section>
+
+{# ------------------------------------------------ Customer analytics (web-ai-3) #}
+{% include "_customer_analytics.html" %}
+
+{# ------------------------------- Incumbent: who won before (A4, VG-06) #}
+{% include "_customer_incumbent.html" %}
+
+{# ------------------------------------------ Competitor profile (web-ai-4, VG-06) #}
+{% include "_competitor_analytics.html" %}
+
+{# ------------------------------------------- Konkurencija: winners (owner 13.10) #}
+{% include "_competition.html" %}
+
+{# --------------------------------------- Expected re-procurements (web-ai-4, VG-07) #}
+{% include "_reprocurement_forecast.html" %}
+
+{# Copying / downloading of the draft (web-ux-3). The delegation — covers also
+   the HTMX fragments substituted after the generation. #}
+<script src="{{ static_url('js/ai_artifacts.js') }}" integrity="sha384-CzwA/pxQO7SA/xB5xU4NMyIEHlVSs9ycGUykzQwz7le+14MmZPmUWf3rm5wj2LmL" crossorigin="anonymous"></script>
+{% endblock %}

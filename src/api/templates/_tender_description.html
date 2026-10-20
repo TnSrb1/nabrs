@@ -1,0 +1,68 @@
+{# The body of the tender’s description + the translation toggle (the owner’s decision “content as is”).
+
+   The partial is rendered TWICE and must match in the markup (id / container):
+   the primary inside tender_detail.html — ALWAYS in the original (machine=false), and
+   as the response of the htmx fragment GET /app/tenders/{id}/description. It is swapped entirely
+   (hx-swap="outerHTML") by its own id — as _card_title.html.
+
+   The translation — ONLY by the button: on opening the card the model is not called at all.
+   The button “Translate description” pulls the fragment with lang=<the interface language>; “Show original” —
+   with lang=sr. The waiting indicator — .htmx-request on the button itself (a spinner +
+   dimming); there is no skeleton on page load any more. A partial refusal
+   of the translation → the ORIGINAL comes here ENTIRELY (machine=false), not a mix of languages.
+
+   Context: tender_id, profile_id, description (the text to show), machine (is this
+   a machine translation?), unavailable (the translation was requested but did not happen), original_lang.
+
+   The button color — amber (--color-accent-*, the “action” role) by an inline style: there is no
+   utility class for it in the frozen CSS subset; style-src allows inline. The tap zone and
+   :focus-visible — from .act-btn (min-height 2rem). #}
+{% set _dbox = "tender-description-body" %}
+{% set _dfrag = "/app/tenders/" ~ tender_id ~ "/description?profile_id=" ~ profile_id %}
+<div id="{{ _dbox }}" class="text-sm space-y-2">
+  {# The same predicate as the public card (tender.html): a description made only of
+     file extracts — a collapsed block, the file names inside it (F-05 of the UX audit). #}
+  {% macro _desc_blocks() %}
+  {% for block in description | description_blocks %}
+  {% if block.heading %}<p class="text-xs font-semibold text-slate-600 break-all">{{ block.heading }}</p>{% endif %}
+  {% for line in block.text.split('\n') %}
+  {% if line.strip() %}<p>{{ line }}</p>{% endif %}
+  {% endfor %}
+  {% endfor %}
+  {% endmacro %}
+  {% if description | description_docs_only %}
+  <details class="tp-docs">
+    <summary>{{ t.td_desc_from_docs }}</summary>
+    {{ _desc_blocks() }}
+  </details>
+  {% else %}
+  {{ _desc_blocks() }}
+  {% endif %}
+  {% if machine %}
+  <p class="mt-3 text-xs text-slate-500">{{ t.td_machine_note }}</p>
+  <p class="mt-2">
+    <button type="button" class="act-btn" style="color: var(--color-accent-600)"
+            hx-get="{{ _dfrag }}&amp;lang={{ original_lang }}" hx-target="#{{ _dbox }}" hx-swap="outerHTML" hx-indicator="this"
+            title="{{ t.td_show_original_title }}">{{ t.td_show_original }}</button>
+  </p>
+  {% else %}
+  {# ‼️ The refusal reason is named EXPLICITLY. Until 15.08.2026 the exhausted limit and a model failure
+     gave one and the same phrase “translation is unavailable right now” — a monetary
+     refusal was read as a temporary glitch, and the client pressed the button again. #}
+  {% if unavailable %}<p class="mt-3 text-xs text-slate-400">
+    {%- if block_reason == 'exhausted' %}{{ t.tr_block_exhausted }}
+    {%- elif block_reason == 'frozen' %}{{ t.tr_block_frozen }}
+    {%- elif block_reason == 'unavailable' %}{{ t.tr_block_plan }}
+    {%- else %}{{ t.td_desc_unavailable }}{% endif %}</p>{% endif %}
+  <p class="mt-2">
+    {# ‼️ The translation language = the INTERFACE language (the owner’s decision, 25.07), and not a hard-coded
+       ru; in the Serbian interface there is no button — the original is already Serbian. #}
+    {% set _uilang = ui_lang | default(lang, true) %}
+    {% if _uilang != original_lang %}
+    <button type="button" class="act-btn" style="color: var(--color-accent-600)"
+            hx-get="{{ _dfrag }}&amp;lang={{ _uilang }}" hx-target="#{{ _dbox }}" hx-swap="outerHTML" hx-indicator="this"
+            title="{{ t.td_translate_title }}">{{ t.td_translate }}</button>
+    {% endif %}
+  </p>
+  {% endif %}
+</div>

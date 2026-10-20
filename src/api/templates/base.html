@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {# The brand in <title> — by one rule for all the cabinet / login pages: "<page> —
+     TenderSRB". The title block is rendered via self.title() (the block itself is hidden below
+     in an if false and does not get into the markup); the pages where the brand is already present are not
+     doubled. #}
+  {%- set _page_title = self.title() | trim %}
+  <title>{% if not _page_title %}TenderSRB{% elif "TenderSRB" in _page_title %}{{ _page_title }}{% else %}{{ _page_title }} — TenderSRB{% endif %}</title>
+  {%- if false %}{% block title %}{% endblock %}{% endif %}
+  <meta name="description" content="{% block meta_description %}{{ t.meta_description }}{% endblock %}">
+  <link rel="icon" href="{{ static_url('favicon.svg') }}" type="image/svg+xml">
+  <meta property="og:title" content="TenderSRB">
+  <meta property="og:description" content="{% block og_description %}{{ t.og_description }}{% endblock %}">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="{{ static_url('css/app.css') }}" integrity="sha384-kV5xCIiMWFNIK88aRXtndv9eH6fTCNm10mvKC4VsMUzmfsbH3kxDqLUDLzEw17Wz" crossorigin="anonymous">
+  <script src="{{ static_url('js/htmx.min.js') }}" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
+  <script src="{{ static_url('js/confirm_dialogs.js') }}" integrity="sha384-H/a0gd2xR130nVjoDGEWr/eTy/mKIQlhuu1Y+OtCkqVwW8etBzREJypWkhiJgnVx" crossorigin="anonymous"></script>
+  {# GSAP 3.12.5 from the jsDelivr CDN (SRI pinned). The vendored copy is not part of the public snapshot (GreenSock Standard License). The site CSP must allow script-src https://cdn.jsdelivr.net. `defer` keeps execution order: GSAP runs before its consumers from the scripts block. #}
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt" crossorigin="anonymous" defer></script>
+  {# The “To the top” button (Stage 9) — its own file, GSAP is not needed for it: it works also with
+     reduced-motion (then the scroll is instant). `defer` — the DOM is already ready. #}
+  <script src="{{ static_url('js/scroll_nav.js') }}" integrity="sha384-6go7ejTmYNuDDnZ0c8BKXaPsfXodJY0EByN24bCvPZ5+4RW/y+aUo5bCd0v8uLaG" crossorigin="anonymous" defer></script>
+  {# Ctrl/⌘/Shift-click on the Vesti tab — open in a new tab instead of replacing the block (vesti_tabs.js). `defer`: the listener is on the document, the order with htmx does not matter. #}
+  <script src="{{ static_url('js/vesti_tabs.js') }}" integrity="sha384-5jrLTWmYZrgWL3y7TfI1vMsymKTjhgb56TzhR8Un23SwW+YAyiVtMdXwA5tYU3ka" crossorigin="anonymous" defer></script>
+</head>
+<body class="bg-slate-50 text-slate-800">
+  {# The skip-link (a11y): the first focusable element — it moves the keyboard / screen reader
+     straight to the content, bypassing the header. It is moved off the screen and returns on :focus
+     (see .skip-link in app.css), with a z-index above the sticky header. #}
+  <a href="#main" class="skip-link">{{ t.skip_link }}</a>
+{% include "_cabinet_nav.html" %}
+  {# --header-h from the actual header height (header_h.js): synchronously RIGHT after the header — before the content is painted, no jump. Without JS the CSS fallback remains. #}
+  <script src="{{ static_url('js/header_h.js') }}" integrity="sha384-hG7hRIseacP9iCcxO0k7CbX59QjVI42iqc21YWWyAB5ox5T3ecJ5hKNp5hsC82cE" crossorigin="anonymous"></script>
+  {# The subscription has ended (owner 10.10): the cabinet is open, the delivery has stopped. The banner — on
+     EVERY cabinet page; the renewal is free, by request (the operator approves). #}
+  {% if access_frozen %}
+  <div class="mx-auto max-w-5xl px-4 pt-4">
+    <div class="border rounded px-4 py-3 text-sm bg-amber-50 border-amber-200 text-slate-800" role="status" data-sub-ended>
+      <p class="font-semibold">{{ t.sub_ended_title }}</p>
+      <p class="mt-1">{{ t.sub_ended_text }}</p>
+      {% with access_mode='cta' %}{% include "_access_badge.html" %}{% endwith %}
+      <a href="/plans" class="inline-block mt-2 underline">{{ t.sub_ended_plans }}</a>
+    </div>
+  </div>
+  {% endif %}
+  <main id="main" class="mx-auto max-w-5xl px-4 py-8">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="border-t">
+    <div class="mx-auto max-w-5xl px-4 py-6 text-sm text-slate-500 flex flex-wrap gap-4">
+      <a href="/help" class="hover:text-slate-900">{{ t.nav_help }}</a>
+      {# Common pages (not the personal menu): Cenovnik/Izvori/Novosti left the cabinet header (owner 10.10). #}
+      <a href="/plans" class="hover:text-slate-900">{{ t.nav_plans }}</a>
+      <a href="/izvori" class="hover:text-slate-900">{{ t.nav_sources }}</a>
+      <a href="/novosti" class="hover:text-slate-900">{{ t.nav_news }}{% if news_unread %} <span class="badge badge-accent" style="margin-left:.25rem" data-news-badge>{{ t.nav_new_badge }}</span>{% endif %}</a>
+      <a href="/legal/privacy" class="hover:text-slate-900">{{ t.footer_privacy }}</a>
+      <a href="/legal/terms" class="hover:text-slate-900">{{ t.footer_terms }}</a>
+      <a href="/legal/impressum" class="hover:text-slate-900">{{ t.footer_impressum }}</a>
+    </div>
+  </footer>
+  {# “To the top” — the second half of the decision for long pages (the first — the sticky header).
+     A real <button> with aria-label and focus-ring, not a “dead” div. The class
+     is-visible is set by scroll_nav.js after the scroll; while the JS has not run,
+     the button is hidden via visibility and does not get into the tab order. #}
+  <button type="button" class="to-top" data-scroll-top aria-label="{{ t.to_top }}" title="{{ t.to_top }}">
+    <span aria-hidden="true">↑</span>
+  </button>
+  {# The page scripts — only as external files with SRI (inline is forbidden by the CSP).
+     They go after the markup and after GSAP from <head defer>. #}
+  {% block scripts %}{% endblock %}
+</body>
+</html>

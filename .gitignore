@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.coverage
+.pytest_cache/
+
+# Local temporary artifacts
+tmp/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+
+# mypy cache (gate.sh)
+.mypy_cache/

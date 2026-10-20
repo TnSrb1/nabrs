@@ -1,0 +1,53 @@
+{# The customer analytics (web-ai-3). Context: analytics — CustomerAnalyticsView.
+   Pure SQL over the award data (no AI / limits); the gate — Pro+ and the freeze. The body —
+   ru (the cabinet language). The render by analytics.status. #}
+<section id="customer-analytics" class="card mb-6">
+  <h2 class="text-lg font-semibold mb-3">{{ t.ca_h }}</h2>
+  {% if analytics is none %}
+  {# safeguard: the analytics were not computed (edge case) — the section is not shown #}
+  {% elif analytics.status == 'success' %}
+  <p class="text-sm text-slate-600 mb-3">
+    {{ t.ca_who_wins }} <span class="font-medium text-slate-800">{{ analytics.customer_name }}</span>{% if analytics.customer_pib %} <span class="text-slate-500">· PIB {{ analytics.customer_pib }}</span>{% endif %} {{ t.ca_by_registry }}
+  </p>
+
+  {# The metrics / concentration / dynamics / top — a common partial with the cabinet page
+     /cabinet/narucilac (A3): one markup of the profile, not two copies. #}
+  {% set a = analytics %}
+  {% include "_customer_profile_body.html" %}
+
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <a href="/app/tenders/{{ data.tender_id }}/analytics.csv?profile_id={{ data.profile_id }}&amp;kind=customer" class="btn-secondary">⬇️ {{ t.export_csv }}</a>
+    <span class="text-xs text-slate-500">{{ t.ca_export_hint }}</span>
+  </div>
+
+  <p class="mt-3 text-xs text-slate-500 italic">{{ t.ca_source_note }}</p>
+
+  {% elif analytics.status == 'gate_pro' %}
+  {% set empty_state_title = t.gate_pro_title %}
+  {% set empty_state_hint = t.ca_gate_hint %}
+  {% set empty_state_cta_href = "/plans" %}
+  {% set empty_state_cta_label = t.see_plans %}
+  {% set empty_state_secondary_href = none %}
+  {% set empty_state_secondary_label = none %}
+  {% include "_empty_state.html" %}
+
+  {% elif analytics.status == 'frozen' %}
+  {% set empty_state_title = t.frozen_title %}
+  {% set empty_state_hint = t.ca_frozen_hint %}
+  {% set empty_state_cta_href = "/plans" %}
+  {% set empty_state_cta_label = t.renew_plan %}
+  {% set empty_state_secondary_href = none %}
+  {% set empty_state_secondary_label = none %}
+  {% include "_empty_state.html" %}
+
+  {% else %}
+  {# no_data | no_customer | no_tender — there is no data for this customer #}
+  {% set empty_state_title = t.ca_nodata_title %}
+  {% set empty_state_hint = t.ca_nodata_hint %}
+  {% set empty_state_cta_href = none %}
+  {% set empty_state_cta_label = none %}
+  {% set empty_state_secondary_href = none %}
+  {% set empty_state_secondary_label = none %}
+  {% include "_empty_state.html" %}
+  {% endif %}
+</section>

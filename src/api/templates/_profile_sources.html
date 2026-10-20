@@ -1,0 +1,24 @@
+{# The “Sources” block of the template card (profile_detail.html; the htmx fragment after “+ source”).
+   The row — what is set in THIS template (switched off by the admin — with a mark). Below — each
+   enabled source that is missing from the template, as a button: pressing = a POST, ONE source into
+   this template (routes_profiles.add_profile_source). Expects: sources_in, sources_missing,
+   profile_id, csrf_token (the context). HTMX: the button replaces the whole block (#pd-sources). #}
+<div id="pd-sources" class="mt-4 text-sm">
+  <p>
+    <span class="text-slate-500">{{ t.pf_sources_label }}:</span>
+    {% for s in sources_in %}<span class="font-medium">{{ s.label }}</span>{% if s.countries %} <span class="field__hint">({% for c in s.countries %}{{ t.get('country_' ~ c, c) }}{% if not loop.last %}, {% endif %}{% endfor %})</span>{% endif %}{% if s.paused %} <span class="field__hint">· {{ t.src_paused }}</span>{% endif %}{% if not loop.last %}, {% endif %}{% else %}<span class="field__hint">—</span>{% endfor %}
+  </p>
+  {% if sources_missing %}
+  <p class="field__hint mt-2">{{ t.pd_src_missing_hint }}</p>
+  <div class="flex flex-wrap gap-2 mt-2">
+    {% for s in sources_missing %}
+    <form method="post" action="/profiles/{{ profile_id }}/sources/add"
+          hx-post="/profiles/{{ profile_id }}/sources/add" hx-target="#pd-sources" hx-swap="outerHTML" hx-indicator="this">
+      <input type="hidden" name="csrf" value="{{ csrf_token }}">
+      <input type="hidden" name="source_key" value="{{ s.key }}">
+      <button type="submit" class="btn-ghost border border-slate-300">+ {{ s.label }}{% if s.countries %} ({% for c in s.countries %}{{ t.get('country_' ~ c, c) }}{% if not loop.last %}, {% endif %}{% endfor %}){% endif %}</button>
+    </form>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>

@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 1100" font-family="Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2d3748"/>
+    </marker>
+    <style>
+      .ttl { font-size: 18px; font-weight: bold; fill: #1a202c; }
+      .zone-ttl { font-size: 14px; font-weight: bold; fill: #4a5568; }
+      .box-ttl { font-size: 12px; font-weight: bold; fill: #1a202c; }
+      .box-sub { font-size: 10px; fill: #4a5568; }
+      .box-tag { font-size: 9px; fill: #718096; font-style: italic; }
+      .ln { stroke: #2d3748; stroke-width: 1.6; fill: none; }
+      .ln-dash { stroke: #718096; stroke-width: 1.4; fill: none; stroke-dasharray: 4 3; }
+    </style>
+  </defs>
+
+  <text x="640" y="28" class="ttl" text-anchor="middle">Diagram 1. Where things physically run</text>
+
+  <!-- ZONE 1: VPS Netherlands -->
+  <text x="40" y="60" class="zone-ttl">ZONE 1 — a VPS in the Netherlands (Docker Compose)</text>
+  <rect x="20" y="68" width="730" height="540" rx="8" fill="#f7fafc" stroke="#2d3748" stroke-width="2.2" stroke-dasharray="6 4"/>
+
+  <!-- Docker container blocks inside the VPS -->
+  <!-- Caddy -->
+  <rect x="40" y="90" width="200" height="74" rx="5" fill="#e6fffa" stroke="#319795" stroke-width="1.8"/>
+  <text x="140" y="108" class="box-ttl" text-anchor="middle">caddy:2</text>
+  <text x="140" y="124" class="box-sub" text-anchor="middle">reverse-proxy</text>
+  <text x="140" y="138" class="box-sub" text-anchor="middle">auto-HTTPS</text>
+  <text x="140" y="155" class="box-tag" text-anchor="middle">ports 80/443 outward</text>
+
+  <!-- API -->
+  <rect x="260" y="90" width="220" height="74" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="370" y="108" class="box-ttl" text-anchor="middle">api (FastAPI)</text>
+  <text x="370" y="124" class="box-sub" text-anchor="middle">bot webhooks · REST</text>
+  <text x="370" y="138" class="box-sub" text-anchor="middle">cabinet · Paddle webhook</text>
+  <text x="370" y="155" class="box-tag" text-anchor="middle">uvicorn, 2 workers</text>
+
+  <!-- Workers -->
+  <rect x="500" y="90" width="230" height="74" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="1.8"/>
+  <text x="615" y="108" class="box-ttl" text-anchor="middle">workers</text>
+  <text x="615" y="124" class="box-sub" text-anchor="middle">sending notifications</text>
+  <text x="615" y="138" class="box-sub" text-anchor="middle">AI analysis · billing tasks</text>
+  <text x="615" y="155" class="box-tag" text-anchor="middle">RQ + Redis queue</text>
+
+  <!-- Parsers -->
+  <rect x="40" y="180" width="200" height="74" rx="5" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1.8"/>
+  <text x="140" y="198" class="box-ttl" text-anchor="middle">parsers</text>
+  <text x="140" y="214" class="box-sub" text-anchor="middle">jnportal (phase 1)</text>
+  <text x="140" y="228" class="box-sub" text-anchor="middle">obnova, EBRD (phase 2-3)</text>
+  <text x="140" y="245" class="box-tag" text-anchor="middle">APScheduler 30 min</text>
+
+  <!-- Postgres -->
+  <rect x="260" y="180" width="220" height="74" rx="5" fill="#d1fae5" stroke="#047857" stroke-width="2"/>
+  <text x="370" y="198" class="box-ttl" text-anchor="middle">postgres:16</text>
+  <text x="370" y="214" class="box-sub" text-anchor="middle">tenders / subscribers</text>
+  <text x="370" y="228" class="box-sub" text-anchor="middle">profiles / notifications</text>
+  <text x="370" y="245" class="box-tag" text-anchor="middle">RLS + WAL-archive</text>
+
+  <!-- Redis -->
+  <rect x="500" y="180" width="230" height="74" rx="5" fill="#fee2e2" stroke="#dc2626" stroke-width="1.8"/>
+  <text x="615" y="198" class="box-ttl" text-anchor="middle">redis:7</text>
+  <text x="615" y="214" class="box-sub" text-anchor="middle">worker queue</text>
+  <text x="615" y="228" class="box-sub" text-anchor="middle">FSM-storage aiogram</text>
+  <text x="615" y="245" class="box-tag" text-anchor="middle">cache + rate limit</text>
+
+  <!-- Tracker -->
+  <rect x="40" y="270" width="200" height="74" rx="5" fill="#fce7f3" stroke="#be185d" stroke-width="1.8"/>
+  <text x="140" y="288" class="box-ttl" text-anchor="middle">tracker</text>
+  <text x="140" y="304" class="box-sub" text-anchor="middle">tender statuses</text>
+  <text x="140" y="318" class="box-sub" text-anchor="middle">5/3/1/0 day reminders</text>
+  <text x="140" y="335" class="box-tag" text-anchor="middle">cron every 5 min</text>
+
+  <!-- Volumes -->
+  <rect x="260" y="270" width="220" height="74" rx="5" fill="#e0e7ff" stroke="#4338ca" stroke-width="1.8"/>
+  <text x="370" y="288" class="box-ttl" text-anchor="middle">volumes</text>
+  <text x="370" y="304" class="box-sub" text-anchor="middle">/var/lib/postgresql</text>
+  <text x="370" y="318" class="box-sub" text-anchor="middle">/var/lib/caddy (TLS)</text>
+  <text x="370" y="335" class="box-tag" text-anchor="middle">backup every 24h</text>
+
+  <!-- Plausible -->
+  <rect x="500" y="270" width="230" height="74" rx="5" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.8"/>
+  <text x="615" y="288" class="box-ttl" text-anchor="middle">plausible (phase 3)</text>
+  <text x="615" y="304" class="box-sub" text-anchor="middle">landing analytics</text>
+  <text x="615" y="318" class="box-sub" text-anchor="middle">self-hosted</text>
+  <text x="615" y="335" class="box-tag" text-anchor="middle">enabled in phase 3</text>
+
+  <!-- VPS resource info -->
+  <rect x="40" y="360" width="690" height="60" rx="5" fill="#fafafa" stroke="#a0aec0" stroke-width="1.5"/>
+  <text x="385" y="380" class="box-ttl" text-anchor="middle">VPS resources</text>
+  <text x="385" y="396" class="box-sub" text-anchor="middle">Minimum: 2 vCPU, 4 GB RAM, 80 GB NVMe; recommendation — Hetzner CPX22 (€7.99/month) or the currently rented VPS</text>
+  <text x="385" y="411" class="box-tag" text-anchor="middle">resource monitoring via the Better Stack agent</text>
+
+  <!-- VPS management -->
+  <rect x="40" y="435" width="690" height="155" rx="5" fill="#fffbf0" stroke="#92400e" stroke-width="1.5"/>
+  <text x="385" y="455" class="box-ttl" text-anchor="middle">VPS management</text>
+  <text x="55" y="478" class="box-sub">• Access only via the Tailscale VPN (free tier, up to 100 devices)</text>
+  <text x="55" y="496" class="box-sub">• SSH: users d1, d2 with sudo; root is blocked; keys in 1Password</text>
+  <text x="55" y="514" class="box-sub">• fail2ban + automatic security updates (unattended-upgrades)</text>
+  <text x="55" y="532" class="box-sub">• Caddy listens only on 80/443; everything else is inside the Docker network</text>
+  <text x="55" y="550" class="box-sub">• Logs of all containers → Better Stack (free up to 1 GB/month)</text>
+  <text x="55" y="568" class="box-sub">• Container healthchecks → Healthchecks.io pings → an alert in Telegram</text>
+
+  <!-- ZONE 2: External SaaS -->
+  <text x="780" y="60" class="zone-ttl">ZONE 2 — External SaaS services</text>
+  <rect x="760" y="68" width="500" height="540" rx="8" fill="#fff5f7" stroke="#b83280" stroke-width="2.2" stroke-dasharray="6 4"/>
+
+  <!-- Anthropic -->
+  <rect x="780" y="90" width="220" height="80" rx="5" fill="#fff" stroke="#9f1239" stroke-width="1.8"/>
+  <text x="890" y="108" class="box-ttl" text-anchor="middle">Anthropic API</text>
+  <text x="890" y="124" class="box-sub" text-anchor="middle">Haiku 4.5 / Sonnet 4.6</text>
+  <text x="890" y="138" class="box-sub" text-anchor="middle">Opus 4.7</text>
+  <text x="890" y="152" class="box-tag" text-anchor="middle">prepaid + spending limit</text>
+  <text x="890" y="164" class="box-tag" text-anchor="middle">$50/month limit at the start</text>
+
+  <!-- Postmark -->
+  <rect x="1020" y="90" width="220" height="80" rx="5" fill="#fff" stroke="#9f1239" stroke-width="1.8"/>
+  <text x="1130" y="108" class="box-ttl" text-anchor="middle">Postmark</text>
+  <text x="1130" y="124" class="box-sub" text-anchor="middle">transactional email</text>
+  <text x="1130" y="138" class="box-sub" text-anchor="middle">10k emails/month ($15)</text>
+  <text x="1130" y="152" class="box-tag" text-anchor="middle">templates sr/ru/en</text>
+  <text x="1130" y="164" class="box-tag" text-anchor="middle">+ inbound for support@</text>
+
+  <!-- Telegram -->
+  <rect x="780" y="186" width="220" height="80" rx="5" fill="#fff" stroke="#9f1239" stroke-width="1.8"/>
+  <text x="890" y="204" class="box-ttl" text-anchor="middle">Telegram Bot API</text>
+  <text x="890" y="220" class="box-sub" text-anchor="middle">free</text>
+  <text x="890" y="234" class="box-sub" text-anchor="middle">webhook to our api</text>
+  <text x="890" y="248" class="box-tag" text-anchor="middle">30 msg/sec limit</text>
+  <text x="890" y="260" class="box-tag" text-anchor="middle">token in .env</text>
+
+  <!-- Viber -->
+  <rect x="1020" y="186" width="220" height="80" rx="5" fill="#fff" stroke="#9f1239" stroke-width="2"/>
+  <text x="1130" y="204" class="box-ttl" text-anchor="middle">Viber Business Messages</text>
+  <text x="1130" y="220" class="box-sub" text-anchor="middle">Public Account is free</text>
+  <text x="1130" y="234" class="box-sub" text-anchor="middle">~$0.003-0.015 per msg</text>
+  <text x="1130" y="248" class="box-tag" text-anchor="middle">KYC via the DOO</text>
+  <text x="1130" y="260" class="box-tag" text-anchor="middle">webhook to our api</text>
+
+  <!-- Paddle -->
+  <rect x="780" y="282" width="220" height="80" rx="5" fill="#fff" stroke="#9f1239" stroke-width="1.8"/>
+  <text x="890" y="300" class="box-ttl" text-anchor="middle">Paddle (MoR)</text>
+  <text x="890" y="316" class="box-sub" text-anchor="middle">billing + VAT</text>
+  <text x="890" y="330" class="box-sub" text-anchor="middle">5% + $0.50 per transaction</text>
+  <text x="890" y="344" class="box-tag" text-anchor="middle">Checkout overlay</text>
+  <text x="890" y="356" class="box-tag" text-anchor="middle">webhook subscription.*</text>
+
+  <!-- CorvusPay -->
+  <rect x="1020" y="282" width="220" height="80" rx="5" fill="#fff" stroke="#9f1239" stroke-width="1.4" stroke-dasharray="3 2"/>
+  <text x="1130" y="300" class="box-ttl" text-anchor="middle">CorvusPay (phase 2)</text>
+  <text x="1130" y="316" class="box-sub" text-anchor="middle">local acquiring</text>
+  <text x="1130" y="330" class="box-sub" text-anchor="middle">1.5–2.5% fee</text>
+  <text x="1130" y="344" class="box-tag" text-anchor="middle">via Banca Intesa</text>
+  <text x="1130" y="356" class="box-tag" text-anchor="middle">PCI DSS SAQ-A</text>
+
+  <!-- Cloudflare -->
+  <rect x="780" y="378" width="220" height="80" rx="5" fill="#fff" stroke="#9f1239" stroke-width="1.8"/>
+  <text x="890" y="396" class="box-ttl" text-anchor="middle">Cloudflare</text>
+  <text x="890" y="412" class="box-sub" text-anchor="middle">DNS / WAF / CDN</text>
+  <text x="890" y="426" class="box-sub" text-anchor="middle">Free tier</text>
+  <text x="890" y="440" class="box-tag" text-anchor="middle">DDoS-protection</text>
+  <text x="890" y="452" class="box-tag" text-anchor="middle">SSL Universal</text>
+
+  <!-- Pages for the landing -->
+  <rect x="1020" y="378" width="220" height="80" rx="5" fill="#fff" stroke="#9f1239" stroke-width="1.8"/>
+  <text x="1130" y="396" class="box-ttl" text-anchor="middle">Cloudflare Pages</text>
+  <text x="1130" y="412" class="box-sub" text-anchor="middle">landing (Astro)</text>
+  <text x="1130" y="426" class="box-sub" text-anchor="middle">Free tier</text>
+  <text x="1130" y="440" class="box-tag" text-anchor="middle">static, 3 languages</text>
+  <text x="1130" y="452" class="box-tag" text-anchor="middle">deploy via GH Actions</text>
+
+  <!-- Sentry, Healthchecks -->
+  <rect x="780" y="474" width="220" height="80" rx="5" fill="#fff" stroke="#9f1239" stroke-width="1.8"/>
+  <text x="890" y="492" class="box-ttl" text-anchor="middle">Sentry / Healthchecks</text>
+  <text x="890" y="508" class="box-sub" text-anchor="middle">errors + cron pings</text>
+  <text x="890" y="522" class="box-sub" text-anchor="middle">Free tier</text>
+  <text x="890" y="536" class="box-tag" text-anchor="middle">alerts to Telegram</text>
+
+  <!-- Backblaze -->
+  <rect x="1020" y="474" width="220" height="80" rx="5" fill="#fff" stroke="#9f1239" stroke-width="1.8"/>
+  <text x="1130" y="492" class="box-ttl" text-anchor="middle">Backblaze B2</text>
+  <text x="1130" y="508" class="box-sub" text-anchor="middle">PG + WAL backups</text>
+  <text x="1130" y="522" class="box-sub" text-anchor="middle">$6/TB, ~€1.5/month</text>
+  <text x="1130" y="536" class="box-tag" text-anchor="middle">age encryption</text>
+
+  <!-- Cloudflare -->
+  <rect x="780" y="570" width="460" height="32" rx="5" fill="#fff" stroke="#9f1239" stroke-width="1.6"/>
+  <text x="1010" y="591" class="box-sub" text-anchor="middle">OpenAI API (embeddings only, &lt;€1/month) · Proton Mail (mail for the team) · 1Password (secrets)</text>
+
+  <!-- ZONE 3: Devs -->
+  <text x="40" y="640" class="zone-ttl">ZONE 3 — The development team</text>
+  <rect x="20" y="648" width="730" height="225" rx="8" fill="#f0fff4" stroke="#15803d" stroke-width="2.2" stroke-dasharray="6 4"/>
+
+  <rect x="40" y="670" width="220" height="80" rx="5" fill="#fff" stroke="#15803d" stroke-width="1.6"/>
+  <text x="150" y="688" class="box-ttl" text-anchor="middle">GitHub (private)</text>
+  <text x="150" y="704" class="box-sub" text-anchor="middle">monorepo</text>
+  <text x="150" y="718" class="box-sub" text-anchor="middle">Free + Actions 2000 min</text>
+  <text x="150" y="732" class="box-tag" text-anchor="middle">CI/CD: lint → test → deploy</text>
+  <text x="150" y="744" class="box-tag" text-anchor="middle">2 users: owner, partner</text>
+
+  <rect x="280" y="670" width="220" height="80" rx="5" fill="#fff" stroke="#15803d" stroke-width="1.6"/>
+  <text x="390" y="688" class="box-ttl" text-anchor="middle">Linear Standard</text>
+  <text x="390" y="704" class="box-sub" text-anchor="middle">tasks + sprints</text>
+  <text x="390" y="718" class="box-sub" text-anchor="middle">$10/user/month × 2 = $20</text>
+  <text x="390" y="732" class="box-tag" text-anchor="middle">GitHub PR integration</text>
+  <text x="390" y="744" class="box-tag" text-anchor="middle">cycles, projects, issues</text>
+
+  <rect x="520" y="670" width="220" height="80" rx="5" fill="#fff" stroke="#15803d" stroke-width="1.6"/>
+  <text x="630" y="688" class="box-ttl" text-anchor="middle">Tailscale VPN</text>
+  <text x="630" y="704" class="box-sub" text-anchor="middle">VPS access</text>
+  <text x="630" y="718" class="box-sub" text-anchor="middle">Free tier (up to 100)</text>
+  <text x="630" y="732" class="box-tag" text-anchor="middle">SSO, MagicDNS</text>
+  <text x="630" y="744" class="box-tag" text-anchor="middle">no open SSH ports</text>
+
+  <rect x="40" y="765" width="220" height="80" rx="5" fill="#fff" stroke="#15803d" stroke-width="1.6"/>
+  <text x="150" y="783" class="box-ttl" text-anchor="middle">Claude Code (owner)</text>
+  <text x="150" y="799" class="box-sub" text-anchor="middle">architectural AI agent</text>
+  <text x="150" y="813" class="box-sub" text-anchor="middle">pay by API ($)</text>
+  <text x="150" y="827" class="box-tag" text-anchor="middle">via the terminal</text>
+  <text x="150" y="839" class="box-tag" text-anchor="middle">multi-file refactoring</text>
+
+  <rect x="280" y="765" width="220" height="80" rx="5" fill="#fff" stroke="#15803d" stroke-width="1.6"/>
+  <text x="390" y="783" class="box-ttl" text-anchor="middle">Cursor Pro (partner)</text>
+  <text x="390" y="799" class="box-sub" text-anchor="middle">an IDE with AI autocomplete</text>
+  <text x="390" y="813" class="box-sub" text-anchor="middle">$20/month</text>
+  <text x="390" y="827" class="box-tag" text-anchor="middle">we connect Claude</text>
+  <text x="390" y="839" class="box-tag" text-anchor="middle">fast development</text>
+
+  <rect x="520" y="765" width="220" height="80" rx="5" fill="#fff" stroke="#15803d" stroke-width="1.6"/>
+  <text x="630" y="783" class="box-ttl" text-anchor="middle">1Password Family</text>
+  <text x="630" y="799" class="box-sub" text-anchor="middle">shared secrets</text>
+  <text x="630" y="813" class="box-sub" text-anchor="middle">$5/month (5 users)</text>
+  <text x="630" y="827" class="box-tag" text-anchor="middle">API keys, SSH keys</text>
+  <text x="630" y="839" class="box-tag" text-anchor="middle">passwords of customer services</text>
+
+  <!-- ZONE 4: Subscribers -->
+  <text x="780" y="640" class="zone-ttl">ZONE 4 — Subscriber devices</text>
+  <rect x="760" y="648" width="500" height="225" rx="8" fill="#fffbeb" stroke="#92400e" stroke-width="2.2" stroke-dasharray="6 4"/>
+
+  <rect x="780" y="670" width="220" height="80" rx="5" fill="#fff" stroke="#92400e" stroke-width="1.6"/>
+  <text x="890" y="688" class="box-ttl" text-anchor="middle">Smartphone</text>
+  <text x="890" y="704" class="box-sub" text-anchor="middle">Viber app</text>
+  <text x="890" y="718" class="box-sub" text-anchor="middle">Telegram app</text>
+  <text x="890" y="732" class="box-tag" text-anchor="middle">PWA cabinet (via the browser)</text>
+  <text x="890" y="744" class="box-tag" text-anchor="middle">push notifications</text>
+
+  <rect x="1020" y="670" width="220" height="80" rx="5" fill="#fff" stroke="#92400e" stroke-width="1.6"/>
+  <text x="1130" y="688" class="box-ttl" text-anchor="middle">Desktop</text>
+  <text x="1130" y="704" class="box-sub" text-anchor="middle">browser (cabinet)</text>
+  <text x="1130" y="718" class="box-sub" text-anchor="middle">email client</text>
+  <text x="1130" y="732" class="box-tag" text-anchor="middle">Telegram/Viber Desktop</text>
+  <text x="1130" y="744" class="box-tag" text-anchor="middle">CSV export</text>
+
+  <rect x="780" y="765" width="460" height="80" rx="5" fill="#fff" stroke="#92400e" stroke-width="1.6"/>
+  <text x="1010" y="783" class="box-ttl" text-anchor="middle">Subscriber profile</text>
+  <text x="1010" y="800" class="box-sub" text-anchor="middle">language: sr / ru / en · keywords · stop_words · CPV codes · regions · price min/max</text>
+  <text x="1010" y="816" class="box-sub" text-anchor="middle">notification schedule · chosen channels (Viber/TG/Email) · chosen sources</text>
+  <text x="1010" y="836" class="box-tag" text-anchor="middle">many profiles per subscriber (by plan: 1 / 3 / 10)</text>
+
+  <!-- The links between zones are shown in diagram 2 (data flow), here only the placement -->
+  <text x="640" y="625" font-size="11" fill="#718096" text-anchor="middle" font-style="italic">The links between zones are shown in Diagram 2 (data flows by scenario)</text>
+
+  <!-- Bottom: legend -->
+  <text x="40" y="900" class="zone-ttl">Zone legend</text>
+  <rect x="40" y="910" width="20" height="14" fill="#f7fafc" stroke="#2d3748" stroke-width="2" stroke-dasharray="4 3"/>
+  <text x="68" y="922" font-size="11" fill="#4a5568">Our infrastructure (a VPS under our control)</text>
+  <rect x="40" y="930" width="20" height="14" fill="#fff5f7" stroke="#b83280" stroke-width="2" stroke-dasharray="4 3"/>
+  <text x="68" y="942" font-size="11" fill="#4a5568">External SaaS (we pay a subscription or use a free tier)</text>
+  <rect x="40" y="950" width="20" height="14" fill="#f0fff4" stroke="#15803d" stroke-width="2" stroke-dasharray="4 3"/>
+  <text x="68" y="962" font-size="11" fill="#4a5568">The development team (workstations + shared tools)</text>
+  <rect x="40" y="970" width="20" height="14" fill="#fffbeb" stroke="#92400e" stroke-width="2" stroke-dasharray="4 3"/>
+  <text x="68" y="982" font-size="11" fill="#4a5568">Subscriber devices (outside our control)</text>
+</svg>

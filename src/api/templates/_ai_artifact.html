@@ -1,0 +1,195 @@
+{# The server-side render macros of the AI artifacts (web-ai-2). The body of the artifacts —
+   as stored (sr), we do not translate. The markup is ported from tender_detail.html
+   (web-ai-1), so that the same view is used both on the full page and in the
+   HTMX fragment after the generation. #}
+
+{% macro bid(output) %}
+{% set verdict = output.verdict or 'none' %}
+{% set _vicon = {'go': '👍', 'caution': '🤔', 'no_go': '🚫', 'none': '❔'} %}
+<div class="verdict {{ 'verdict--' ~ verdict }}">
+  <span class="verdict__icon" aria-hidden="true">{{ _vicon[verdict] }}</span>
+  <span class="verdict__label">{{ t['art_verdict_' ~ verdict] }}</span>
+  {% if output.score is not none %}
+  <span class="verdict__score"><span class="verdict__score-num">{{ output.score }}</span><span class="verdict__score-max">/100</span></span>
+  {% endif %}
+</div>
+{% if output.score is not none %}
+<div class="score-meter" role="img" aria-label="{{ t.art_score_aria.format(score=output.score) }}">
+  <div class="score-meter__track">
+    <div class="score-meter__fill {{ 'score-meter__fill--' ~ (verdict if verdict in ['go', 'caution', 'no_go'] else 'caution') }}" style="width: {{ output.score if output.score >= 0 else 0 }}%"></div>
+  </div>
+  <div class="score-meter__scale"><span>{{ t.art_scale_min }}</span><span>{{ t.art_scale_max }}</span></div>
+</div>
+{% endif %}
+<div class="grid gap-4 sm:grid-cols-2 mt-4">
+  {% if output.pros %}
+  <div class="reason-panel reason-panel--pro">
+    <p class="reason-panel__title">{{ t.art_pros }}</p>
+    <ul>{% for p in output.pros %}<li>{{ p }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+  {% if output.cons %}
+  <div class="reason-panel reason-panel--con">
+    <p class="reason-panel__title">{{ t.art_cons }}</p>
+    <ul>{% for c in output.cons %}<li>{{ c }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+</div>
+{{ ai_disclaimer() }}
+{% endmacro %}
+
+{% macro checklist(output) %}
+{% if output.documents %}
+{% set _mandatory = output.documents | selectattr('mandatory') | list %}
+{% set _optional = output.documents | rejectattr('mandatory') | list %}
+{% if _mandatory %}
+<p class="reason-panel__title mb-2">{{ t.art_docs_mandatory }} <span class="chip">{{ _mandatory | length }}</span></p>
+<ul class="chk-list mb-4">
+  {% for doc in _mandatory %}{{ _doc_row(doc) }}{% endfor %}
+</ul>
+{% endif %}
+{% if _optional %}
+<p class="font-medium text-sm mb-2">{{ t.art_docs_optional }}</p>
+<ul class="chk-list mb-4">
+  {% for doc in _optional %}{{ _doc_row(doc) }}{% endfor %}
+</ul>
+{% endif %}
+{% endif %}
+{% if output.deadlines %}
+<div class="mt-4">
+  <p class="font-medium mb-1">{{ t.art_deadlines }}</p>
+  <ul class="list-disc list-inside text-sm space-y-1">
+    {% for d in output.deadlines %}<li>{{ d.label }}: <span class="font-medium">{{ d.value }}</span></li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% if output.disqualification_risks %}
+<div class="reason-panel reason-panel--risk mt-4">
+  <p class="reason-panel__title">{{ t.art_disqual }}</p>
+  <ul>{% for r in output.disqualification_risks %}<li>{{ r }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+{% if output.summary %}<p class="mt-4 text-sm text-slate-600">💡 {{ output.summary }}</p>{% endif %}
+{{ ai_disclaimer() }}
+{% endmacro %}
+
+{% macro ai_disclaimer() %}
+{# Static disclaimer: the verdict, checklist and draft are model output, not a legal assessment. #}
+<p class="mt-3 text-xs text-amber-700 italic">⚠️ {{ t.art_disclaimer }}</p>
+{% endmacro %}
+
+{% macro _doc_row(doc) %}
+<li class="chk-item">
+  <span class="chk-item__box" aria-hidden="true">{{ '☑️' if doc.mandatory else '◻️' }}</span>
+  <span class="min-w-0">
+    <span class="font-medium">{{ doc.title }}</span>
+    {% if doc.category %}<span class="chip ml-1">{{ doc.category }}</span>{% endif %}
+    {% if doc.note %}<span class="chk-item__note">{{ doc.note }}</span>{% endif %}
+  </span>
+</li>
+{% endmacro %}
+
+{% macro draft(output) %}
+{# Plain text of the draft for copying/downloading (the body is sr, as stored). #}
+{% set _plain %}{% for s in output.sections or [] %}{% if s.heading %}{{ s.heading }}
+{% endif %}{{ s.body }}
+
+{% endfor %}{% for item in output.criteria_mapping or [] %}{{ item.criterion }}: {{ item.response }}
+{% endfor %}{% endset %}
+<div data-artifact="draft">
+  {% if output.sections or output.criteria_mapping %}
+  <div class="artifact-toolbar">
+    <button type="button" class="btn-secondary" data-copy>{{ t.art_copy }}</button>
+    <button type="button" class="btn-ghost" data-download="chernovik-zayavki.txt">{{ t.art_download }}</button>
+  </div>
+  <textarea data-artifact-src hidden aria-hidden="true">{{ _plain }}</textarea>
+  {% endif %}
+  {% if output.sections %}
+  <div class="artifact-body">
+    {% for section in output.sections %}
+    {% if section.heading %}<div class="artifact-body__heading">{{ section.heading }}</div>{% endif %}
+    <div class="artifact-body__text">{{ section.body }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% if output.criteria_mapping %}
+  <div class="mt-4">
+    <p class="font-medium mb-1">{{ t.art_criteria }}</p>
+    <ul class="list-disc list-inside text-sm space-y-1">
+      {% for item in output.criteria_mapping %}
+      <li><span class="font-medium">{{ item.criterion }}</span>: {{ item.response }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+  {% if output.summary %}<p class="mt-4 text-sm text-slate-600">💡 {{ output.summary }}</p>{% endif %}
+  {{ ai_disclaimer() }}
+</div>
+{% endmacro %}
+
+{% macro deep_view(output) %}
+{% set deep = output %}
+  {% if deep.match_score is defined and deep.match_score is not none %}
+  <div class="mb-3">
+    <div class="flex items-center gap-2 mb-1">
+      <span class="text-sm font-medium text-slate-700">{{ t.td_match_score }}</span>
+      <span class="badge badge-new">{{ deep.match_score }}/5</span>
+    </div>
+    <div class="bar-track" style="max-width: 12rem"><div class="bar-fill" style="width: {{ (deep.match_score / 5 * 100) | round | int }}%"></div></div>
+  </div>
+  {% endif %}
+  {% if deep.summary %}
+  <div class="text-sm space-y-2 mb-3">
+    {% for line in deep.summary.split('\n') %}
+    {% if line.strip() %}<p>{{ line }}</p>{% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+  <div class="grid gap-4 sm:grid-cols-2 mt-3">
+  {% if deep.match_reasons %}
+  <div class="reason-panel reason-panel--pro">
+    <p class="reason-panel__title">{{ t.td_match_pro }}</p>
+    <ul>{% for r in deep.match_reasons %}<li>{{ r }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+  {% if deep.red_flags %}
+  <div class="reason-panel reason-panel--risk">
+    <p class="reason-panel__title">{{ t.td_red_flags }}</p>
+    <ul>{% for r in deep.red_flags %}<li>{{ r }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+  </div>
+  {% if deep.required_qualifications %}
+  <div class="mt-4">
+    <p class="font-medium mb-1">{{ t.td_qualifications }}</p>
+    <ul class="list-disc list-inside text-sm space-y-1">
+      {% for q in deep.required_qualifications %}<li>{{ q }}</li>{% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+  {% if deep.work_breakdown %}
+  <div class="mt-4">
+    <p class="font-medium mb-1">{{ t.td_work_breakdown }}</p>
+    <ol class="list-decimal list-inside text-sm space-y-1">
+      {% for w in deep.work_breakdown %}<li>{{ w }}</li>{% endfor %}
+    </ol>
+  </div>
+  {% endif %}
+  {% if deep.participation_checklist %}
+  <div class="mt-4">
+    <p class="font-medium mb-1">{{ t.td_participation }}</p>
+    <ol class="list-decimal list-inside text-sm space-y-1">
+      {% for s in deep.participation_checklist %}<li>{{ s }}</li>{% endfor %}
+    </ol>
+  </div>
+  {% endif %}
+{{ ai_disclaimer() }}
+{% endmacro %}
+
+{% macro render(level, output) %}
+{% if level == 'bid' %}{{ bid(output) }}
+{% elif level == 'checklist' %}{{ checklist(output) }}
+{% elif level == 'draft' %}{{ draft(output) }}
+{% elif level == 'deep' %}{{ deep_view(output) }}
+{% endif %}
+{% endmacro %}

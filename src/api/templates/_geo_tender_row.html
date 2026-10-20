@@ -1,0 +1,32 @@
+{# The tender row on /tenderi/{cpv,region}/{code} — the same classes fd-card / fd-list
+   as the cabinet feed (_feed_card.html), without the AI cluster / the translation toggle (the public
+   showcase: an anonymous user has no profile and no analysis). Context: row (id, title,
+   customer_name, deadline_at, amount_eur, amount_original, currency_original), tender_t = TENDER[lang] (the shared labels
+   of the tender row — we reuse the card catalog, we do not create a second copy). #}
+{% set _dl = row.deadline_at | days_left %}
+<article class="fd-card">
+  <div class="fd-card__head">
+    <div class="fd-card__main">
+      <a href="/tender/{{ row.id }}" class="fd-card__title">{{ (row.title | clean_seo) or ui.brand }}</a>
+      {% if row.customer_name %}<p class="fd-card__customer">🏛 {{ row.customer_name | clean_seo }}</p>{% endif %}
+    </div>
+    <div class="fd-card__side fd-card__side--cols">
+      <span class="fd-card__deadline">
+      {% if _dl is not none %}
+        {% if _dl < 0 %}
+        <span class="badge badge-expired">{{ tender_t.badge_expired }}</span>
+        {% elif _dl == 0 %}
+        <span class="badge badge-urgent" title="{{ tender_t.deadline }}: {{ row.deadline_at | dl_local(row.source_key, lang) }}">⏰ {{ tender_t.deadline_today }}</span>
+        {% elif _dl <= 7 %}
+        <span class="badge badge-urgent" title="{{ tender_t.deadline }}: {{ row.deadline_at | dl_local(row.source_key, lang) }}">⏰ {{ plural(lang, 'deadline_days_left', _dl) }}</span>
+        {% else %}
+        <span class="badge badge-muted" title="{{ tender_t.deadline }}: {{ row.deadline_at | dl_local(row.source_key, lang) }}">{{ row.deadline_at | d_local }}</span>
+        {% endif %}
+      {% endif %}
+      </span>
+      {% if row.amount_eur %}<p class="fd-card__value text-sm">€{{ '{:,.0f}'.format(row.amount_eur).replace(',', ' ') }}</p>
+      {% elif row.amount_original and row.currency_original %}<p class="fd-card__value text-sm">{{ '{:,.0f}'.format(row.amount_original).replace(',', ' ') }} {{ row.currency_original }}</p>
+      {% else %}<p class="fd-card__value text-sm">—</p>{% endif %}
+    </div>
+  </div>
+</article>

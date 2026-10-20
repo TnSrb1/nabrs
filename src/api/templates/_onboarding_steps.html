@@ -1,0 +1,43 @@
+{# The onboarding stepper (VG-30b): rendered while there are unfinished steps
+   (the calling template includes the partial only inside {% if %}).
+   The context sets onboarding_steps (a list of {num,title,done,cta_href,cta_label,hint,help_href})
+   and onboarding_done_count / onboarding_total. #}
+<section class="card">
+  <div class="flex items-center justify-between gap-3 mb-3">
+    <h2 class="text-lg font-semibold">{{ t.onb_heading }}</h2>
+    <span class="text-sm text-slate-500">{{ onboarding_done_count }} {{ t.onb_of }} {{ onboarding_total }}</span>
+  </div>
+  <ol class="space-y-3">
+    {% set ns = namespace(active_taken=false) %}
+    {% for step in onboarding_steps %}
+    {% set is_active = (not step.done) and (not ns.active_taken) %}
+    {% if is_active %}{% set ns.active_taken = true %}{% endif %}
+    <li class="onboarding-step flex items-start gap-3{{ ' is-done' if step.done else '' }}">
+      <span class="step-num flex-none w-7 h-7 rounded-full text-sm flex items-center justify-center{{ ' is-done' if step.done else ('' if is_active else ' is-pending') }}">
+        {% if step.done %}✓{% else %}{{ step.num }}{% endif %}
+      </span>
+      <div class="min-w-0">
+        <p class="onboarding-step__title font-medium{{ ' is-done' if step.done else '' }}">{{ step.title }}</p>
+        {% if not step.done %}
+        {% if step.hint %}
+        <p class="text-xs text-slate-500 mt-1">
+          {{ step.hint }}
+          {% if step.help_href %}<a href="{{ step.help_href }}" class="underline hover:text-slate-900">{{ t.stats_how_it_works }}</a>{% endif %}
+        </p>
+        {% endif %}
+        {% if step.cta_href %}
+        <div class="mt-2 flex flex-wrap items-center gap-3">
+          <a href="{{ step.cta_href }}" class="{{ 'btn-primary' if is_active else 'btn-secondary' }}">{{ step.cta_label }}</a>
+          {# An optional second link — an alternative path of the step (e.g. the second
+             delivery channel). Steps without cta2_href do not render it. #}
+          {% if step.cta2_href %}
+          <a href="{{ step.cta2_href }}" class="text-sm text-brand font-medium hover:underline">{{ step.cta2_label }}</a>
+          {% endif %}
+        </div>
+        {% endif %}
+        {% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ol>
+</section>

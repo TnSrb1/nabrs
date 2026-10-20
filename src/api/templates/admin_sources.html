@@ -1,0 +1,94 @@
+{% extends "admin_base.html" %}
+{% block title %}Источники — Админ{% endblock %}
+{% block admin_content %}
+{# “Izvori”: the management of the sources (SRC-0d). The data — the sources table + the inflow by
+   tenders_normalized.first_seen_at. Enabling = a silent first pass (the archive is not
+   pulled, tenders before the end of the pass are not delivered) — the semantics of src.domain.sources.
+   CSP script-src 'self': the confirmation — only data-confirm. #}
+<h1 class="text-xl font-semibold mb-2">Источники (Izvori)</h1>
+<p class="text-sm text-slate-500 mb-6">
+  Включение источника: курсор стартует от момента включения, архив не загружается,
+  а тендеры, пришедшие до конца первого («тихого») прохода, никому не рассылаются.
+  Выключение — пауза: отметки источника не сбрасываются, повторное включение снова
+  идёт тихим первым проходом.
+</p>
+
+{% if sources %}
+<div class="border rounded-lg bg-white overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-50 border-b">
+      <tr>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">Источник</th>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">Страны</th>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">Состояние</th>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">Проходы</th>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">Тендеры</th>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">Сверка</th>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">Действие</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      {% for s in sources %}
+      <tr class="hover:bg-slate-50" data-source-row="{{ s.source_key }}">
+        <td class="px-4 py-3">
+          <div class="font-medium">{{ s.label }}</div>
+          <div class="text-xs text-slate-500"><code>{{ s.source_key }}</code>{% if not s.registered %} · адаптера нет в реестре{% endif %}</div>
+        </td>
+        <td class="px-4 py-3">{{ s.country_codes | join(', ') or '—' }}</td>
+        <td class="px-4 py-3">
+          {% if s.enabled %}
+          <span class="badge badge-success">включён</span>
+          <div class="text-xs text-slate-500 mt-1">с {{ s.enabled_at.strftime('%d.%m.%Y %H:%M') if s.enabled_at else '—' }} UTC</div>
+          <div class="text-xs mt-1">
+            {% if s.baseline_done %}тихий первый проход завершён ({{ s.baseline_at.strftime('%d.%m.%Y %H:%M') }}){% else %}тихий первый проход: в процессе{% endif %}
+          </div>
+          {% if s.silent %}
+          <div class="mt-1"><span class="badge badge-error" data-silent-row>молчит: проверить{% if s.silent_hours is not none %} · {{ '%.0f'|format(s.silent_hours) }} ч{% endif %} (порог {{ '%.0f'|format(s.threshold_hours) }} ч)</span></div>
+          {% endif %}
+          {% else %}
+          <span class="badge badge-muted">выключен</span>
+          {% endif %}
+        </td>
+        <td class="px-4 py-3 text-xs text-slate-600">
+          <div>последний: {{ s.last_run_at.strftime('%d.%m.%Y %H:%M') if s.last_run_at else '—' }} UTC</div>
+          <div>статус: {{ s.last_status or '—' }}</div>
+          <div>ошибок подряд: {{ s.error_count }}</div>
+        </td>
+        <td class="px-4 py-3 text-xs text-slate-600">
+          <div>24 ч: {{ s.cnt_24h }} · 7 дн: {{ s.cnt_7d }} · всего: {{ s.cnt_total }}</div>
+          <div>последний: {{ s.last_tender_at.strftime('%d.%m.%Y %H:%M') if s.last_tender_at else '—' }} UTC</div>
+        </td>
+        <td class="px-4 py-3 text-xs text-slate-600" data-reconcile-cell>
+          {% if s.reconcile_last %}
+          {% if s.reconcile_bad %}
+          <div><span class="badge badge-error" data-reconcile-bad>расхождение {{ s.reconcile_bad.day.strftime('%d.%m') }}: источник {{ s.reconcile_bad.source_count }} · у нас {{ s.reconcile_bad.our_count }}</span></div>
+          {% else %}
+          <div><span class="badge badge-success">совпало</span></div>
+          {% endif %}
+          <div class="mt-1">сверено {{ s.reconcile_last.checked_at.strftime('%d.%m.%Y %H:%M') }} UTC (за {{ s.reconcile_last.day.strftime('%d.%m') }}: {{ s.reconcile_last.source_count }} / {{ s.reconcile_last.our_count }})</div>
+          {% else %}
+          —
+          {% endif %}
+        </td>
+        <td class="px-4 py-3">
+          {% if s.enabled %}
+          <form method="post" action="/admin/sources/{{ s.source_key }}/disable">
+            <button type="submit" class="btn-danger" data-confirm="Выключить источник «{{ s.label }}»? Рассылка по нему встанет; повторное включение начнёт тихий первый проход.">Выключить</button>
+          </form>
+          {% else %}
+          <form method="post" action="/admin/sources/{{ s.source_key }}/enable">
+            <button type="submit" class="btn-secondary" data-confirm="Включить источник «{{ s.label }}»? Первый проход будет тихим: тендеры, пришедшие до его конца, рассылаться не будут.">Включить</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+{% set empty_state_title = "Источников нет" %}
+{% set empty_state_hint = "Строка источника появляется, когда ingest впервые видит зарегистрированный адаптер (выключенной)." %}
+{% include "_empty_state.html" %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "public_base.html" %}
+{# The /kontakt page: heading + the form partial (_contact_form.html). #}
+{% block title %}{{ t.title }} — {{ ui.brand }}{% endblock %}
+{% block meta_description %}{{ t.intro }}{% endblock %}
+{% block og_title %}{{ t.title }} — {{ ui.brand }}{% endblock %}
+{% block og_description %}{{ t.intro }}{% endblock %}
+{% block content %}
+<section class="mx-auto max-w-3xl px-4 py-12">
+  {% if sent_to %}
+  <h1 class="text-2xl font-bold text-slate-900">{{ t.thanks_title }}</h1>
+  <p class="mt-3 text-slate-700" role="status">{{ t.thanks_text }} <strong>{{ sent_to }}</strong>.</p>
+  <p class="mt-6"><a href="{{ back_href }}" class="text-sm text-slate-900 underline">{{ back_label }}</a></p>
+  {% else %}
+  <h1 class="text-2xl font-bold text-slate-900">{{ t.title }}</h1>
+  <p class="mt-2 text-slate-600">{{ t.intro }}</p>
+  {% include "_contact_form.html" %}
+  {% endif %}
+</section>
+{% endblock %}

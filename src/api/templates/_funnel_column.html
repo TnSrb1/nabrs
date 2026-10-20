@@ -1,0 +1,27 @@
+{# The column of the funnel board on /app/my (portal, Stage 2).
+   Context: g (StageGroup: status / label / tenders / reminds), archive (optional) —
+   the outcome column, drawn in a muted style.
+
+   Progressive enhancement: the counter is rendered by the server in the final form;
+   `data-count-to` — only a hint for the GSAP counter from my_tenders.js. Without JS
+   (or with prefers-reduced-motion) the very same number is visible. #}
+{% set _n = g.tenders | length %}
+<section class="fn-col{% if archive %} fn-col--archive{% endif %}{% if not _n %} is-empty{% endif %}"
+         data-funnel-col aria-labelledby="fn-col-{{ g.status }}">
+  <div class="fn-col__head">
+    <h3 class="fn-col__title" id="fn-col-{{ g.status }}">{{ t['status_' ~ g.status] }}</h3>
+    <span class="fn-col__count" data-count-to="{{ _n }}">{{ _n }}</span>
+  </div>
+  {% if g.reminds %}
+  <p class="fn-col__note">⏰ {{ t.col_reminds }}</p>
+  {% endif %}
+  {% if _n %}
+  <ul class="fn-col__list">
+    {% for row in g.tenders %}
+    {% include "_my_tender_row.html" %}
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="fn-col__empty">{{ t.col_empty }}</p>
+  {% endif %}
+</section>

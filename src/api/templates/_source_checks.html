@@ -1,0 +1,23 @@
+{# The platform checkboxes — one set for “Composition”, the “as is” screen (and as a row of the template form).
+   Expects: source_choices (routes_profiles / routes_library → source_choice_rows),
+   checked_keys (the list of keys that are ticked by default). The field name is the contract of
+   parse_profile_form: enabled_source_keys. The label — the WHOLE label line (the click target),
+   “more” — a link OUTSIDE the label: interactive content inside interactive content is invalid. #}
+{% for src in source_choices %}
+  <div>
+  <label class="field-check w-full items-start">
+    <input type="checkbox" name="enabled_source_keys" value="{{ src.key }}"{% if src.key in checked_keys %} checked{% endif %}>
+    <span>
+      {{ src.label }}
+      {%- if src.countries %} <span class="field__hint">· {% for c in src.countries %}{{ t.get('country_' ~ c, c) }}{% if not loop.last %}, {% endif %}{% endfor %}</span>{% endif %}
+      {%- if src.paused %} <span class="field__hint">· {{ t.src_paused }}</span>{% endif %}
+    </span>
+  </label>
+  {% if src.caps_short or not src.paused %}
+  <p class="field__hint" style="margin-top: 0; padding-left: 1.5rem">
+    {%- for k in src.caps_short %}{{ t[k] }}{% if not loop.last %} · {% endif %}{% endfor %}
+    {%- if not src.paused %}{% if src.caps_short %} · {% endif %}<a href="/izvori#{{ src.key }}" class="underline">{{ t.cap_more }}</a>{% endif %}
+  </p>
+  {% endif %}
+  </div>
+{% endfor %}

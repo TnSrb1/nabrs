@@ -1,0 +1,114 @@
+{# The shared cards of the template showcase — for /library and the first screen
+   “Čime se bavite?” (/profiles/new, profile_start.html). One markup: the tile
+   of the package on both screens leads to the same place and shows the same figure. #}
+{# The card’s figure — “how many notices would match over 30 days”. Counted by the same
+   predicate as the form preview (template_prefill → preview_service), therefore
+   after pressing “Use” the client will see IN THE FORM exactly this same number.
+   None = the counter is unavailable (do not lie with a zero), 0 = an honest zero. #}
+{% macro card_count(n) %}
+{%- if n is not none %}
+<p class="tpl-card__count{% if not n %} tpl-card__count--zero{% endif %}">
+  {%- if n %}≈ {{ plural(lang, "tenders_30d", n) }}{% else %}{{ t.lib_count_zero }}{% endif -%}
+</p>
+{%- endif %}
+{% endmacro %}
+
+{% macro keyword_tags(terms) %}
+{%- if terms %}
+<div class="tpl-tags">
+  {% for term in terms[:6] %}
+  <span class="tpl-tag">{{ term }}</span>
+  {% endfor %}
+  {% if terms | length > 6 %}
+  <span class="tpl-tag tpl-tag--more">+{{ terms | length - 6 }}</span>
+  {% endif %}
+</div>
+{%- endif %}
+{% endmacro %}
+
+{# "Based on / as is" link: when the template limit is exhausted — to /cabinet/account. #}
+{% macro use_href(card, profile_limit_reached) -%}
+{%- if profile_limit_reached %}/cabinet/account{% else %}/profiles/new/confirm?from_{{ card.kind }}={{ card.key }}{% endif -%}
+{%- endmacro %}
+
+{# The showcase card — one markup for the package and the template (library_sectors
+   sets kind / key / terms). “Composition” — the page /library/{kind}/{key}:
+   all the words, CPV with names, stop words, examples of tenders. #}
+{% macro showcase_card(card, profile_limit_reached) %}
+<article class="tpl-card{% if card.kind == 'package' %} tpl-card--pkg{% endif %}">
+  <div class="tpl-card__body">
+    {% if card.kind == 'package' %}<p class="tpl-card__badge">{{ t.lib_sector_badge }}</p>{% endif %}
+    <p class="tpl-card__title">{{ card.name }}</p>
+    {% if card.description %}
+    <p class="tpl-card__desc">{{ card.description }}</p>
+    {% endif %}
+    {{ keyword_tags(card.terms) }}
+    {{ card_count(card.count) }}
+  </div>
+  <div class="tpl-card__actions">
+    <a href="{{ use_href(card, profile_limit_reached) }}" class="btn-primary tpl-card__cta">
+      {%- if card.kind == 'package' %}{{ t.lib_apply_package }}{% else %}{{ t.lib_use_template }}{% endif -%}
+    </a>
+    <a href="/library/{{ card.kind }}/{{ card.key }}" class="btn-ghost tpl-card__more">{{ t.lib_view_details }}</a>
+  </div>
+</article>
+{% endmacro %}
+
+{# Navigation by sectors: anchors to sections — without JS (CSP script-src 'self'). #}
+{% macro sector_nav(sectors) %}
+{%- if sectors | length > 1 %}
+<nav class="tpl-sector-nav" aria-label="{{ t.lib_sectors_nav }}">
+  {% for s in sectors %}
+  <a href="#sector-{{ s.slug }}" class="tpl-sector-nav__chip">{{ t['lib_sector_' ~ s.slug] }}</a>
+  {% endfor %}
+</nav>
+{%- endif %}
+{% endmacro %}
+
+{# The industry: the package (“the whole industry”) first, then the narrow templates in descending
+   figure. collapse_templates=True (the first screen of the wizard) — the narrow templates under
+   <details>, so that the selection screen does not stretch to eight screens. #}
+{% macro sector_sections(sectors, profile_limit_reached, collapse_templates=False) %}
+{% for s in sectors %}
+<section class="tpl-group" id="sector-{{ s.slug }}">
+  <div class="tpl-group__head">
+    <h2 class="tpl-group__title">{{ t['lib_sector_' ~ s.slug] }}</h2>
+    <span class="tpl-count">{{ s.packages | length + s.templates | length }}</span>
+  </div>
+  {% if collapse_templates and s.packages %}
+    <div class="tpl-grid">
+      {% for card in s.packages %}{{ showcase_card(card, profile_limit_reached) }}{% endfor %}
+    </div>
+    {% if s.templates %}
+    <details class="tpl-more">
+      <summary>{{ t.ps_more_templates }} · {{ s.templates | length }}</summary>
+      <div class="tpl-grid">
+        {% for card in s.templates %}{{ showcase_card(card, profile_limit_reached) }}{% endfor %}
+      </div>
+    </details>
+    {% endif %}
+  {% else %}
+    <div class="tpl-grid">
+      {% for card in s.packages + s.templates %}{{ showcase_card(card, profile_limit_reached) }}{% endfor %}
+    </div>
+  {% endif %}
+</section>
+{% endfor %}
+{% endmacro %}
+
+{# “How the templates work”: expanded for a new client (not a single
+   template yet), collapsed for the returning ones. The text of item 2 — exactly the logic
+   matching.py: CPV (stage A) AND the group of words (stage B), a stop word cuts. #}
+{% macro howto(profile_used) %}
+<details class="tpl-howto"{% if not profile_used %} open{% endif %}>
+  <summary>{{ t.lib_howto_title }}</summary>
+  <ol class="tpl-howto__list">
+    <li>{{ t.lib_howto_1 }}</li>
+    <li>{{ t.lib_howto_2 }}</li>
+    <li>{{ t.lib_howto_3 }}</li>
+    <li>{{ t.lib_howto_4 }}</li>
+    <li>{{ t.lib_howto_5 }}</li>
+    <li>{{ t.lib_howto_6 }}</li>
+  </ol>
+</details>
+{% endmacro %}

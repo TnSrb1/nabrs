@@ -1,0 +1,18 @@
+{# The login of the platform operator (/admin/login). A separate URL and heading on top of the
+   COMMON magic-link contour of the cabinet: the form posts to the same /login, differing
+   only by the hidden next (a return to the admin). There is no own authentication here. #}
+{% extends "base.html" %}
+{% block title %}Вход для оператора{% endblock %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-2">Вход для оператора платформы</h1>
+<p class="text-sm text-slate-600 mb-4">Ссылка для входа придёт на почту оператора. Дальше — сразу в админ-консоль.</p>
+<form method="post" action="/login" class="space-y-4 max-w-md">
+  <input type="hidden" name="next" value="{{ next_path }}">
+  <div>
+    <label class="block text-sm mb-1">Email</label>
+    <input type="email" name="email" required autocomplete="email" class="field-control">
+  </div>
+  <button type="submit" class="btn-primary">Получить ссылку для входа</button>
+</form>
+<p class="mt-4 text-sm">Вы не оператор? <a href="/login" class="underline">Обычный вход в кабинет</a></p>
+{% endblock %}

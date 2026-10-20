@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}{{ t.cf_title }}{% endblock %}
+{% block content %}
+{% set pf = profile or {} %}
+{# The confirmation screen between the showcase and the saving (owner 22.09.2026): two clicks
+   from the package to the template. It restates the prefill in human words — the client,
+   who came from the card, saw before this screen only the questionnaire of 18 fields.
+
+   ‼️ The “Create” button sends the SAME POST /profiles with all the prefill fields as
+   hidden fields: a trimmed payload would mean “created not what was shown”.
+   The names of the hidden fields are the contract of parse_profile_form; they must not be changed. #}
+{% set terms = [] %}
+{% for group in pf.get('keywords_include') or [] %}
+  {%- for term in (group.get('all_of') or []) %}{% if term not in terms %}{% set _ = terms.append(term) %}{% endif %}{% endfor -%}
+{% endfor %}
+{% set cls_inc = (pf.get('classifications') or {}).get('include') or [] %}
+{% set channels = pf.get('delivery_channels') or [] %}
+{% set chosen = pf.get('enabled_source_keys') or [] %}
+
+<div class="max-w-2xl">
+  <h1 class="text-xl font-semibold mb-1">{{ t.cf_title }}</h1>
+  <p class="text-sm text-slate-500 mb-4">{{ t.cf_lede }}</p>
+
+  <section class="form-section">
+    <h2 class="form-section__title">{{ pf.get('name') or t.cf_unnamed }}</h2>
+    {# The same figure as on the showcase card: one preview_service.preview_count
+       over one payload from template_prefill. #}
+    <div class="preview-live" role="status">
+      {%- if count %}
+      <p class="preview-live__count">≈ {{ plural(lang, "tenders_30d", count) }}</p>
+      {%- else %}
+      <p class="preview-live__count preview-live__count--zero">{{ t.pf_preview_zero }}</p>
+      <p class="preview-live__hint">{{ t.pf_preview_zero_hint }}</p>
+      {%- endif %}
+    </div>
+    <dl class="recap">
+      <div class="recap__row">
+        <dt class="recap__key">{{ t.cf_what }}</dt>
+        <dd class="recap__val">
+          {%- if pf.get('match_all') -%}
+            {{ t.cf_all_tenders }}
+          {%- elif terms -%}
+            {{ terms[:8] | join(', ') }}{% if terms | length > 8 %} +{{ terms | length - 8 }}{% endif %}
+            {%- if cls_inc %} · {{ plural(lang, "cpv_count", cls_inc | length) }}{% endif -%}
+          {%- elif cls_inc -%}
+            {{ plural(lang, "cpv_count", cls_inc | length) }}
+          {%- else -%}
+            {{ t.cf_nothing_yet }}
+          {%- endif -%}
+        </dd>
+      </div>
+      <div class="recap__row">
+        <dt class="recap__key">{{ t.cf_where }}</dt>
+        <dd class="recap__val">{% if pf.get('regions') %}{{ pf.get('regions') | map('okrug_label') | join(', ') }}{% else %}{{ t.cf_all_serbia }}{% endif %}</dd>
+      </div>
+      <div class="recap__row">
+        <dt class="recap__key">{{ t.cf_amount }}</dt>
+        <dd class="recap__val">
+          {%- if pf.get('min_amount_eur') and pf.get('max_amount_eur') -%}
+            {{ t.cf_amount_between.format(min=pf.get('min_amount_eur'), max=pf.get('max_amount_eur')) }}
+          {%- elif pf.get('min_amount_eur') -%}
+            {{ t.cf_amount_from.format(min=pf.get('min_amount_eur')) }}
+          {%- elif pf.get('max_amount_eur') -%}
+            {{ t.cf_amount_to.format(max=pf.get('max_amount_eur')) }}
+          {%- else -%}
+            {{ t.cf_amount_any }}
+          {%- endif -%}
+        </dd>
+      </div>
+      <div class="recap__row">
+        <dt class="recap__key">{{ t.cf_channels }}</dt>
+        <dd class="recap__val">
+          {%- if channels -%}
+            {% for v, lbl in channel_choices %}{% if v in channels %}{{ lbl }}{% if not loop.last %} {% endif %}{% endif %}{% endfor %}
+          {%- else -%}
+            <span class="text-amber-700">{{ t.cf_no_channels }}</span>
+          {%- endif -%}
+        </dd>
+      </div>
+      <div class="recap__row">
+        <dt class="recap__key">{{ t.cf_schedule }}</dt>
+        <dd class="recap__val">
+          {%- set sched = pf.get('delivery_schedule') or 'immediate' -%}
+          {%- for v, lbl in schedule_choices %}{% if v == sched %}{{ t[lbl] }}{% endif %}{% endfor -%}
+        </dd>
+      </div>
+    </dl>
+  </section>
+
+  <form method="post" action="/profiles" id="confirmForm">
+    {# All 18 fields of the form contract — as hidden ones. The checkboxes travel with the value
+       'on' / '' (empty = False in forms._to_bool), therefore the set of names in the POST
+       is the same as in the full questionnaire, not “as many as managed to fit”. #}
+    <input type="hidden" name="name" value="{{ pf.get('name') or '' }}">
+    <textarea name="keywords_include" class="hidden">{{ keywords_include_text or '' }}</textarea>
+    <input type="hidden" name="keywords_exclude" value="{{ keywords_exclude_text or '' }}">
+    <input type="hidden" name="keyword_dict" value="{{ 'on' if pf.get('keyword_dict') else '' }}">
+    <input type="hidden" name="match_all" value="{{ 'on' if pf.get('match_all') else '' }}">
+    <textarea name="cls_include" class="hidden">{{ cls_include_text or '' }}</textarea>
+    <textarea name="cls_exclude" class="hidden">{{ cls_exclude_text or '' }}</textarea>
+    {% for code in pf.get('regions') or [] %}<input type="hidden" name="regions" value="{{ code }}">{% endfor %}
+    {% if not pf.get('regions') %}<input type="hidden" name="regions" value="">{% endif %}
+    {% for code in pf.get('contract_types') or [] %}<input type="hidden" name="contract_types" value="{{ code }}">{% endfor %}
+    {% if not pf.get('contract_types') %}<input type="hidden" name="contract_types" value="">{% endif %}
+    {% for c in pf.get('customers_include') or [] %}<input type="hidden" name="customers_include" value="{{ c }}">{% endfor %}
+    <input type="hidden" name="customers_include" value="">
+    {% for c in pf.get('customers_exclude') or [] %}<input type="hidden" name="customers_exclude" value="{{ c }}">{% endfor %}
+    <input type="hidden" name="customers_exclude" value="">
+    <input type="hidden" name="min_amount_eur" value="{{ pf.get('min_amount_eur') if pf.get('min_amount_eur') is not none else '' }}">
+    <input type="hidden" name="max_amount_eur" value="{{ pf.get('max_amount_eur') if pf.get('max_amount_eur') is not none else '' }}">
+    <input type="hidden" name="include_no_amount" value="{{ 'on' if pf.get('include_no_amount') else '' }}">
+    <input type="hidden" name="min_days_until_deadline" value="{{ pf.get('min_days_until_deadline') if pf.get('min_days_until_deadline') is not none else '' }}">
+    {# The sources — the checkboxes below (the same as in the template form). The sentinel “empty”
+       always goes: all ticks removed = a field with an empty value → an error at
+       the field, not a silent default. #}
+    {% for v in channels %}<input type="hidden" name="delivery_channels" value="{{ v }}">{% endfor %}
+    {% if not channels %}<input type="hidden" name="delivery_channels" value="">{% endif %}
+    <input type="hidden" name="delivery_schedule" value="{{ pf.get('delivery_schedule') or 'immediate' }}">
+    <input type="hidden" name="ai_analysis_level" value="{{ pf.get('ai_analysis_level') or 'none' }}">
+    <input type="hidden" name="is_active" value="{{ 'on' if pf.get('is_active', True) else '' }}">
+    <input type="hidden" name="debug_match" value="{{ 'on' if pf.get('debug_match') else '' }}">
+    <fieldset id="pf-sources" class="form-section">
+      <legend class="field__label">{{ t.pf_sources_label }}</legend>
+      <p class="field__hint">{{ t.pf_sources_desc }}</p>
+      {% if not chosen %}<p class="text-sm text-red-700 font-medium" role="alert">{{ t.err_sources_required }}</p>{% endif %}
+      <input type="hidden" name="enabled_source_keys" value="">
+      {% set checked_keys = chosen %}
+      {% include "_source_checks.html" %}
+    </fieldset>
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">{{ t.cf_create }}</button>
+      <a href="/profiles/new{{ edit_query }}" class="btn-secondary">{{ t.cf_edit }}</a>
+      <a href="/library" class="btn-ghost">{{ t.cf_back_library }}</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

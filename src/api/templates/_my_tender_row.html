@@ -1,0 +1,60 @@
+{# The tender row on /app/my (a column of the funnel board or a folder).
+   Context: row (MyTenderRow: tender_id / title / customer_name / deadline_at /
+   tender_url / note / status / profile_id); the chrome — from the `t` catalog (the cabinet i18n), NOT to be
+   confused with the row variable (previously the row was called `t` and shadowed the catalog —
+   now `row`, so that `t.*` is available inside).
+
+   The stage is labelled only inside a folder (`in_folder`): on the board the stage is
+   the column itself, duplicating it on every row is noise. The urgency badge is the same
+   color code as on the dashboard (expired / ≤2 days / ≤7 days); if there is no deadline —
+   there is no badge, we do not invent anything. The customer / the note are data, “as is”,
+   they are not translated by the interface language.
+
+   The heading (#464 defect class): profile_id is resolved by a subquery
+   to delivery_outbox (workflow_service._PROFILE_RESOLVE_SQL) — when it exists,
+   we draw the same translation toggle as in the feed / agenda, and the link leads INSIDE
+   the product (the cabinet card), not to eNabavke. ‼️ view is NOT "feed": the view "feed" in
+   GET /app/tenders/{id}/title (routes_tender_ai.py) recomputes the link to
+   data.source_url (the external one) — after the first click “Show translation” the row
+   would lead off the portal, reproducing exactly the defect this fix repairs.
+   ‼️ And NOT one common view for both columns: /app/my renders ONE tender in
+   a funnel stage and in a folder AT THE SAME TIME (the same include, the same
+   tender_id / profile_id) — a shared view would give the same DOM id to two rows
+   (_card_title.html builds the id from view), and the hx-target of the second button would land
+   in the first. "my_board" / "my_folder" (routes_tender_ai._CARD_TITLE_VIEWS) are
+   the same markup / link, different ids; the switch is `in_folder`,
+   which the calling template (my_tenders.html) already sets for the folders column.
+   Without a profile_id (the tender does not resolve to any profile of the tenant) —
+   we leave the external link without the toggle: a 404 is worse than an honest link to the portal
+   (CLAUDE.md). #}
+<li class="fn-row">
+  {% if row.profile_id %}
+  {% with tender_id=row.tender_id, profile_id=row.profile_id,
+          view=("my_folder" if in_folder else "my_board"),
+          view_title=row.title,
+          title_url="/app/tenders/" ~ row.tender_id ~ "?profile_id=" ~ row.profile_id,
+          title_class="fn-row__title", title_blank=false,
+          show_original=true, unavailable=false, original_lang="sr" %}
+  {% include "_card_title.html" %}
+  {% endwith %}
+  {% elif row.tender_url %}
+  <a href="{{ row.tender_url }}" target="_blank" rel="noopener" class="fn-row__title">{{ row.title }}</a>
+  {% else %}
+  <span class="fn-row__title">{{ row.title }}</span>
+  {% endif %}
+  {% if row.customer_name %}<p class="fn-row__meta">🏛 {{ row.customer_name }}</p>{% endif %}
+  {% if row.source_label %}<p class="fn-row__meta">🌐 {{ t.src_label }}: {{ row.source_label }}</p>{% endif %}
+  {% if row.note %}<p class="fn-row__note">📝 {{ row.note }}</p>{% endif %}
+  {% set _dl = row.deadline_at | days_left %}
+  {% if _dl is not none or in_folder %}
+  <div class="fn-row__badges">
+    {% if _dl is not none %}
+    <span class="badge {% if _dl < 0 %}badge-expired{% elif _dl <= 2 %}badge-urgent{% elif _dl <= 7 %}badge-new{% else %}badge-muted{% endif %}"
+          title="{{ t.deadline_title }} {{ row.deadline_at | dl_local(row.source_key, lang) }}">
+      {% if _dl < 0 %}{{ t.badge_deadline_expired }}{% elif _dl == 0 %}⏰ {{ t.deadline_today }}{% elif _dl <= 2 %}⏰ {{ plural(lang, "days_left_short", _dl) }}{% else %}{{ plural(lang, "days_left_short", _dl) }}{% endif %}
+    </span>
+    {% endif %}
+    {% if in_folder %}<span class="badge badge-muted">{{ t['status_' ~ row.status] }}</span>{% endif %}
+  </div>
+  {% endif %}
+</li>

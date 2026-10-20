@@ -1,0 +1,12 @@
+{# The honest banner “hidden by the district filter” (the cabinet, ru-only).
+   Visible ONLY when the active profile narrowed the district AND part of the matching tenders
+   was cut off (their district is not resolved) — feed_service.get_region_hidden_notice,
+   which reuses the preview logic (a mirror of the delivery predicate), rather than a new one.
+   The container `.alert` (dashboard v2: three kinds of containers). Expects the variable region_hidden. #}
+{% if region_hidden %}
+<section class="alert alert--warn" role="alert">
+  <p class="alert__title">≈{{ region_hidden.hidden }} {{ t.rhid_suffix }}</p>
+  <p class="alert__body">{{ t.rhid_body }}</p>
+  <a href="/profiles/{{ region_hidden.profile_id }}/edit" class="btn-primary alert__cta">{{ t.rhid_cta }}</a>
+</section>
+{% endif %}

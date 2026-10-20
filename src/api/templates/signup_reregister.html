@@ -1,0 +1,38 @@
+{% extends "public_base.html" %}
+{# Re-registration after the self-deletion (#658): the same frame of the showcase as /signup.
+   The screen is shown on ANY “address already taken” and uniformly confirms the request —
+   it cannot be used to learn whether the account was deleted (anti-enumeration). #}
+{% block title %}{{ t.rrg_page_title }}{% endblock %}
+{% block content %}
+<section class="mx-auto max-w-5xl px-4 pt-14 pb-12">
+  {% if sent %}
+  <h1 class="text-3xl font-bold tracking-tight text-slate-900">{{ t.rrg_sent_h1 }}</h1>
+  <div class="mt-6 max-w-md rounded border p-4 bg-green-50 border-green-200">
+    <p>{{ t.rrg_sent }}</p>
+  </div>
+  <p class="mt-4"><a href="/login" class="text-slate-600 underline">{{ t.sgr_back_login }}</a></p>
+  {% else %}
+  <h1 class="text-3xl font-bold tracking-tight text-slate-900">{{ t.rrg_h1 }}</h1>
+  <div class="mt-6 max-w-md rounded border p-4 bg-red-50 border-red-200">
+    <p>{{ t.sgr_msg_duplicate }}</p>
+  </div>
+  <p class="mt-2 text-sm text-slate-500">{{ t.sgr_no_email }} <a href="/auth/resend" class="underline">{{ t.sgr_resend }}</a>.</p>
+  <div class="mt-6">
+    {% if turnstile_error %}
+    <p id="turnstile-error" role="alert" class="mb-4 text-sm text-red-600">{{ t.sgr_msg_turnstile }}</p>
+    {% endif %}
+    <p class="mb-2 text-sm">{{ t.rrg_intro }}</p>
+    <p class="mb-4 text-sm text-slate-600">{{ t.rrg_how }}</p>
+    <form method="post" action="/signup/reregister" class="space-y-4 max-w-md" data-turnstile-form>
+      <input type="hidden" name="email" value="{{ email|default('') }}">
+      <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-callback="tsrbTurnstileOk" data-expired-callback="tsrbTurnstileReset" data-error-callback="tsrbTurnstileError" data-timeout-callback="tsrbTurnstileReset"></div>
+      <p class="text-sm text-slate-600" aria-live="polite"><span id="turnstile-wait" hidden>{{ t.sgn_turnstile_wait }}</span></p>
+      <button type="submit" class="btn-primary">{{ t.rrg_btn }}</button>
+    </form>
+    <p class="mt-4"><a href="/signup" class="text-slate-600 underline">{{ t.sgr_back_signup }}</a></p>
+  </div>
+  <script src="{{ static_url('js/signup_turnstile.js') }}" integrity="sha384-G2uKZVg8t59MgekhbquRlJoUCyTQodFPYzdpbI54T2rdCf9EKtX3R0CTwQZMYNkK" crossorigin="anonymous"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,8 @@
+{# The mark “the same tender is also on other sources” (0047, src/dedup/also_on.py).
+   The same fork as on the public card (tender.html): probable →
+   t.also_on_probable, otherwise t.also_on; N = the other SourceS of the cluster (also_on_n
+   is counted by the SQL expression also_on_count_sql in the row selection). N = 0 — nothing.
+   Context (via with): also_on_n, also_on_conf, also_on_class. #}
+{% if also_on_n and also_on_n > 0 -%}
+<p class="{{ also_on_class }}" data-also-on>🔁 {{ (t.also_on_probable if also_on_conf == 'probable' else t.also_on).format(n=also_on_n) }}</p>
+{%- endif %}

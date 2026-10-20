@@ -1,0 +1,47 @@
+{# The common pager: “ to the start · ‹ Back · the numbers with a window · Forward › · to the end ”, plus “Go to N”.
+   The import: {% from "_pager.html" import pager with context %} (t and request are needed).
+   href(n) — the macro of the link to page n: each place keeps ITS parameters (sort / q / filters).
+   form_action — where the GET form “Go to” goes (without JS). All the request parameters except page go
+   into it as hidden fields. The ceiling — max=total: the browser will not let a page past the end. #}
+{% macro pager(page, total, href, aria, form_action) -%}
+{% if total > 1 %}
+{% set tokens = pager_tokens(page, total) %}
+<nav class="fd-pager" aria-label="{{ aria }}">
+  <div class="fd-pager__controls">
+    {% if page > 1 %}
+    <a href="{{ href(1) }}" class="btn-ghost fd-pager__edge" rel="first" aria-label="{{ t.pager_first }}">«</a>
+    <a href="{{ href(page - 1) }}" class="btn-secondary fd-pager__step" rel="prev" aria-label="{{ t.pager_prev }}"><span class="fd-pager__word">{{ t.pager_prev }}</span><span class="fd-pager__arrow" aria-hidden="true">‹</span></a>
+    {% else %}
+    <span class="btn-ghost fd-pager__edge cursor-default text-slate-500" aria-disabled="true">«</span>
+    <span class="btn-ghost fd-pager__step cursor-default text-slate-500" aria-disabled="true"><span class="fd-pager__word">{{ t.pager_prev }}</span><span class="fd-pager__arrow" aria-hidden="true">‹</span></span>
+    {% endif %}
+    {% for kind, n in tokens %}
+    {% if kind == "gap" %}
+    <span class="fd-pager__gap" aria-hidden="true">…</span>
+    {% elif kind == "gap_m" %}
+    <span class="fd-pager__gap fd-pager__m-only" aria-hidden="true">…</span>
+    {% elif n == page %}
+    <span class="fd-pager__num" aria-current="page">{{ n }}</span>
+    {% else %}
+    <a href="{{ href(n) }}" class="btn-ghost fd-pager__num{% if kind == 'far' %} fd-pager__wide{% endif %}" aria-label="{{ t.pager_page }} {{ n }}">{{ n }}</a>
+    {% endif %}
+    {% endfor %}
+    {% if page < total %}
+    <a href="{{ href(page + 1) }}" class="btn-secondary fd-pager__step" rel="next" aria-label="{{ t.pager_next }}"><span class="fd-pager__word">{{ t.pager_next }}</span><span class="fd-pager__arrow" aria-hidden="true">›</span></a>
+    <a href="{{ href(total) }}" class="btn-ghost fd-pager__edge" rel="last" aria-label="{{ t.pager_last }}">»</a>
+    {% else %}
+    <span class="btn-secondary fd-pager__step cursor-default text-slate-500" aria-disabled="true"><span class="fd-pager__word">{{ t.pager_next }}</span><span class="fd-pager__arrow" aria-hidden="true">›</span></span>
+    <span class="btn-ghost fd-pager__edge cursor-default text-slate-500" aria-disabled="true">»</span>
+    {% endif %}
+  </div>
+  <form method="get" action="{{ form_action }}" class="fd-pager__jump">
+    {% for k, v in request.query_params.multi_items() if k != "page" %}
+    <input type="hidden" name="{{ k }}" value="{{ v }}">
+    {% endfor %}
+    <label for="pager-jump">{{ t.pager_goto }}</label>
+    <input id="pager-jump" class="field-control" type="number" name="page" min="1" max="{{ total }}" inputmode="numeric" required>
+    <button type="submit" class="btn-secondary">{{ t.pager_go }}</button>
+  </form>
+</nav>
+{% endif %}
+{%- endmacro %}

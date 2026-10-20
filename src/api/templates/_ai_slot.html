@@ -1,0 +1,129 @@
+{# The single swap container of the AI artifact level (web-ai-2). id="ai-slot-{level}" —
+   the same wrapper for the full page, the generation start, the HTMX polling and
+   all the terminal states, so that hx-swap="outerHTML" replaces them cleanly.
+
+   Context: level, tender_id, profile_id, mode. Opt.: output (mode='content'),
+   polls (mode='pending'). Modes:
+     content — the artifact (if output) or the “Generate” button;
+     pending — a spinner + hx-get polling of the status every 3s;
+     timeout — the generation dragged on → a retry button;
+     gate_pro — the level requires the Pro+ plan (an understandable CTA, not a bare 403);
+     frozen — access is frozen;
+     limit_exhausted — the monthly limit of the level is exhausted;
+     auto_skipped — the AUTO analysis of the stream was not performed (limit / demo / plan), the tender
+                      was delivered without an analysis; requires the context `auto`;
+     model_busy / model_error — a model failure → a retry button;
+     no_tender / no_profile — not found (edge cases). #}
+{# The import WITH CONTEXT: the artifact macros read `t` / `lang` of the calling render
+   (without `with context` inside the imported macro only the global `t` is visible
+   = the cabinet default, and the en / sr artifacts would stay in ru). #}
+{% from "_ai_artifact.html" import render as render_artifact with context %}
+{% set _post_url = '/app/tenders/' ~ tender_id ~ '/generate/' ~ level ~ '?profile_id=' ~ profile_id %}
+{# The remainder of this level’s limit (the tender card passes `ai_limits`). HTMX fragments
+   have no context — then `lu` = None and we behave as before. #}
+{% set lu = ai_limits.by_level(level) if ai_limits is defined and ai_limits else None %}
+<div id="ai-slot-{{ level }}"
+     {% if mode == 'pending' %}hx-get="/app/tenders/{{ tender_id }}/status/{{ level }}?profile_id={{ profile_id }}&polls={{ polls }}" hx-trigger="every 3s" hx-target="this" hx-swap="outerHTML" hx-indicator="this"{% endif %}>
+{# The flash — only on the client’s action (the route passes `flash` on a limit refusal).
+   It disappears by itself after ~6 s; the state remains below as a permanent line. #}
+{% if flash %}{% include "_flash_limit.html" %}{% endif %}
+{% if mode == 'content' %}
+  {% if output %}
+  {{ render_artifact(level, output) }}
+  {% elif lu and lu.state in ('exhausted', 'demo_exhausted') %}
+  {# The limit is exhausted ALREADY before the click: the “Generate” button would lead to a refusal.
+     The state lives in the button itself — a client who returns an hour later sees the cause
+     without a single press (the owner’s requirement “nothing switches off silently”). #}
+  <div class="empty-state">
+    <p class="empty-state__title">{{ t.slot_limit_title }}</p>
+    <p class="empty-state__hint">{{ t.slot_limit_used.format(used=lu.used, limit=lu.limit) }}</p>
+    <div class="empty-state__actions">
+      <a href="/plans" class="btn-primary">{{ t.slot_limit_cta }}</a>
+    </div>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <p class="empty-state__title">{{ t['slot_empty_' ~ level] }}</p>
+    <p class="empty-state__hint">{{ t.slot_empty_hint }}</p>
+    <div class="empty-state__actions">
+      <button type="button" class="btn-primary" hx-post="{{ _post_url }}" hx-target="#ai-slot-{{ level }}" hx-swap="outerHTML" hx-indicator="this">{{ t['slot_cta_' ~ level] }}</button>
+    </div>
+    {# A warning BEFORE the refusal: at the 80% threshold (src.ai.usage._SOFT_LIMIT_FRACTION)
+       we show the remainder, so that the exhaustion does not come suddenly. #}
+    {% if lu and lu.limit and lu.used >= (lu.limit * 0.8) %}
+    <p class="empty-state__hint">{{ t.slot_limit_left.format(left=(lu.limit - lu.used), limit=lu.limit) }}</p>
+    {% endif %}
+  </div>
+  {% endif %}
+{% elif mode == 'pending' %}
+  <div role="status" aria-live="polite">
+    <p class="text-sm text-slate-500 mb-3">{{ t.slot_pending }}</p>
+    <div class="skeleton h-4 w-full mb-2"></div>
+    <div class="skeleton h-4 w-full mb-2"></div>
+    <div class="skeleton h-4 w-full"></div>
+  </div>
+{% elif mode == 'timeout' %}
+  <div class="empty-state">
+    <p class="empty-state__title">{{ t.slot_timeout_title }}</p>
+    <p class="empty-state__hint">{{ t.slot_timeout_hint }}</p>
+    <div class="empty-state__actions">
+      <button type="button" class="btn-primary" hx-post="{{ _post_url }}" hx-target="#ai-slot-{{ level }}" hx-swap="outerHTML" hx-indicator="this">{{ t.slot_retry }}</button>
+    </div>
+  </div>
+{% elif mode == 'gate_pro' %}
+  <div class="empty-state">
+    <p class="empty-state__title">{{ t.gate_pro_title }}</p>
+    <p class="empty-state__hint">{{ t.slot_gate_hint }}</p>
+    <div class="empty-state__actions">
+      <a href="/plans" class="btn-primary">{{ t.see_plans }}</a>
+    </div>
+  </div>
+{% elif mode == 'frozen' %}
+  <div class="empty-state">
+    <p class="empty-state__title">{{ t.frozen_title }}</p>
+    <p class="empty-state__hint">{{ t.slot_frozen_hint }}</p>
+    <div class="empty-state__actions">
+      <a href="/plans" class="btn-primary">{{ t.renew_plan }}</a>
+    </div>
+  </div>
+{% elif mode == 'limit_exhausted' %}
+  <div class="empty-state">
+    <p class="empty-state__title">{{ t.slot_limit_title }}</p>
+    <p class="empty-state__hint">{{ t.slot_limit_hint }}</p>
+    <div class="empty-state__actions">
+      <a href="/plans" class="btn-primary">{{ t.see_plans }}</a>
+    </div>
+  </div>
+{% elif mode == 'auto_skipped' %}
+  {# The AUTO analysis of the stream was NOT performed, and the tender was delivered as an ordinary card
+     (AiWorker._degrade_to_plain). Previously this happened silently: the subscriber
+     saw an empty analysis block and could not learn either the reason or the remainder.
+     The owner’s requirement of 15.08.2026 — “nothing must switch off silently”.
+     Context: auto = the LevelUsage of the auto level (src.ai.usage.usage_snapshot). #}
+  <div class="empty-state">
+    <p class="empty-state__title">{{ t.slot_auto_skipped_title }}</p>
+    <p class="empty-state__hint">
+      {% if auto.state == 'demo_exhausted' %}{{ t.slot_auto_demo_hint.format(used=auto.used, limit=auto.limit) }}
+      {%- elif auto.state == 'unavailable' %}{{ t.slot_auto_unavailable_hint }}
+      {%- else %}{{ t.slot_auto_limit_hint.format(used=auto.used, limit=auto.limit) }}{% endif %}
+    </p>
+    <p class="empty-state__hint">{{ t.slot_auto_manual_hint }}</p>
+    <div class="empty-state__actions">
+      <a href="/plans" class="btn-primary">{{ t.see_plans }}</a>
+    </div>
+  </div>
+{% elif mode == 'model_busy' or mode == 'model_error' %}
+  <div class="empty-state">
+    <p class="empty-state__title">{{ t.slot_model_title }}</p>
+    <p class="empty-state__hint">{{ t.slot_model_hint }}</p>
+    <div class="empty-state__actions">
+      <button type="button" class="btn-primary" hx-post="{{ _post_url }}" hx-target="#ai-slot-{{ level }}" hx-swap="outerHTML" hx-indicator="this">{{ t.slot_retry_short }}</button>
+    </div>
+  </div>
+{% else %}
+  <div class="empty-state">
+    <p class="empty-state__title">{{ t.slot_na_title }}</p>
+    <p class="empty-state__hint">{{ t.slot_na_hint }}</p>
+  </div>
+{% endif %}
+</div>

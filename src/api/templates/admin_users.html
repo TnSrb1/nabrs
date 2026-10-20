@@ -1,0 +1,149 @@
+{% extends "admin_base.html" %}
+{% block title %}Пользователи — Админ{% endblock %}
+{% block admin_content %}
+<h1 class="text-xl font-semibold mb-6">Пользователи</h1>
+
+{# Heading-sorting: a link without JS (CSP). A click on an inactive column — its first
+   the direction (first_dir); for the active one — the opposite. The active one: ▲ / ▼ and aria-sort.
+   A reset of page to 1 — a link without page. The tap zone: min-height 2rem (the height and the width —
+   the text of the column). #}
+{% macro sort_th(key, label, first_dir, cur_key, cur_dir, base_qs, th_class="", justify="flex-start") %}
+{% set active = key == cur_key %}
+{% set next_dir = ('asc' if cur_dir == 'desc' else 'desc') if active else first_dir %}
+<th{% if th_class %} class="{{ th_class }}"{% endif %}{% if active %} aria-sort="{{ 'ascending' if cur_dir == 'asc' else 'descending' }}"{% endif %}>
+  <a href="?sort={{ key }}&dir={{ next_dir }}{{ base_qs }}" class="text-brand hover:underline"
+     style="display:inline-flex;align-items:center;gap:.25rem;min-width:2rem;min-height:2rem;justify-content:{{ justify }}">{{ label }}{% if active %} <span aria-hidden="true">{{ '▲' if cur_dir == 'asc' else '▼' }}</span>{% endif %}</a>
+</th>
+{% endmacro %}
+
+<!-- The platform statistics — as cards (as on the dashboard) -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+  <div class="card text-center">
+    <p class="text-2xl font-semibold">{{ stats.tenders_all_time }}</p>
+    <p class="text-xs text-slate-500 mt-1">тендеров всего</p>
+  </div>
+  <div class="card text-center">
+    <p class="text-2xl font-semibold">{{ stats.tenders_month }}</p>
+    <p class="text-xs text-slate-500 mt-1">за текущий месяц</p>
+  </div>
+  <div class="card text-center">
+    <p class="text-2xl font-semibold">{{ stats.tenders_day }}</p>
+    <p class="text-xs text-slate-500 mt-1">за текущие сутки</p>
+  </div>
+  <div class="card text-center">
+    <p class="text-2xl font-semibold">{{ stats.users_total }}</p>
+    <p class="text-xs text-slate-500 mt-1">пользователей</p>
+  </div>
+</div>
+
+{# The search (email / tenant, substring) + the plan filter — a read-only GET form.
+   Always visible, so that the filter can be reset from an empty result. #}
+<form method="get" action="/admin/users" class="filter-bar" role="search">
+  <div class="filter-bar__field flex-1 min-w-0">
+    <label for="admin-users-q" class="filter-bar__label">Поиск по email или тенанту</label>
+    <input id="admin-users-q" type="search" name="q" value="{{ q }}"
+           placeholder="напр. company.rs или id тенанта"
+           class="field-control" autocomplete="off">
+  </div>
+  <div class="filter-bar__field">
+    <label for="admin-users-tier" class="filter-bar__label">Тариф</label>
+    <select id="admin-users-tier" name="tier" class="field-control">
+      <option value="">Все тарифы</option>
+      {% for t in tiers %}
+      <option value="{{ t }}"{% if t == tier %} selected{% endif %}>{{ t }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  {# Sorting survives the search: hidden fields, otherwise "Find" would reset it. #}
+  <input type="hidden" name="sort" value="{{ sort }}">
+  <input type="hidden" name="dir" value="{{ sort_dir }}">
+  <button type="submit" class="btn-primary">Найти</button>
+  {% if q or tier %}
+  <a href="/admin/users" class="btn-ghost">Сбросить</a>
+  {% endif %}
+</form>
+
+{# Suffix for pagination links — keeps the active search/filter. #}
+{% set filter_qs %}{% if q %}&q={{ q | urlencode }}{% endif %}{% if tier %}&tier={{ tier | urlencode }}{% endif %}{% endset %}
+{# Sorting for the pager (header links do not take it — they have their own). #}
+{% set sort_qs %}&sort={{ sort }}&dir={{ sort_dir }}{% endset %}
+
+{% if users %}
+<div class="admin-table__wrap">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        {{ sort_th('email', 'Email', 'asc', sort, sort_dir, filter_qs) }}
+        {{ sort_th('tenant', 'Тенант', 'asc', sort, sort_dir, filter_qs) }}
+        {{ sort_th('tier', 'Тариф', 'asc', sort, sort_dir, filter_qs) }}
+        {{ sort_th('access_until', 'Доступ до', 'desc', sort, sort_dir, filter_qs) }}
+        {{ sort_th('profiles', 'Профили', 'desc', sort, sort_dir, filter_qs, 'text-right', 'flex-end') }}
+        {{ sort_th('created', 'Зарегистрирован', 'desc', sort, sort_dir, filter_qs) }}
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>
+          {{ u.email or '—' }}
+          {% if u.is_disabled %}<span class="badge badge-muted">Отключён</span>{% endif %}
+        </td>
+        <td class="font-mono text-xs text-slate-500">{{ u.tenant_id[:8] }}…</td>
+        <td>
+          {% if u.tier %}
+            <span class="badge badge-muted">{{ u.tier }}</span>
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          {% if u.access_until is none %}
+            <span class="badge badge-success">бессрочно</span>
+          {% elif u.access_active %}
+            <span class="badge badge-success">{{ u.access_until.strftime('%d.%m.%Y') }}</span>
+          {% else %}
+            <span class="badge badge-error">истёк {{ u.access_until.strftime('%d.%m.%Y') }}</span>
+          {% endif %}
+        </td>
+        <td class="text-right"><a href="/admin/users/{{ u.id }}#profiles" class="hover:underline" title="Шаблоны подписчика">{{ u.profile_count }}</a></td>
+        <td class="text-slate-500">
+          {{ u.created_at.strftime('%d.%m.%Y') if u.created_at else '—' }}
+        </td>
+        <td class="text-right">
+          <a href="/admin/users/{{ u.id }}" class="text-brand hover:underline text-xs font-medium">Управление →</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="flex items-center justify-between gap-3 flex-wrap mt-3">
+  <p class="text-xs text-slate-400">Найдено: {{ total }}</p>
+  {% if total_pages > 1 %}
+  <div class="flex items-center gap-3">
+    {% if page > 1 %}
+    <a href="?page={{ page - 1 }}{{ filter_qs }}{{ sort_qs }}" class="btn-secondary">← Назад</a>
+    {% else %}
+    <span class="btn-ghost cursor-default text-slate-500">← Назад</span>
+    {% endif %}
+    <span class="text-sm text-slate-500">стр. {{ page }} / {{ total_pages }}</span>
+    {% if page < total_pages %}
+    <a href="?page={{ page + 1 }}{{ filter_qs }}{{ sort_qs }}" class="btn-secondary">Вперёд →</a>
+    {% else %}
+    <span class="btn-ghost cursor-default text-slate-500">Вперёд →</span>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% elif q or tier %}
+{% set empty_state_title = "Ничего не найдено" %}
+{% set empty_state_hint = "Под текущий поиск и фильтр пользователей нет. Измените запрос или сбросьте фильтр." %}
+{% set empty_state_cta_href = "/admin/users" %}
+{% set empty_state_cta_label = "Сбросить фильтр" %}
+{% include "_empty_state.html" %}
+{% else %}
+{% set empty_state_title = "Пользователей нет" %}
+{% set empty_state_hint = "Здесь появятся зарегистрированные пользователи площадки." %}
+{% include "_empty_state.html" %}
+{% endif %}
+{% endblock %}

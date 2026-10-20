@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% from "_tpl_cards.html" import card_count with context %}
+{% block title %}{{ item.name }} · {{ t.nav_library }}{% endblock %}
+{% block content %}
+{# The composition of the template / package (routes_library.library_detail): everything that goes into
+   the copy — before the profile is created. The figure and the examples — one pass of
+   preview_service.preview_count over the same payload as the card and the form. #}
+<p class="mb-3"><a href="/library#sector-{{ item.sector }}" class="text-sm text-slate-500 underline hover:text-slate-900">{{ t.lib_d_back }}</a></p>
+
+<div class="tpl-intro">
+  <p class="tpl-meta">{{ t['lib_sector_' ~ item.sector] }}{% if kind == 'package' %} · {{ t.lib_sector_badge }}{% endif %}</p>
+  <h1 class="text-xl font-semibold mb-1">{{ item.name }}</h1>
+  {% if item.description %}<p class="text-sm text-slate-500 prose-measure">{{ item.description }}</p>{% endif %}
+</div>
+
+<dl class="tpl-detail">
+  <div class="tpl-detail__row">
+    <dt class="tpl-detail__key">{{ t.lib_d_words }}</dt>
+    <dd class="tpl-detail__val">
+      {% if item.groups %}
+      <p class="tpl-detail__hint">{{ t.lib_d_words_hint }}</p>
+      {# The all_of group — as one tag “a + b” (all the words are needed); the groups
+         between themselves — OR: so 15 one-word groups do not stretch the screen. #}
+      <div class="tpl-tags">
+        {% for group in item.groups %}<span class="tpl-tag">{{ group | join(" + ") }}</span>{% endfor %}
+      </div>
+      {% else %}{{ t.lib_d_words_none }}{% endif %}
+    </dd>
+  </div>
+  <div class="tpl-detail__row">
+    <dt class="tpl-detail__key">{{ t.lib_d_cpv }}</dt>
+    <dd class="tpl-detail__val">
+      {% if item.cpv %}
+      <ul class="tpl-detail__cpv">
+        {% for c in item.cpv %}
+        <li><span class="tpl-tag tpl-tag--cpv">{{ c.code }}</span>{% if c.label %} {{ c.label }}{% endif %}</li>
+        {% endfor %}
+      </ul>
+      {% else %}{{ t.lib_d_cpv_none }}{% endif %}
+    </dd>
+  </div>
+  <div class="tpl-detail__row">
+    <dt class="tpl-detail__key">{{ t.lib_d_stop }}</dt>
+    <dd class="tpl-detail__val">
+      {% if item.stop_words %}
+      <p class="tpl-detail__hint">{{ t.lib_d_stop_hint }}</p>
+      <div class="tpl-tags">{% for w in item.stop_words %}<span class="tpl-tag tpl-tag--stop">{{ w }}</span>{% endfor %}</div>
+      {% else %}{{ t.lib_d_stop_none }}{% endif %}
+    </dd>
+  </div>
+  <div class="tpl-detail__row">
+    <dt class="tpl-detail__key">{{ t.lib_d_region }}</dt>
+    <dd class="tpl-detail__val">{% if regions %}{{ regions | join(", ") }}{% else %}{{ t.cf_all_serbia }}{% endif %}</dd>
+  </div>
+  <div class="tpl-detail__row">
+    <dt class="tpl-detail__key">{{ t.lib_d_count }}</dt>
+    <dd class="tpl-detail__val">
+      {{ card_count(count) }}
+      {% if count is not none %}
+        {% if examples %}{% include "_preview_examples.html" %}{% else %}<p class="tpl-detail__hint">{{ t.lib_d_no_examples }}</p>{% endif %}
+      {% endif %}
+    </dd>
+  </div>
+</dl>
+
+{# “Based on” — at once the full form (the prefill template_prefill, everything is editable);
+   “as is” — the confirmation screen. The profile limit is exhausted — in /cabinet/account.
+   The sources — a GET form (without JS, CSP): the chosen ones go into both buttons; the "as is" button
+   changes the address via formaction. src_sent — so that an empty choice
+   is not lost (otherwise it is indistinguishable from “the parameter was not sent”). #}
+<div class="tpl-detail__actions">
+{% if profile_limit_reached %}
+  <p class="text-sm text-slate-500">{{ t.lib_d_copy_note }}</p>
+  <div class="tpl-detail__buttons">
+    <a href="/cabinet/account" class="btn-primary">{{ t.lib_d_base_cta }}</a>
+    <a href="/cabinet/account" class="btn-secondary">{{ t.lib_d_asis_cta }}</a>
+  </div>
+{% else %}
+  <form method="get" action="/profiles/new" id="lib-form">
+    {% for k, v in item.params.items() %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+    <input type="hidden" name="src_sent" value="1">
+    <fieldset>
+      <legend class="field__label">{{ t.pf_sources_label }}</legend>
+      <p class="field__hint">{{ t.lib_sources_hint }}</p>
+      {% include "_source_checks.html" %}
+    </fieldset>
+    <p class="text-sm text-slate-500 mt-3">{{ t.lib_d_copy_note }}</p>
+    <div class="tpl-detail__buttons">
+      <button type="submit" class="btn-primary">{{ t.lib_d_base_cta }}</button>
+      <button type="submit" formaction="/profiles/new/confirm" class="btn-secondary">{{ t.lib_d_asis_cta }}</button>
+    </div>
+  </form>
+{% endif %}
+  {% if profile_limit is not none %}
+  <p class="tpl-meta{% if profile_limit_reached %} text-amber-700 font-medium{% endif %}">
+    {{ t.acct_profiles_used.format(used=profile_used, limit=profile_limit) }}
+    {% if profile_limit_reached %} — <a href="/cabinet/account" class="underline hover:text-slate-900">{{ t.acct_link_cta }}</a>{% endif %}
+  </p>
+  {% endif %}
+</div>
+{% endblock %}

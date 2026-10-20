@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 1100" font-family="Arial, sans-serif">
+  <defs>
+    <style>
+      .ttl { font-size: 18px; font-weight: bold; fill: #1a202c; }
+      .col-ttl { font-size: 14px; font-weight: bold; fill: #4a5568; }
+      .mod-ttl { font-size: 12px; font-weight: bold; fill: #1a202c; }
+      .mod-sub { font-size: 10px; fill: #4a5568; }
+      .tbl-name { font-size: 12px; font-weight: bold; fill: #047857; font-family: 'Courier New', monospace; }
+      .tbl-field { font-size: 10px; fill: #4a5568; font-family: 'Courier New', monospace; }
+      .tbl-pk { font-weight: bold; fill: #1a202c; }
+    </style>
+  </defs>
+
+  <text x="640" y="28" class="ttl" text-anchor="middle">Diagram 3. Code modules and the DB structure</text>
+
+  <!-- ===== LEFT COLUMN: CODE MODULES ===== -->
+  <text x="40" y="65" class="col-ttl">Repository structure (monorepo)</text>
+
+  <!-- apps/api -->
+  <rect x="20" y="78" width="600" height="120" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="35" y="98" class="mod-ttl">apps/api/ — FastAPI, a single process</text>
+  <text x="35" y="118" class="mod-sub">routers/tg_webhook.py — receiving Telegram webhooks, routing to handlers</text>
+  <text x="35" y="133" class="mod-sub">routers/viber_webhook.py — receiving Viber Business Messages webhooks</text>
+  <text x="35" y="148" class="mod-sub">routers/cabinet.py — the REST API for the web cabinet (profiles, tenders, billing)</text>
+  <text x="35" y="163" class="mod-sub">routers/paddle_webhook.py — handling subscription.* events from Paddle</text>
+  <text x="35" y="178" class="mod-sub">handlers/ — the business logic of bot commands (start, profile, list, status)</text>
+  <text x="35" y="193" class="mod-sub">middleware/ — auth, rate limit, i18n (detecting the user’s language)</text>
+
+  <!-- apps/parsers -->
+  <rect x="20" y="210" width="600" height="115" rx="6" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1.8"/>
+  <text x="35" y="230" class="mod-ttl">apps/parsers/ — parsing workers</text>
+  <text x="35" y="250" class="mod-sub">jnportal/parser.py — fetch the JSON API, parse, normalize. Runs every 30 min</text>
+  <text x="35" y="265" class="mod-sub">jnportal/cpv_mapper.py — converting Serbian CPV codes to EU CPV</text>
+  <text x="35" y="280" class="mod-sub">obnova/parser.py — static HTML, BeautifulSoup (phase 2)</text>
+  <text x="35" y="295" class="mod-sub">ebrd/parser.py — RSS + REST API (phase 3)</text>
+  <text x="35" y="310" class="mod-sub">_base.py — the abstract BaseParser with fetch/parse/normalize/dedupe</text>
+
+  <!-- apps/workers -->
+  <rect x="20" y="337" width="600" height="115" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.8"/>
+  <text x="35" y="357" class="mod-ttl">apps/workers/ — background tasks (RQ + Redis)</text>
+  <text x="35" y="377" class="mod-sub">routing.py — matching a new tender against subscriber profiles</text>
+  <text x="35" y="392" class="mod-sub">delivery.py — sending notifications via the chosen channels (Viber/TG/Email)</text>
+  <text x="35" y="407" class="mod-sub">ai_review.py — background processing of the “Deep analysis” via Claude Opus</text>
+  <text x="35" y="422" class="mod-sub">tracker.py — deadline reminders (5/3/1/0 days) + the morning summary at 9:00</text>
+  <text x="35" y="437" class="mod-sub">billing.py — handling events from Paddle, subscription renewals/cancellations</text>
+
+  <!-- apps/web -->
+  <rect x="20" y="464" width="600" height="100" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.8"/>
+  <text x="35" y="484" class="mod-ttl">apps/web/ — the web cabinet (FastAPI + Jinja2 + HTMX + Tailwind)</text>
+  <text x="35" y="504" class="mod-sub">templates/ — page templates (login, profiles, tenders, billing) in 3 languages</text>
+  <text x="35" y="519" class="mod-sub">static/ — Tailwind CSS, icons, minimal JS</text>
+  <text x="35" y="534" class="mod-sub">auth.py — magic-link authorization by email (no passwords)</text>
+  <text x="35" y="549" class="mod-sub">i18n/ — sr/ru/en translations via babel</text>
+
+  <!-- libs/ -->
+  <rect x="20" y="576" width="600" height="135" rx="6" fill="#fce7f3" stroke="#be185d" stroke-width="1.8"/>
+  <text x="35" y="596" class="mod-ttl">libs/ — shared libraries</text>
+  <text x="35" y="616" class="mod-sub">libs/core/db.py — the SQLAlchemy engine, RLS, migrations via Alembic</text>
+  <text x="35" y="631" class="mod-sub">libs/core/httpx_client.py — a shared HTTP client with retries, an IPv4 monkey-patch</text>
+  <text x="35" y="646" class="mod-sub">libs/core/keywords_lib_sr.py — Serbian KEYWORDS, STOP_WORDS, classify()</text>
+  <text x="35" y="661" class="mod-sub">libs/ai/anthropic_client.py — a wrapper over the Anthropic API + prompt caching</text>
+  <text x="35" y="676" class="mod-sub">libs/channels/ — the Viber/Telegram/Email/WebPush implementation via NotificationChannel</text>
+  <text x="35" y="691" class="mod-sub">libs/billing/paddle.py — a wrapper over the Paddle SDK + signature verify</text>
+
+  <!-- infra/ -->
+  <rect x="20" y="723" width="600" height="100" rx="6" fill="#e0e7ff" stroke="#4338ca" stroke-width="1.8"/>
+  <text x="35" y="743" class="mod-ttl">infra/ — infrastructure (outside the docker images)</text>
+  <text x="35" y="763" class="mod-sub">docker-compose.yml — all services (caddy, api, parsers, workers, postgres, redis)</text>
+  <text x="35" y="778" class="mod-sub">Caddyfile — the Caddy configuration (TLS, reverse proxy, headers)</text>
+  <text x="35" y="793" class="mod-sub">migrations/ — Alembic DB migrations</text>
+  <text x="35" y="808" class="mod-sub">backup.sh — pg_dump + age encryption + rclone to Backblaze B2 (cron 03:00 UTC)</text>
+
+  <!-- docs/ -->
+  <rect x="20" y="835" width="600" height="100" rx="6" fill="#f7fafc" stroke="#4a5568" stroke-width="1.8"/>
+  <text x="35" y="855" class="mod-ttl">docs/ — documentation (lives in the repo)</text>
+  <text x="35" y="875" class="mod-sub">CHANGELOG.md, docs/archive/ENVIRONMENT.md, RUNBOOK.md, DECISIONS.md (ADR)</text>
+  <text x="35" y="890" class="mod-sub">docs/archive/SOURCES.md — the list of tender platforms and the connection plan</text>
+  <text x="35" y="905" class="mod-sub">CHANNELS.md — delivery channels and the matrix “channel × plan × urgency”</text>
+  <text x="35" y="920" class="mod-sub">docs/archive/OPEN_QUESTIONS.md — questions to agree on</text>
+
+  <!-- .github/ -->
+  <rect x="20" y="947" width="600" height="80" rx="6" fill="#fff5f7" stroke="#9f1239" stroke-width="1.8"/>
+  <text x="35" y="967" class="mod-ttl">.github/workflows/ — CI/CD</text>
+  <text x="35" y="987" class="mod-sub">ci.yml — on every PR: ruff, black, mypy, pytest, migration checks</text>
+  <text x="35" y="1002" class="mod-sub">deploy-staging.yml — merge into main → auto-deploy to the staging domain</text>
+  <text x="35" y="1017" class="mod-sub">deploy-prod.yml — manual approve → deploy to prod (one person)</text>
+
+  <!-- ===== RIGHT COLUMN: DB ===== -->
+  <text x="650" y="65" class="col-ttl">DB structure (PostgreSQL 16)</text>
+
+  <!-- subscribers -->
+  <rect x="640" y="78" width="290" height="160" rx="6" fill="#fff" stroke="#047857" stroke-width="1.8"/>
+  <rect x="640" y="78" width="290" height="22" rx="6" fill="#047857"/>
+  <text x="785" y="94" text-anchor="middle" style="font-size:13px;font-weight:bold;fill:#fff;font-family:Arial">subscribers</text>
+  <text x="650" y="116" class="tbl-field"><tspan class="tbl-pk">id</tspan>            UUID PRIMARY KEY</text>
+  <text x="650" y="131" class="tbl-field">email          TEXT UNIQUE</text>
+  <text x="650" y="146" class="tbl-field">tg_user_id     BIGINT UNIQUE</text>
+  <text x="650" y="161" class="tbl-field">viber_user_id  TEXT UNIQUE</text>
+  <text x="650" y="176" class="tbl-field">locale         TEXT (sr|ru|en)</text>
+  <text x="650" y="191" class="tbl-field">plan           TEXT (free|starter|pro|business)</text>
+  <text x="650" y="206" class="tbl-field">paddle_subscription_id TEXT</text>
+  <text x="650" y="221" class="tbl-field">trial_ends_at  TIMESTAMP, status, created_at</text>
+
+  <!-- profiles -->
+  <rect x="640" y="252" width="290" height="160" rx="6" fill="#fff" stroke="#047857" stroke-width="1.8"/>
+  <rect x="640" y="252" width="290" height="22" rx="6" fill="#047857"/>
+  <text x="785" y="268" text-anchor="middle" style="font-size:13px;font-weight:bold;fill:#fff;font-family:Arial">profiles</text>
+  <text x="650" y="290" class="tbl-field"><tspan class="tbl-pk">id</tspan>             UUID PRIMARY KEY</text>
+  <text x="650" y="305" class="tbl-field">subscriber_id  UUID FK → subscribers</text>
+  <text x="650" y="320" class="tbl-field">name           TEXT</text>
+  <text x="650" y="335" class="tbl-field">keywords       TEXT[]</text>
+  <text x="650" y="350" class="tbl-field">stop_words     TEXT[]</text>
+  <text x="650" y="365" class="tbl-field">cpv_codes      TEXT[]</text>
+  <text x="650" y="380" class="tbl-field">regions        TEXT[]</text>
+  <text x="650" y="395" class="tbl-field">min_price, max_price NUMERIC</text>
+  <text x="650" y="408" class="tbl-field">channels       JSONB · active BOOLEAN</text>
+
+  <!-- tenders -->
+  <rect x="640" y="425" width="290" height="160" rx="6" fill="#fff" stroke="#047857" stroke-width="1.8"/>
+  <rect x="640" y="425" width="290" height="22" rx="6" fill="#047857"/>
+  <text x="785" y="441" text-anchor="middle" style="font-size:13px;font-weight:bold;fill:#fff;font-family:Arial">tenders</text>
+  <text x="650" y="463" class="tbl-field"><tspan class="tbl-pk">id</tspan>             UUID PRIMARY KEY</text>
+  <text x="650" y="478" class="tbl-field">source         TEXT (jnportal|obnova|...)</text>
+  <text x="650" y="493" class="tbl-field">source_uid     TEXT</text>
+  <text x="650" y="508" class="tbl-field">title, description TEXT</text>
+  <text x="650" y="523" class="tbl-field">cpv            TEXT[]</text>
+  <text x="650" y="538" class="tbl-field">region, price_eur NUMERIC</text>
+  <text x="650" y="553" class="tbl-field">deadline_at    TIMESTAMP</text>
+  <text x="650" y="568" class="tbl-field">url, hash, ai_summary, published_at</text>
+  <text x="650" y="581" class="tbl-field" font-style="italic">+ GIN index on cpv, keywords</text>
+
+  <!-- notifications -->
+  <rect x="640" y="598" width="290" height="125" rx="6" fill="#fff" stroke="#047857" stroke-width="1.8"/>
+  <rect x="640" y="598" width="290" height="22" rx="6" fill="#047857"/>
+  <text x="785" y="614" text-anchor="middle" style="font-size:13px;font-weight:bold;fill:#fff;font-family:Arial">notifications</text>
+  <text x="650" y="636" class="tbl-field"><tspan class="tbl-pk">id</tspan>             UUID PRIMARY KEY</text>
+  <text x="650" y="651" class="tbl-field">subscriber_id  UUID FK</text>
+  <text x="650" y="666" class="tbl-field">profile_id, tender_id  FK</text>
+  <text x="650" y="681" class="tbl-field">channel        TEXT (viber|tg|email)</text>
+  <text x="650" y="696" class="tbl-field">sent_at, status, message_id</text>
+  <text x="650" y="711" class="tbl-field">user_action    ENUM (participate|study|skip)</text>
+
+  <!-- tracker_items -->
+  <rect x="640" y="736" width="290" height="100" rx="6" fill="#fff" stroke="#047857" stroke-width="1.8"/>
+  <rect x="640" y="736" width="290" height="22" rx="6" fill="#047857"/>
+  <text x="785" y="752" text-anchor="middle" style="font-size:13px;font-weight:bold;fill:#fff;font-family:Arial">tracker_items</text>
+  <text x="650" y="774" class="tbl-field"><tspan class="tbl-pk">id</tspan>           UUID</text>
+  <text x="650" y="789" class="tbl-field">subscriber_id, tender_id  FK</text>
+  <text x="650" y="804" class="tbl-field">status       (active|won|lost|abandoned)</text>
+  <text x="650" y="819" class="tbl-field">deadline_at, notes, last_reminder_at</text>
+
+  <!-- ai_analyses -->
+  <rect x="640" y="850" width="290" height="100" rx="6" fill="#fff" stroke="#047857" stroke-width="1.8"/>
+  <rect x="640" y="850" width="290" height="22" rx="6" fill="#047857"/>
+  <text x="785" y="866" text-anchor="middle" style="font-size:13px;font-weight:bold;fill:#fff;font-family:Arial">ai_analyses</text>
+  <text x="650" y="888" class="tbl-field"><tspan class="tbl-pk">id</tspan>           UUID</text>
+  <text x="650" y="903" class="tbl-field">tender_id, subscriber_id  FK</text>
+  <text x="650" y="918" class="tbl-field">model        (sonnet-4-6|opus-4-7)</text>
+  <text x="650" y="933" class="tbl-field">depth        (short|deep)</text>
+  <text x="650" y="945" class="tbl-field">cost_usd, result_md, created_at</text>
+
+  <!-- billing_events -->
+  <rect x="640" y="965" width="290" height="80" rx="6" fill="#fff" stroke="#047857" stroke-width="1.8"/>
+  <rect x="640" y="965" width="290" height="22" rx="6" fill="#047857"/>
+  <text x="785" y="981" text-anchor="middle" style="font-size:13px;font-weight:bold;fill:#fff;font-family:Arial">billing_events</text>
+  <text x="650" y="1003" class="tbl-field"><tspan class="tbl-pk">id</tspan>           UUID</text>
+  <text x="650" y="1018" class="tbl-field">subscriber_id, paddle_event_id (uniq)</text>
+  <text x="650" y="1033" class="tbl-field">event_type, amount_eur, created_at</text>
+
+  <!-- ===== Links / RLS ===== -->
+  <text x="950" y="65" class="col-ttl">RLS policies (Row-Level Security)</text>
+
+  <rect x="950" y="78" width="310" height="200" rx="6" fill="#fff5f7" stroke="#be185d" stroke-width="1.8"/>
+  <text x="965" y="98" class="mod-ttl">Isolation of subscriber data</text>
+  <text x="965" y="118" class="mod-sub">RLS is enabled for:</text>
+  <text x="965" y="135" class="tbl-field">profiles, notifications,</text>
+  <text x="965" y="150" class="tbl-field">tracker_items, ai_analyses,</text>
+  <text x="965" y="165" class="tbl-field">billing_events</text>
+  <text x="965" y="187" class="mod-sub">Policy: USING (subscriber_id =</text>
+  <text x="965" y="202" class="tbl-field">current_setting('app.user_id')::uuid)</text>
+  <text x="965" y="225" class="mod-sub">Before a query from the API:</text>
+  <text x="965" y="240" class="tbl-field">SET app.user_id = '...'</text>
+  <text x="965" y="262" class="mod-sub">The tables tenders, tender_documents</text>
+  <text x="965" y="272" class="mod-sub">— WITHOUT RLS (public data)</text>
+
+  <!-- Indexes -->
+  <rect x="950" y="295" width="310" height="180" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.8"/>
+  <text x="965" y="315" class="mod-ttl">Key indexes</text>
+  <text x="965" y="335" class="tbl-field">CREATE INDEX ON tenders</text>
+  <text x="965" y="350" class="tbl-field">  USING GIN (cpv);</text>
+  <text x="965" y="370" class="tbl-field">CREATE INDEX ON tenders</text>
+  <text x="965" y="385" class="tbl-field">  USING GIN (to_tsvector('simple',</text>
+  <text x="965" y="400" class="tbl-field">  unaccent(title || description)));</text>
+  <text x="965" y="420" class="tbl-field">CREATE INDEX ON profiles</text>
+  <text x="965" y="435" class="tbl-field">  USING GIN (keywords);</text>
+  <text x="965" y="455" class="tbl-field">CREATE INDEX ON tenders</text>
+  <text x="965" y="470" class="tbl-field">  (deadline_at) WHERE status='open';</text>
+
+  <!-- Backups -->
+  <rect x="950" y="492" width="310" height="170" rx="6" fill="#fffbeb" stroke="#92400e" stroke-width="1.8"/>
+  <text x="965" y="512" class="mod-ttl">Backups and Point-In-Time Recovery</text>
+  <text x="965" y="532" class="mod-sub">• A full pg_dump every 24 hours</text>
+  <text x="965" y="552" class="mod-sub">• WAL archiving continuously (pg_basebackup)</text>
+  <text x="965" y="572" class="mod-sub">• age encryption before sending</text>
+  <text x="965" y="592" class="mod-sub">• Storage: Backblaze B2 (~$1.50/month)</text>
+  <text x="965" y="612" class="mod-sub">• Retention: 7 days daily + 4 weekly + 12 monthly</text>
+  <text x="965" y="632" class="mod-sub">• A restore test on staging — once a month</text>
+  <text x="965" y="652" class="mod-sub">• A Healthchecks.io ping on backup success</text>
+
+  <!-- Sentry / monitoring -->
+  <rect x="950" y="680" width="310" height="170" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="965" y="700" class="mod-ttl">Production monitoring</text>
+  <text x="965" y="720" class="mod-sub">• Sentry: Python errors, frontend errors</text>
+  <text x="965" y="740" class="mod-sub">• Healthchecks: cron tasks, backups</text>
+  <text x="965" y="760" class="mod-sub">• UptimeRobot: HTTP /health and /api/ping</text>
+  <text x="965" y="780" class="mod-sub">• Better Stack: centralised logs</text>
+  <text x="965" y="800" class="mod-sub">• All alerts → a separate Telegram chat</text>
+  <text x="965" y="820" class="mod-sub">• A daily summary at 9:00: number of tenders,</text>
+  <text x="965" y="835" class="mod-sub">  sends, errors, AI calls, spend</text>
+
+  <!-- Security -->
+  <rect x="950" y="867" width="310" height="160" rx="6" fill="#fff" stroke="#4a5568" stroke-width="1.8"/>
+  <text x="965" y="887" class="mod-ttl">Security</text>
+  <text x="965" y="907" class="mod-sub">• All secrets are in .env (chmod 600)</text>
+  <text x="965" y="927" class="mod-sub">• .env in .gitignore + 1Password Secret References</text>
+  <text x="965" y="947" class="mod-sub">• HTTPS-only via Caddy (HSTS, perfect-fwd)</text>
+  <text x="965" y="967" class="mod-sub">• Webhook signatures: Telegram, Viber, Paddle</text>
+  <text x="965" y="987" class="mod-sub">• A rate limit on the cabinet API (10 req/sec/user)</text>
+  <text x="965" y="1007" class="mod-sub">• Regular updates of the Docker base images</text>
+
+</svg>

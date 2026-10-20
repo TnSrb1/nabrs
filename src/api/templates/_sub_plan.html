@@ -1,0 +1,55 @@
+{# --- Value ladder (VG-12): "what my plan gives" + upsell to /plans. ------ #}
+{# The feature labels ↔ catalog.FEATURE_KEYS — from the chrome catalog (COMMON∪CABINET, feat_*).
+   The values (the limits) — from feature_matrix. #}
+{% set feat_labels = {
+  "profiles": t.feat_profiles,
+  "telegram": t.feat_telegram,
+  "ai_match": t.feat_ai_match,
+  "ai_deep": t.feat_ai_deep,
+  "bid": t.feat_bid,
+  "checklist": t.feat_checklist,
+  "draft": t.feat_draft,
+  "analytics": t.feat_analytics,
+} %}
+
+{# Human-readable cell limit wording (None=∞, monthly ones — with "/ mo."). #}
+{% macro feat_line(cell) %}
+  <span>{{ feat_labels[cell.key] }}</span>
+  {% if cell.kind == "limit" %}
+  <span class="text-slate-500">— {% if cell.limit is none %}{{ t.subp_no_limit }}{% elif cell.key in ["ai_deep", "draft"] %}{{ cell.limit }} {{ t.subp_per_month }}{% else %}{{ cell.limit }}{% endif %}</span>
+  {% endif %}
+{% endmacro %}
+
+{% if current_features %}
+<section class="card mb-6" id="plan-features" >
+  <h2 class="ck-section__title">{{ t.subp_plan_gives_title }}</h2>
+  <ul class="space-y-2 text-sm">
+    {% for cell in current_features %}
+    <li class="flex items-start gap-2">
+      <svg class="h-4 w-4 shrink-0 mt-0.5" style="color: var(--status-success)" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0z"/></svg>
+      <span>{{ feat_line(cell) }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% for up in upgrades %}
+{% if up.delta %}
+<section class="card mb-6" >
+  <h2 class="ck-section__title">{{ t.subp_upgrade_pre }}{{ up.plan.key | capitalize }}{{ t.subp_upgrade_post }}</h2>
+  <p class="text-sm text-slate-500 mb-4 prose-measure">{{ t.subp_upgrade_desc_pre }}{{ up.plan.key | capitalize }}{% if up.plan.price_eur %} — {{ up.plan.price_eur }} {{ t.subp_price_month }}{% endif %}</p>
+  <ul class="space-y-2 text-sm">
+    {% for cell in up.delta %}
+    <li class="flex items-start gap-2">
+      <svg class="h-4 w-4 shrink-0 text-amber-600 mt-0.5" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.5a.75.75 0 0 1 .75.75v5h5a.75.75 0 0 1 0 1.5h-5v5a.75.75 0 0 1-1.5 0v-5h-5a.75.75 0 0 1 0-1.5h5v-5A.75.75 0 0 1 8 1.5z"/></svg>
+      <span>{{ feat_line(cell) }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  <div class="mt-5">
+    <a href="/plans" class="btn-primary">{{ t.subp_upgrade_cta_pre }}{{ up.plan.key | capitalize }}</a>
+  </div>
+</section>
+{% endif %}
+{% endfor %}

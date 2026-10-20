@@ -1,0 +1,11 @@
+{# The fragment of the response to the HTMX enabling of a source from _source_banner.html: it replaces
+   the #src-banner section. The count — of templates where the source stands AFTER the write. #}
+{% if done_count %}
+<section class="card" id="src-banner" role="status">
+  <p class="text-sm font-medium">{{ t.src_banner_done.format(n=plural(lang, "templates_count", done_count)) }}</p>
+</section>
+{% else %}
+<section class="card" id="src-banner" role="alert">
+  <p class="text-sm">{{ t.src_banner_failed }}</p>
+</section>
+{% endif %}

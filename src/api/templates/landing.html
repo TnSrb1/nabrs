@@ -1,0 +1,145 @@
+{% extends "public_base.html" %}
+{# SITE-01: the showcase offer — a Claude DRAFT; the owner approves/edits the wording and CTAs. #}
+{% block title %}{{ t.hero_title }} — {{ ui.brand }}{% endblock %}
+{% block meta_description %}{{ t.hero_subtitle }}{% endblock %}
+{% block og_title %}{{ t.hero_title }}{% endblock %}
+{% block og_description %}{{ t.hero_subtitle }}{% endblock %}
+{% block content %}
+<section class="mx-auto max-w-5xl px-4 pt-16 pb-12">
+  <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-brand max-w-3xl">{{ t.hero_title }}</h1>
+  <p class="mt-5 text-lg text-slate-600 max-w-2xl">{{ t.hero_subtitle }}</p>
+  <div class="mt-8 flex flex-wrap items-center gap-3">
+    {% if authed %}<a href="/app" class="btn-primary">{{ t.cta_cabinet }}</a>{% else %}<a href="/signup" class="btn-primary">{{ t.cta }}</a>{% endif %}
+    <a href="/plans" class="btn-secondary">{{ t.hero_cta_plans }}</a>
+    <a href="/tenderi" class="btn-secondary">{{ ui.nav_tenderi }}</a>
+  </div>
+  {% if not authed %}
+  <p class="mt-6"><span class="badge badge-success">{{ t.trial_note }}</span></p>
+  <p class="mt-2 text-sm text-slate-600 max-w-2xl">{{ t.trial_after }}</p>
+  {% endif %}
+</section>
+
+{# Three questions of the subscriber: each card leads to a function. The whole card is a link;
+   there is no interactive content inside <a>. The block does not depend on the facts: without them the caption simply disappears. #}
+<section class="mx-auto max-w-5xl px-4 pb-12" data-landing-questions>
+  <h2 class="text-xl font-semibold text-slate-900">{{ t.q_title }}</h2>
+  <div class="mt-4 grid gap-3 sm:grid-cols-3">
+    <a href="/tenderi" class="card">
+      <p class="font-semibold text-slate-900">{{ t.q_open_title }}</p>
+    </a>
+    <a href="/tenderi" class="card">
+      <p class="font-semibold text-slate-900">{{ t.q_soon_title }}</p>
+      <p class="mt-1 text-sm text-slate-500">{{ t.q_soon_sub }}</p>
+    </a>
+    <a href="/statistika" class="card">
+      <p class="font-semibold text-slate-900">{{ t.q_win_title }}</p>
+      <p class="mt-1 text-sm text-slate-500">{{ t.q_win_sub }}</p>
+    </a>
+  </div>
+</section>
+
+{# The facts for quoting + an example of the result: the figures are the same counters as the hub
+   /tenderi (geo_cache.get_landing_facts, a 1 h cache). No data — no blocks. #}
+{% if facts and facts.open_total %}
+<section class="mx-auto max-w-5xl px-4 pb-12" data-landing-facts>
+  <p class="text-sm text-slate-600">
+    <strong class="text-slate-900">{{ t.facts_open.format(n=facts.open_total) }}</strong>
+    {%- if facts.updated_at %} · {% if facts_updated_today %}{{ t.facts_updated_today }}{% else %}{{ t.facts_updated_on.format(date=facts.updated_at | d_local) }}{% endif %}{% endif %}
+    {%- if facts_sources_text %}
+    · <a href="/izvori">{{ facts_sources_text }}</a>{% if facts_countries_text %} · {{ facts_countries_text }}{% endif %}
+    {%- endif %}
+  </p>
+  {% if facts.example %}
+  <h2 class="mt-6 text-base font-semibold text-slate-900">{{ t.example_title }}</h2>
+  <div class="fd-list mt-3">
+    {% with row = facts.example %}{% include "_geo_tender_row.html" %}{% endwith %}
+  </div>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="bg-slate-50 border-y">
+  <div class="mx-auto max-w-5xl px-4 py-12">
+    <div class="flex items-center gap-2">
+      {# The section label: blue is taken by time and the match score, therefore the accent
+         gives amber — the role “action and upsell” (the owner’s decision 25.07). #}
+      <span class="badge badge-accent">AI</span>
+      <h2 class="text-xl font-semibold text-slate-900">{{ t.ai_title }}</h2>
+    </div>
+    <p class="mt-2 text-slate-600 max-w-2xl">{{ t.ai_subtitle }}</p>
+    <p class="mt-1 text-sm text-slate-500 max-w-2xl">{{ t.ai_included }}</p>
+    <div class="mt-6 grid gap-4 sm:grid-cols-2">
+      {% for f in t.ai_features %}
+      <div class="card">
+        <div class="flex items-center gap-2">
+          <span class="text-xl" aria-hidden="true">{{ f.icon }}</span>
+          <span class="font-semibold text-slate-900">{{ f.title }}</span>
+        </div>
+        <p class="mt-2 text-sm text-slate-600">{{ f.text }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# A static snapshot of a real analysis (home_ai_example.py): without a DB request for the display.
+   The pros / cons — in the language of the page (sr / en — a manual translation of the fixture). #}
+{% if ai_example %}
+<section class="mx-auto max-w-5xl px-4 py-12" data-home-ai-example>
+  <h2 class="text-xl font-semibold text-slate-900">{{ t.ex_title }}</h2>
+  <p class="mt-1 text-sm text-slate-600">{{ t.ex_real }}</p>
+  <div class="card mt-4">
+    <p class="text-xs text-slate-500">{{ t.ex_caption.format(date=ai_example.analysis_date) }}</p>
+    <h3 class="mt-1 font-semibold text-slate-900">{{ ai_example.title }}</h3>
+    <p class="mt-2 text-sm text-slate-600">{{ t.ex_customer }}: {{ ai_example.customer }} · {{ t.ex_amount }}: {{ ai_example.amount }}</p>
+    <p class="mt-3 flex flex-wrap items-center gap-2">
+      <span class="text-sm text-slate-600">{{ t.ex_verdict_label }}:</span>
+      <span class="badge badge-accent">🟡 {{ t.ex_verdict_caution }}</span>
+      <span class="text-sm text-slate-600">{{ t.ex_score.format(score=ai_example.score) }}</span>
+    </p>
+    <div class="mt-4 grid gap-4 sm:grid-cols-2" lang="{{ lang }}">
+      <div>
+        <h4 class="text-sm font-semibold text-slate-900" lang="{{ lang }}">{{ t.ex_pros }}</h4>
+        <ul class="mt-2 list-disc list-inside text-sm text-slate-700 space-y-1">
+          {% for p in ai_example.texts[lang].pros %}<li>{{ p }}</li>{% endfor %}
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-sm font-semibold text-slate-900" lang="{{ lang }}">{{ t.ex_cons }}</h4>
+        <ul class="mt-2 list-disc list-inside text-sm text-slate-700 space-y-1">
+          {% for c in ai_example.texts[lang].cons %}<li>{{ c }}</li>{% endfor %}
+        </ul>
+      </div>
+    </div>
+    <p class="mt-3 text-xs text-slate-500">{{ t.ex_lang_note }}</p>
+    <p class="mt-3"><a href="/tender/{{ ai_example.tender_id }}" class="btn-secondary">{{ t.ex_link }}</a></p>
+    <p class="mt-3 text-sm text-slate-600">{{ t.ex_button_note }}</p>
+    <p class="mt-3 text-xs text-amber-700 italic">⚠️ {{ t.ai_disclaimer }}</p>
+  </div>
+</section>
+{% endif %}
+
+<section class="mx-auto max-w-5xl px-4 py-12">
+  <h2 class="text-xl font-semibold text-slate-900">{{ t.how_title }}</h2>
+  <ol class="mt-6 grid gap-4 sm:grid-cols-2">
+    {% for step in t.how_steps %}
+    <li class="card flex gap-3 items-start">
+      <span class="step-num flex-none w-7 h-7 rounded-full text-sm flex items-center justify-center">{{ loop.index }}</span>
+      <span class="text-slate-700">{{ step }}</span>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+
+<section class="bg-slate-50 border-y">
+  <div class="mx-auto max-w-5xl px-4 py-12">
+    <h2 class="text-xl font-semibold text-slate-900">{{ t.icp_title }}</h2>
+    <div class="mt-3 card max-w-2xl">
+      <p class="text-slate-600">{{ t.icp_text }}</p>
+    </div>
+    <div class="mt-8">
+      {% if authed %}<a href="/app" class="btn-primary">{{ t.cta_cabinet }}</a>{% else %}<a href="/signup" class="btn-primary">{{ t.cta }}</a>{% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

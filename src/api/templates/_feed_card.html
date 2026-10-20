@@ -1,0 +1,72 @@
+{# The match card on /app/feed (portal, Stage 3). The language of the cockpit / board:
+   the heading → the customer → the profile as a quiet tag; on the right the urgency badge and the date
+   of delivery; at the bottom — the AI cluster.
+   Context: item (feed_service.FeedItem).
+
+   The urgency badge — THE SAME color code as on the board and in the dashboard teaser
+   (expired / today / ≤2 / ≤7 / further — the date): one tender must look
+   the same on all three pages.
+
+   The AI cluster is honest: we show ONLY the artifacts that really exist
+   (`ai_actions`), and when nothing is ready — one noticeable CTA instead of a scatter of
+   badges. The links and anchors are the same as before (#analysis / #bid / #checklist / #draft). #}
+{% set _dl = item.deadline_at | days_left %}
+{% set a = item.ai_actions %}
+{% set detail_url = "/app/tenders/" ~ item.tender_id ~ "?profile_id=" ~ item.profile_id %}
+{% set _has_ai = a.delivered_analysis_level or a.has_bid_verdict or a.has_checklist or a.has_draft %}
+<article class="fd-card{% if _dl is not none and _dl >= 0 and _dl <= 2 %} is-urgent{% endif %}" data-feed-card>
+  <div class="fd-card__head">
+    <div class="fd-card__main">
+      {# Stage 5: the heading + the translation toggle. The primary render — the original (sr),
+         the model is NOT called on the feed render; the translation only by the button. #}
+      {% with tender_id=item.tender_id, profile_id=item.profile_id, view="feed",
+              view_title=item.title, title_url=item.tender_url,
+              title_class="fd-card__title", title_blank=true,
+              show_original=true, unavailable=false, original_lang="sr" %}
+      {% include "_card_title.html" %}
+      {% endwith %}
+      {% if item.customer_name %}<p class="fd-card__customer">🏛 {{ item.customer_name }}</p>{% endif %}
+      {% if item.source_label %}<p class="fd-card__customer">🌐 {{ t.src_label }}: {{ item.source_label }}</p>{% endif %}
+      {% with also_on_n=item.also_on_n, also_on_conf=item.canonical_confidence, also_on_class="fd-card__customer" %}{% include "_also_on.html" %}{% endwith %}
+      {# The profile — a NOTICEABLE tag, not a pale line: it is a direct answer to "which
+         profile it matches", and for a tenant with several profiles it is also the main way
+         to sort through the feed. The tag is clickable: it leads to the same feed, narrowed by this
+         profile (the same ?profile_id= as the filter chips at the top).
+         One tender matched by two profiles — TWO cards with their own
+         tags (dedup by tender_id + profile_id): gluing them together would mean
+         losing the answer to this very question. #}
+      <a href="/app/feed?profile_id={{ item.profile_id }}" class="fd-card__profile"
+         title="{{ t.fd_profile_match_title.format(name=item.profile_name) }}">{{ item.profile_name }}</a>
+    </div>
+    <div class="fd-card__side fd-card__side--cols">
+      <span class="fd-card__deadline">
+      {% if _dl is not none %}
+        {% if _dl < 0 %}
+        <span class="badge badge-expired" title="{{ t.deadline_passed_title }}">{{ t.deadline_expired }}</span>
+        {% elif _dl == 0 %}
+        <span class="badge badge-urgent" title="{{ t.deadline_title }} {{ item.deadline_at | dl_local(item.source_key, lang) }}">⏰ {{ t.deadline_today }}</span>
+        {% elif _dl <= 2 %}
+        <span class="badge badge-urgent" title="{{ t.deadline_title }} {{ item.deadline_at | dl_local(item.source_key, lang) }}">⏰ {{ plural(lang, 'days_left_short', _dl) }}</span>
+        {% elif _dl <= 7 %}
+        <span class="badge badge-new" title="{{ t.deadline_title }} {{ item.deadline_at | dl_local(item.source_key, lang) }}">{{ plural(lang, 'days_left_short', _dl) }}</span>
+        {% else %}
+        <span class="badge badge-muted" title="{{ t.deadline_title }} {{ item.deadline_at | dl_local(item.source_key, lang) }}">{{ t.deadline_until }} {{ item.deadline_at | d_local }}</span>
+        {% endif %}
+      {% endif %}
+      </span>
+      {% if item.capped %}<span class="fd-card__sent fd-card__value" title="{{ t.fd_capped_title.format(cap=delivery_daily_cap()) }}">{{ t.fd_capped }}</span>{% elif item.web_only %}<span class="fd-card__sent fd-card__value">{{ t.found_prefix }} {{ (item.sent_at | localtime).strftime('%d.%m') }}</span>{% elif item.sent_at %}<span class="fd-card__sent fd-card__value">{{ t.delivered_prefix }} {{ (item.sent_at | localtime).strftime('%d.%m') }}</span>{% endif %}
+    </div>
+  </div>
+  <div class="fd-card__ai">
+    {% if _has_ai %}
+    <span class="fd-card__ready">{{ t.fd_ready }}</span>
+    {% if a.delivered_analysis_level %}<a href="{{ detail_url }}#analysis" class="badge badge-success badge-tap" title="{{ t.fd_ai_analysis_title }}">{{ t.fd_ai_analysis }}</a>{% endif %}
+    {% if a.has_bid_verdict %}<a href="{{ detail_url }}#bid" class="badge badge-success badge-tap" title="{{ t.fd_ai_verdict_title }}">{{ t.fd_ai_verdict }}</a>{% endif %}
+    {% if a.has_checklist %}<a href="{{ detail_url }}#checklist" class="badge badge-success badge-tap" title="{{ t.fd_ai_checklist_title }}">{{ t.fd_ai_checklist }}</a>{% endif %}
+    {% if a.has_draft %}<a href="{{ detail_url }}#draft" class="badge badge-success badge-tap" title="{{ t.fd_ai_draft_title }}">{{ t.fd_ai_draft }}</a>{% endif %}
+    <a href="{{ detail_url }}" class="fd-card__more" title="{{ t.fd_open_ai_title }}">{{ t.fd_open_ai }}</a>
+    {% else %}
+    <a href="{{ detail_url }}" class="fd-card__cta" title="{{ t.fd_cta_ai_title }}">{{ t.fd_cta_ai }}</a>
+    {% endif %}
+  </div>
+</article>

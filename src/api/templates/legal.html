@@ -1,0 +1,20 @@
+{% extends "public_base.html" %}
+{# SITE-05: legal text — a Claude DRAFT; the owner does the final edit (placeholders [[owner: ...]]). #}
+{% block title %}{{ doc.title }} — {{ ui.brand }}{% endblock %}
+{% block meta_description %}{{ doc.title }} — {{ ui.brand }}{% endblock %}
+{% block og_title %}{{ doc.title }}{% endblock %}
+{% block content %}
+<article class="mx-auto max-w-3xl px-4 py-12">
+  <h1 class="text-2xl font-bold text-slate-900">{{ doc.title }}</h1>
+  {% if doc.updated %}<p class="mt-1 text-sm text-slate-500">{{ doc.updated }}</p>{% endif %}
+  {% if doc.intro %}<p class="mt-5 text-slate-700">{{ doc.intro }}</p>{% endif %}
+  {% for s in doc.sections %}
+  <section class="mt-8">
+    <h2 class="text-lg font-semibold text-slate-900">{{ s.h }}</h2>
+    {% for p in s.body %}
+    <p class="mt-3 text-slate-700">{{ p }}</p>
+    {% endfor %}
+  </section>
+  {% endfor %}
+</article>
+{% endblock %}

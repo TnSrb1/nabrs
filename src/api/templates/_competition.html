@@ -1,0 +1,55 @@
+{# Konkurencija: who won earlier from this customer and in this CPV group over the
+   24 months. Context: competition — CompetitionView. Only the winners from
+   tender_awards (the numbers of offers / participants are not in the open data). Without
+   the plan gate (the owner’s decision 13.10). An empty breakdown — an honest “no data”. #}
+{% macro rival_table(items) %}
+<div class="mt-2 overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="border-b border-slate-200 text-left text-xs text-slate-500">
+        <th class="py-2">{{ t.th_winner }}</th>
+        <th class="py-2 text-right">{{ t.th_wins }}</th>
+        <th class="py-2 text-right">{{ t.th_sum }}</th>
+        <th class="py-2 text-right">{{ t.th_last }}</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      {% for r in items %}
+      <tr>
+        <td class="py-2">
+          <span class="text-slate-800">{{ r.name }}</span>
+          {% if r.is_joint %}<span class="badge">{{ t.inc_consortium }}</span>{% endif %}
+          {% if r.pib %}<div class="text-xs text-slate-500">PIB {{ r.pib }}</div>{% endif %}
+        </td>
+        <td class="py-2 text-right text-slate-800">{{ r.wins }}</td>
+        <td class="py-2 text-right">
+          {% if r.sum_fmt %}<span class="text-slate-800">{{ r.sum_fmt }}</span>
+          {% else %}<span class="text-xs text-slate-500">{{ t.inc_sum_hidden }}</span>{% endif %}
+        </td>
+        <td class="py-2 text-right text-slate-600">{{ r.last_fmt or t.inc_date_unknown }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endmacro %}
+{% if competition is not none %}
+<section id="competition" class="card mb-6">
+  <h2 class="text-lg font-semibold mb-1">{{ t.kn_h }}</h2>
+  <p class="text-sm text-slate-600 mb-3">{{ t.kn_lede.format(months=competition.months) }}</p>
+
+  <h3 class="text-sm font-semibold text-slate-700 mt-3">{{ t.kn_customer_h }}{% if competition.customer_name %} · <span class="text-slate-600">{{ competition.customer_name }}</span>{% endif %}</h3>
+  {% if competition.customer %}{{ rival_table(competition.customer) }}
+  {% else %}<p class="mt-1 text-sm text-slate-500">{{ t.kn_none.format(months=competition.months) }}</p>{% endif %}
+
+  {% if competition.cpv_group %}
+  <h3 class="text-sm font-semibold text-slate-700 mt-5">{{ t.kn_cpv_h.format(group=competition.cpv_group) }}</h3>
+  {% if competition.cpv %}{{ rival_table(competition.cpv) }}
+  {% else %}<p class="mt-1 text-sm text-slate-500">{{ t.kn_none.format(months=competition.months) }}</p>{% endif %}
+  {% else %}
+  <p class="mt-4 text-sm text-slate-500">{{ t.kn_no_cpv }}</p>
+  {% endif %}
+
+  <p class="mt-3 text-xs text-slate-500 italic">{{ t.kn_note }}</p>
+</section>
+{% endif %}

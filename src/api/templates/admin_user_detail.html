@@ -1,0 +1,195 @@
+{% extends "admin_base.html" %}
+{% block title %}{{ user.email or user.id }} — Админ{% endblock %}
+{% block admin_content %}
+{% set channel_names = {'telegram': 'Telegram', 'email': 'Email'} %}
+{% set channel_status = {'active': 'активен', 'disabled': 'отключён', 'blocked': 'заблокирован'} %}
+{% macro profile_meta(p) %}
+  {% if p.created_at %}<span class="text-xs text-slate-500">подключён {{ p.created_at | dt_local }}</span>{% endif %}
+  {% if p.delivery_channels %}
+    <span class="text-xs text-slate-500">каналы: {% for ch in p.delivery_channels %}{{ channel_names.get(ch, ch) }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
+  {% else %}
+    <span class="badge badge-urgent" style="align-self: flex-start; white-space: normal">нет канала — доставок не будет</span>
+  {% endif %}
+{% endmacro %}
+<div class="mb-6 flex items-center gap-3">
+  <a href="/admin/users" class="text-slate-500 hover:text-slate-900 text-sm">← Все пользователи</a>
+</div>
+
+<h1 class="text-xl font-semibold mb-6 flex items-center gap-3">
+  {{ user.email or user.id }}
+  {% if user.is_disabled %}<span class="badge badge-muted">Отключён</span>{% endif %}
+</h1>
+
+<!-- The status card -->
+<div class="card mb-4">
+  <dl class="grid gap-3 sm:grid-cols-2 text-sm">
+    <dt class="text-slate-500">ID пользователя</dt>
+    <dd class="font-mono text-xs">{{ user.id }}</dd>
+
+    <dt class="text-slate-500">Тенант</dt>
+    <dd class="font-mono text-xs">{{ user.tenant_id }}</dd>
+
+    <dt class="text-slate-500">Тариф</dt>
+    <dd>
+      {% if user.tier %}
+        <span class="badge badge-muted">{{ user.tier }}</span>
+      {% else %}—{% endif %}
+    </dd>
+
+    <dt class="text-slate-500">Доступ до</dt>
+    <dd>
+      {% if user.access_until is none %}
+        <span class="badge badge-success">бессрочно</span>
+      {% elif user.access_active %}
+        <span class="badge badge-success">{{ user.access_until.strftime('%d.%m.%Y %H:%M UTC') }}</span>
+      {% else %}
+        <span class="badge badge-error">истёк {{ user.access_until.strftime('%d.%m.%Y') }}</span>
+      {% endif %}
+    </dd>
+
+    <dt class="text-slate-500">Дней до завершения</dt>
+    <dd>
+      {% if user.access_until is none %}
+        <span class="badge badge-success">бессрочно</span>
+      {% elif user.days_left > 0 %}
+        <span class="badge badge-urgent">{{ user.days_left }}</span>
+      {% else %}
+        <span class="badge badge-error">истёк</span>
+      {% endif %}
+    </dd>
+
+    <dt class="text-slate-500">Получено тендеров</dt>
+    <dd>{{ delivered_count }}</dd>
+
+    <dt class="text-slate-500">Профилей (всего, вкл. выключенные)</dt>
+    <dd>{{ user.profile_count }}</dd>
+
+    <dt class="text-slate-500">Зарегистрирован</dt>
+    <dd>{{ user.created_at.strftime('%d.%m.%Y') if user.created_at else '—' }}</dd>
+
+    <dt class="text-slate-500">Каналы</dt>
+    <dd>
+      {% if user_channels %}
+        {% for c in user_channels %}
+          <div>
+            {{ channel_names.get(c.channel, c.channel or '—') }}
+            · {{ channel_status.get(c.status, c.status or '—') }}
+            {% if c.linked_at %}· с {{ c.linked_at | dt_local }}{% endif %}
+          </div>
+        {% endfor %}
+      {% else %}
+        <span class="text-slate-500">не подключены</span>
+      {% endif %}
+    </dd>
+  </dl>
+</div>
+
+<!-- The subscriber’s templates (profiles): the active ones on top, the disabled ones muted -->
+<div class="card mb-4" id="profiles">
+  <h2 class="font-medium mb-3">Шаблоны</h2>
+  {% if profiles_active or profiles_inactive %}
+    <p class="text-sm text-slate-500 mb-3">Активных: {{ profiles_active | length }} · выключенных: {{ profiles_inactive | length }}</p>
+    {% if profiles_active %}
+    <ul class="divide-y text-sm">
+      {% for p in profiles_active %}
+      <li class="py-2 flex items-center justify-between gap-3">
+        <span class="flex flex-col gap-1">
+          <span>{{ p.name or '(без имени)' }}</span>
+          {{ profile_meta(p) }}
+        </span>
+        <span class="text-slate-500" style="white-space: nowrap">совпадений за 7 дн:<span class="font-medium text-slate-900">{{ p.match_7d }}</span></span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% if profiles_inactive %}
+    <p class="text-xs text-slate-400 mt-3 mb-1">Выключенные</p>
+    <ul class="divide-y text-sm text-slate-400">
+      {% for p in profiles_inactive %}
+      <li class="py-2 flex items-center justify-between gap-3">
+        <span class="flex flex-col gap-1">
+          <span>{{ p.name or '(без имени)' }}</span>
+          {{ profile_meta(p) }}
+        </span>
+        <span style="white-space: nowrap">совпадений за 7 дн: {{ p.match_7d }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  {% else %}
+    <p class="text-sm text-slate-500">Шаблонов нет</p>
+  {% endif %}
+</div>
+
+<!-- Продлить доступ -->
+<div class="card mb-4">
+  <h2 class="font-medium mb-3">Продлить доступ</h2>
+  <p class="text-sm text-slate-500 mb-3">
+    Сейчас:
+    {% if user.access_until is none %}
+      <span class="badge badge-muted">срок не выдан</span>
+    {% elif user.access_active %}
+      <span class="badge badge-success">до {{ user.access_until.strftime('%d.%m.%Y %H:%M UTC') }}</span>
+    {% else %}
+      <span class="badge badge-error">истёк {{ user.access_until.strftime('%d.%m.%Y %H:%M UTC') }}</span>
+    {% endif %}
+    Дни считаются от большей из дат — действующего срока и текущего момента, поэтому продление не сокращает уже выданный доступ. Сократить срок — кнопкой «Заморозить» ниже.
+  </p>
+  <form method="post" action="/admin/users/{{ user.id }}/grant" class="flex items-center gap-3 flex-wrap">
+    <select name="days" class="border border-slate-300 rounded-md px-3 py-2 text-sm">
+      {% for d in grant_days_options %}
+      <option value="{{ d }}">{{ d }} дней</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn-primary">Выдать</button>
+  </form>
+</div>
+
+<!-- Change plan -->
+<div class="card mb-4">
+  <h2 class="font-medium mb-3">Сменить тариф</h2>
+  <form method="post" action="/admin/users/{{ user.id }}/set-tier" class="flex items-center gap-3 flex-wrap">
+    <select name="tier" class="border border-slate-300 rounded-md px-3 py-2 text-sm">
+      {% for t in tiers %}
+      <option value="{{ t }}" {% if t == user.tier %}selected{% endif %}>{{ t }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn-secondary">Применить</button>
+  </form>
+</div>
+
+<!-- Freeze the account (destructive) -->
+<div class="card mb-4">
+  <h2 class="font-medium mb-3">Заморозить аккаунт</h2>
+  <p class="text-sm text-slate-500 mb-3">Устанавливает access_until = NOW() (истёкший). Telegram-канал и вход в кабинет остаются.</p>
+  <form method="post" action="/admin/users/{{ user.id }}/revoke">
+    <button type="submit" class="btn-danger" data-confirm="Заморозить аккаунт?">Заморозить</button>
+  </form>
+</div>
+
+{% if user.is_disabled %}
+<!-- Return a disconnected subscriber -->
+<div class="card">
+  <h2 class="font-medium mb-3">Вернуть подписчика</h2>
+  <p class="text-sm text-slate-500 mb-3">Снимает отключение: вход в кабинет и Telegram-каналы снова работают. Число дней ниже — срок доступа, который выдаётся вместе с возвратом; «без срока» — доступ выдать отдельно кнопкой «Продлить доступ».</p>
+  <form method="post" action="/admin/users/{{ user.id }}/enable" class="flex items-center gap-3 flex-wrap">
+    <select name="days" class="border border-slate-300 rounded-md px-3 py-2 text-sm">
+      <option value="0">без срока</option>
+      {% for d in grant_days_options %}
+      <option value="{{ d }}">{{ d }} дней</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn-secondary">Вернуть</button>
+  </form>
+</div>
+{% else %}
+<!-- Disconnect the subscriber completely (destructive) -->
+<div class="card">
+  <h2 class="font-medium mb-3">Отключить подписчика</h2>
+  <p class="text-sm text-slate-500 mb-3">Гасит всё сразу: доступ (access_until = NOW()), Telegram-каналы и вход в кабинет (users.deleted_at). Данные не удаляются, действие обратимо кнопкой «Вернуть».</p>
+  <form method="post" action="/admin/users/{{ user.id }}/disable">
+    <button type="submit" class="btn-danger" data-confirm="Отключить подписчика: доступ, каналы и вход?">Отключить</button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

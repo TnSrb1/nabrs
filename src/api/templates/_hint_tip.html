@@ -1,0 +1,10 @@
+{# The single component of the contextual hint (VG-30): a “?” icon with a pop-up
+   explanation “what it is / why / what it gives”. Shown on hover AND on focus
+   (keyboard): the trigger is a real <button>, the bubble is marked role="tooltip".
+   i18n: both `text` and `label` are passed FROM the cabinet chrome catalog (`t.*`), by locale.
+   The import — ONLY `with context`, otherwise `t` is not visible inside the macro.
+   Call: tip(t.some_tip) — the label by default t.tip_what; or explicitly
+   tip(t.some_tip, label=t.tip_what). None → a fallback to t.tip_what. #}
+{% macro tip(text, label=None) -%}
+<span class="tip"><button type="button" class="tip__icon" aria-label="{{ label or t.tip_what }}">?</button><span class="tip__bubble" role="tooltip">{{ text }}</span></span>
+{%- endmacro %}

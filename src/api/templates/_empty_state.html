@@ -1,0 +1,19 @@
+{# The single empty-state component (VG-28.1, unifies the ad-hoc markup of VG-30a).
+   The calling template sets via {% set %} before the include:
+   empty_state_title (mandatory), empty_state_hint (optional),
+   empty_state_cta_href / _label (optional, the main CTA),
+   empty_state_secondary_href / _label (optional, a second action). #}
+<div class="empty-state">
+  <p class="empty-state__title">{{ empty_state_title }}</p>
+  {% if empty_state_hint %}
+  <p class="empty-state__hint">{{ empty_state_hint }}</p>
+  {% endif %}
+  {% if empty_state_cta_href %}
+  <div class="empty-state__actions">
+    <a href="{{ empty_state_cta_href }}" class="btn-primary">{{ empty_state_cta_label }}</a>
+    {% if empty_state_secondary_href %}
+    <a href="{{ empty_state_secondary_href }}" class="btn-ghost">{{ empty_state_secondary_label }}</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>

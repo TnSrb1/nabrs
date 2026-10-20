@@ -1,0 +1,40 @@
+{# The funnel board “My tenders” (portal, Stage 2) — the primary block of the page.
+   Context: board (FunnelBoard: work / outcomes / …), active_stage.
+
+   The work comes first; the outcomes are in <details>: won / lost / skipped no longer require
+   actions and must not push down what is still being worked on. On a wide
+   screen the columns go as a grid (CSS grid), on mobile — as a stack; there is no horizontal
+   scrolling of the page: the columns are minmax(0, 1fr). #}
+<section class="fn" data-funnel aria-labelledby="fn-title">
+  <div class="fn__head">
+    <h2 class="ck-section__title" id="fn-title">{{ t.funnel_title }}</h2>
+    <p class="fn__sub">{{ t.funnel_sub }}</p>
+  </div>
+
+  {% if board.work %}
+  <div class="fn__board">
+    {% for g in board.work %}
+    {% include "_funnel_column.html" %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if board.outcomes %}
+  {# The archive of outcomes. It is open if it is the only thing on the board (otherwise
+     a subscriber who marked only “🏆 Won” would see an empty page with a
+     collapsed block). #}
+  <details class="ck-more fn-archive" {% if not board.work_total %}open{% endif %}>
+    <summary>{{ t.funnel_outcomes }} ({{ board.outcome_total }})</summary>
+    <div class="fn__board fn__board--archive">
+      {% for g in board.outcomes %}
+      {% set archive = true %}
+      {% include "_funnel_column.html" %}
+      {% endfor %}
+    </div>
+  </details>
+  {% endif %}
+
+  {% if board.is_empty and active_stage %}
+  <p class="fn__note">{{ t.funnel_stage_empty }} <a href="/app/my" class="text-brand hover:underline">{{ t.show_all }}</a></p>
+  {% endif %}
+</section>

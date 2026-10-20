@@ -1,0 +1,67 @@
+{# One agenda item of the cockpit — common for the calendar and the “do now” block.
+   Both places show THE SAME events (feed_service.urgent_events —
+   a derivative of the calendar), therefore they are drawn by one markup: if the
+   markup diverges — the meaning diverges too.
+
+   The modifier classes are written out as literals via {% if %}, and NOT by gluing
+   `agenda__item--{{ e.kind }}`: the guard tests/api/test_css_template_coverage.py
+   checks only the static names, and a glued class would silently slip past
+   the check “is it defined in app.css at all”. #}
+
+   `data-date` (Stage 7) — the ISO day of the event (`e.day` = `e.at.date()`), by it
+   cockpit_calendar.js links the item to the calendar cell. In the “do now”
+   block this attribute does nothing: there is no date grid there, and the handlers
+   are attached only inside `[data-cockpit="calendar"]`. #}
+{# `lang` and `t` are passed by the calling template EXPLICITLY (the macro is imported without
+   `with context`, so it does not see the render context variables itself): `lang`
+   is needed for the locale of the pluralisation “N days left”, `t` — for the chrome labels
+   of the event (the subscription heading, the funnel status). The content (the tender name,
+   the customer) goes as is into `e.title` / `e.subtitle`. `plural` — an env global. #}
+{% macro agenda_item(e, lang, t) %}
+{%- set _title = t[e.title_key] if e.title_key else e.title -%}
+{%- set _sub = t[e.subtitle_key] if e.subtitle_key else e.subtitle -%}
+<li>
+  {# ‼️ The row is a DIV, not a whole link: inside lives the TRANSLATION BUTTON, and
+     interactive content inside <a> is invalid and breaks the click. Clickable are the heading
+     (leads to the card) and the days badge; the “empty place” of the row is already gone — this is
+     a deliberate payment for the toggle right in the dashboard (the owner’s requirement of 25.07:
+     previously the translation was only in the block “Current tenders”). #}
+  <div class="agenda__item {% if e.kind == 'action' %}agenda__item--action{% elif e.kind == 'subscription' %}agenda__item--subscription{% else %}agenda__item--deadline{% endif %}"
+     data-agenda-item
+     data-date="{{ e.day.isoformat() }}">
+    {# e.at — the moment from the DB (UTC): the deadline / the action date / the end of the subscription.
+       The display by Belgrade (the presentation boundary); data-date above — the technical
+       binding to the grid cell. #}
+    <span class="agenda__date">
+      <span class="agenda__day">{{ (e.at | localtime).strftime('%d.%m') }}</span>
+      {% if e.source_key | dl_has_time %}{{ (e.at | localtime).strftime('%H:%M') }}{% endif %}
+    </span>
+    <span class="agenda__body">
+      {% if e.tender_id and e.profile_id %}
+      {# The same partial as in the feed: the heading + the translation toggle into the interface
+         language. The event icon stays outside — it is not part of the name
+         and must not travel into the model during the translation. #}
+      <span class="agenda__title">{{ e.icon }}
+        {% with tender_id=e.tender_id, profile_id=e.profile_id, view="agenda",
+                view_title=_title, title_url=e.url,
+                title_class="agenda__title-link", title_blank=false,
+                show_original=true, unavailable=false, original_lang="sr" %}
+        {% include "_card_title.html" %}
+        {% endwith %}
+      </span>
+      {% else %}
+      {# Events without a tender (subscription end) — nothing to translate. #}
+      <span class="agenda__title">{{ e.icon }}
+        {% if e.url %}<a class="agenda__title-link" href="{{ e.url }}">{{ _title }}</a>{% else %}{{ _title }}{% endif %}
+      </span>
+      {% endif %}
+      {% if _sub %}<span class="agenda__meta">{% if e.kind == 'deadline' %}🏛 {% endif %}{{ _sub }}</span>{% endif %}
+      {# Deadline without an hour (CFCU): the date in the column — without the mark the client would take 23:59 for the real deadline. #}
+      {% if e.kind == 'deadline' and not (e.source_key | dl_has_time) %}<span class="agenda__meta">({{ common_t(lang, 'deadline_hour_unknown') }})</span>{% endif %}
+    </span>
+    <span class="agenda__left">
+      <span class="badge {% if e.days_left <= 2 %}badge-urgent{% elif e.days_left <= 7 %}badge-new{% else %}badge-expired{% endif %}">{{ plural(lang, "days_left_short", e.days_left) }}</span>
+    </span>
+  </div>
+</li>
+{% endmacro %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}{{ t.nav_my }}{% endblock %}
+{% block content %}
+{# “My tenders” (portal, Stage 2): the funnel board is primary, the folders — a secondary
+   organizer under it. The data and the HTMX contract are the same as in VG-17: the page
+   only changes the presentation.
+   Context: data (already filtered by active_stage), board (the board from the same
+   aggregate), all_stages (the chips by the full aggregate), active_stage, has_any. #}
+
+<div class="flex items-center justify-between gap-3 mb-4">
+  <h1 class="text-xl font-semibold">{{ t.nav_my }}</h1>
+  {% if has_any %}
+  <div class="flex flex-wrap gap-2">
+    <a href="/app/my/export.csv" class="btn-secondary shrink-0"
+       title="{{ t.export_csv_title }}">⬇️ {{ t.export_csv }}</a>
+    {# All active/watched tenders with a future deadline — in one .ics (session). #}
+    <a href="/app/tenders/calendar.ics" class="btn-secondary shrink-0">{{ t.my_calendar_all }}</a>
+  </div>
+  {% endif %}
+</div>
+
+{% if not has_any %}
+{# Nothing is marked — explain where to go instead of showing an empty board. #}
+{% set empty_state_title = t.my_empty_title %}
+{% set empty_state_hint = t.my_empty_hint %}
+{% set empty_state_cta_href = "/app/feed" %}
+{% set empty_state_cta_label = t.my_empty_cta %}
+{% set empty_state_secondary_href = "/app" %}
+{% set empty_state_secondary_label = t.my_empty_secondary %}
+{% include "_empty_state.html" %}
+{% else %}
+
+{# --- Stage filter: a segment control, the links are the same (?stage=) --- #}
+{% if all_stages %}
+<nav class="seg mb-5" aria-label="{{ t.stage_filter_aria }}">
+  <a href="/app/my" class="seg__item{% if not active_stage %} is-active{% endif %}"
+     {% if not active_stage %}aria-current="page"{% endif %}>{{ t.stage_all }}</a>
+  {% for g in all_stages %}
+  <a href="/app/my?stage={{ g.status }}"
+     class="seg__item{% if g.status == active_stage %} is-active{% endif %}"
+     {% if g.status == active_stage %}aria-current="page"{% endif %}
+     title="{% if g.reminds %}{{ t.stage_reminds_title }}{% else %}{{ t.stage_plain_title }}{% endif %}">{{ t['status_' ~ g.status] }} <span class="seg__num">{{ g.tenders | length }}</span></a>
+  {% endfor %}
+</nav>
+{% endif %}
+
+{# --- 1. Funnel board (primary) --- #}
+{% include "_funnel_board.html" %}
+
+{# --- 2. Folders: a secondary organizer, collapsed while there are none --- #}
+<details class="ck-more fn-folders" {% if data.folders %}open{% endif %}>
+  <summary>{{ t.folders_word }}{% if data.folders %} ({{ data.folders | length }}){% endif %} — {{ t.folders_group_hint }}</summary>
+
+  <form method="post" action="/app/folders" class="flex flex-wrap items-center gap-2 mt-4 mb-4">
+    <label class="field__label" for="folder-name">{{ t.folder_name_label }}</label>
+    <input type="text" id="folder-name" name="name" maxlength="120" required
+           placeholder="{{ t.folder_name_ph }}"
+           class="field-control">
+    <button type="submit" class="btn-primary">{{ t.folder_create }}</button>
+  </form>
+
+  {% if data.folders %}
+  <ul class="space-y-3">
+    {% for f in data.folders %}
+    <li class="fn-folder">
+      <div class="flex items-center justify-between gap-3 mb-2">
+        <h3 class="fn-col__title">🗂 {{ f.name }} <span class="seg__num">({{ f.tenders | length }})</span></h3>
+        {# The confirmation — through confirm_dialogs.js (data-confirm): an inline
+           onsubmit is blocked by the CSP (script-src without 'unsafe-inline') and would silently
+           delete the folder without a question. #}
+        <form method="post" action="/app/folders/{{ f.id }}/delete"
+              data-confirm="{{ t.folder_delete_confirm }}">
+          <button type="submit" class="nav-link">{{ t.folder_delete }}</button>
+        </form>
+      </div>
+      {% if f.tenders %}
+      <ul class="fn-col__list">
+        {% set in_folder = true %}
+        {% for row in f.tenders %}
+        {% include "_my_tender_row.html" %}
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="fn-col__empty">{{ t.folder_empty }}</p>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="fn-col__empty">{{ t.folders_empty }}</p>
+  {% endif %}
+</details>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{# The board’s animations — ONLY by an external file: inline JS is forbidden by the CSP. GSAP is already
+   attached in base.html (a local file, 'self'); we do not fetch it again. #}
+<script src="{{ static_url('js/my_tenders.js') }}" integrity="sha384-NfypvmxGfTE1uXcCtgbdi4Y9+wcTkWPG6m4DD/3hbunW1lGZw3iQAe8sMVChaXcD" crossorigin="anonymous" defer></script>
+{% endblock %}

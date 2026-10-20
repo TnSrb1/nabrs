@@ -1,0 +1,74 @@
+{% extends "public_base.html" %}
+{# The showcase of the sources (the owner’s decision 02.10.2026). Only the ENABLED sources
+   (src/api/public/sources_page). The matrix — the adapter’s declaration
+   (src/parsers/capabilities), the cap_* labels — the common catalog src/i18n_common
+   (the profile form sees the same ones). The anchor #<source_key> — the target of the “more” link
+   from #pf-sources. #}
+{% block title %}{{ t.title }} — {{ ui.brand }}{% endblock %}
+{% block meta_description %}{{ t.subtitle }}{% endblock %}
+{% block og_title %}{{ t.title }} — {{ ui.brand }}{% endblock %}
+{% block og_description %}{{ t.subtitle }}{% endblock %}
+{% block content %}
+<section class="mx-auto max-w-5xl px-4 pt-14 pb-6">
+  <h1 class="text-3xl font-bold tracking-tight text-slate-900">{{ t.title }}</h1>
+  <p class="mt-3 text-slate-600 max-w-2xl">{{ t.subtitle }}</p>
+</section>
+
+<section class="mx-auto max-w-5xl px-4 pb-14">
+  {% if cards %}
+  <div class="space-y-4">
+    {% for src in cards %}
+    <article id="{{ src.key }}" class="card">
+      <h2 class="text-xl font-semibold text-slate-900">{{ src.name }}</h2>
+      <ul class="mt-2 space-y-1 text-sm text-slate-600">
+        {% if src.country_codes %}
+        <li>{{ t.countries }}: {% for c in src.country_codes %}{{ ct.get('country_' ~ c, c) }}{% if not loop.last %}, {% endif %}{% endfor %}</li>
+        {% endif %}
+        {% if src.url %}
+        <li>{{ t.site }}: <a href="{{ src.url }}" class="underline" rel="noopener" target="_blank">{{ src.url | replace('https://', '') | replace('http://', '') }}</a></li>
+        {% endif %}
+        {% if src.collecting_since %}
+        <li>{{ t.since }} {{ src.collecting_since | d_local }}</li>
+        {% endif %}
+        {% if src.interval %}
+        <li>{{ t.interval }} {{ (t.every_h if src.interval[1] == 'h' else t.every_min) | replace('{n}', src.interval[0] | string) }}</li>
+        {% endif %}
+        {% if src.caps %}
+        <li>{{ ct.cap_lang_label }}: {{ ct['cap_lang_' ~ src.caps.card_language] }}</li>
+        {% endif %}
+      </ul>
+      <p class="mt-3"><a href="/tenderi?source={{ src.key | urlencode }}" class="btn-secondary">{{ t.tenders_of_source }}</a></p>
+
+      <h3 class="mt-4 font-semibold text-slate-900">{{ t.caps_heading }}</h3>
+      {% if src.rows %}
+      <ul class="mt-2 space-y-2">
+        {% for on, key in src.rows %}
+        <li class="feature-row {% if not on %}feature-off{% endif %}">
+          {% if on %}
+          <svg class="feature-row__mark feature-yes h-4 w-4" viewBox="0 0 16 16" fill="currentColor" role="img" aria-label="{{ t.yes }}"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0z"/></svg>
+          {% else %}
+          <svg class="feature-row__mark feature-no h-4 w-4" viewBox="0 0 16 16" fill="currentColor" role="img" aria-label="{{ t.no }}"><rect x="3" y="7.25" width="10" height="1.5" rx=".75"/></svg>
+          {% endif %}
+          <span>{{ ct[key] }}</span>
+        </li>
+        {% endfor %}
+        {% if src.dedup_with %}
+        <li class="feature-row">
+          <svg class="feature-row__mark feature-yes h-4 w-4" viewBox="0 0 16 16" fill="currentColor" role="img" aria-label="{{ t.yes }}"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0z"/></svg>
+          <span>{{ ct.cap_dedup | replace('{names}', src.dedup_with | join(', ')) }}</span>
+        </li>
+        {% endif %}
+      </ul>
+      {% else %}
+      <p class="mt-2 text-sm text-slate-600">{{ t.caps_unknown }}</p>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </div>
+  <p class="mt-6 text-sm text-slate-600 max-w-3xl">{{ t.note }}</p>
+  {% else %}
+  {% set empty_state_title = t.empty %}
+  {% include "_empty_state.html" %}
+  {% endif %}
+</section>
+{% endblock %}

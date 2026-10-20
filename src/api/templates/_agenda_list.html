@@ -1,0 +1,40 @@
+{% from "_agenda_item.html" import agenda_item %}
+{# The list of the cockpit’s events with the tail under an explicit expansion.
+   One macro for BOTH display places (the calendar’s agenda and “do now”): they
+   draw the derivatives of one set of events (feed_service.urgent_events), and if
+   the collapsing diverges, the dashboard’s behavior diverges too.
+
+   Why the collapsing. A measurement on 04.08.2026 on the live production with a real stream: 51 items
+   of the agenda + 50 items of “do now” gave a page of 30 817 px = 36 mobile
+   screens in a row, with a fully CLEAN metric (no overflow, the tap zones in
+   the norm, no console errors). The dashboard must answer “what to do today”,
+   and not lay out the month as one list, therefore we limit the DISPLAY, not
+   the selection: `limit` — about the render, `CALENDAR_DEADLINE_LIMIT` — about the data.
+
+   ‼️ The tail STAYS IN THE MARKUP (a collapsed <details>), it is not thrown away: the link
+   “the month cell ↔ the agenda item” is held on it (cockpit_calendar.js
+   matches the items by `data-date`). A click on a day whose events are in the tail must
+   SHOW them — the expansion is done by the same JS (`details.open = true`), see select().
+
+   ‼️ <summary> — strictly the FIRST child of <details>: otherwise the UA hides the content
+   entirely. The label is switched by CSS (`[open]`), not by a script: under the CSP
+   `script-src 'self'` there are no inline handlers, and without JS the block must
+   work by itself. #}
+{% macro agenda_list(events, lang, t, limit, marker=none) %}
+{%- set _head = events[:limit] -%}
+{%- set _tail = events[limit:] -%}
+<ul class="agenda"{% if marker %} data-cockpit="{{ marker }}"{% endif %}>
+  {% for e in _head %}{{ agenda_item(e, lang, t) }}{% endfor %}
+</ul>
+{%- if _tail %}
+<details class="agenda-more" data-agenda-more>
+  <summary class="agenda-more__toggle">
+    <span class="agenda-more__label agenda-more__label--closed">{{ t.agenda_more.format(n=_tail | length) }}</span>
+    <span class="agenda-more__label agenda-more__label--open">{{ t.agenda_less }}</span>
+  </summary>
+  <ul class="agenda agenda-more__list">
+    {% for e in _tail %}{{ agenda_item(e, lang, t) }}{% endfor %}
+  </ul>
+</details>
+{%- endif %}
+{% endmacro %}

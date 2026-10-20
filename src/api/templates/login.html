@@ -1,0 +1,21 @@
+{% extends "public_base.html" %}
+{# F-10 / F-20: the login — in the frame of the showcase (the header Tenderi / Izvori / Cenovnik, the full footer),
+   without the cabinet gsap / htmx. H1 — the same style as the showcase (help / plans). #}
+{% block title %}{{ t.nav_login }} — {{ ui.brand }}{% endblock %}
+{% block content %}
+<section class="mx-auto max-w-5xl px-4 pt-14 pb-12">
+  <h1 class="text-3xl font-bold tracking-tight text-slate-900">{{ t.nav_login }}</h1>
+  <div class="mt-6">
+    <form method="post" action="/login" class="space-y-4 max-w-md">
+      {% if next_path %}<input type="hidden" name="next" value="{{ next_path }}">{% endif %}
+      <div>
+        <label for="email" class="block text-sm mb-1">Email</label>
+        <input type="email" name="email" id="email" required autocomplete="email" class="field-control">
+      </div>
+      <button type="submit" class="btn-primary">{{ t.log_get_link }}</button>
+    </form>
+    <p class="mt-4 text-sm">{{ t.log_no_confirm }} <a href="/auth/resend" class="underline">{{ t.sgr_resend }}</a></p>
+    <p class="mt-2 text-sm">{{ t.log_no_account }} <a href="/signup" class="underline">{{ t.nav_signup }}</a></p>
+  </div>
+</section>
+{% endblock %}

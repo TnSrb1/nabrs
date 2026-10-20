@@ -1,0 +1,43 @@
+{% extends "admin_base.html" %}
+{% block title %}Шаблоны — Админ{% endblock %}
+{% block admin_content %}
+<h1 class="text-xl font-semibold mb-6">Все шаблоны</h1>
+
+{% if profiles %}
+<div class="border rounded-lg bg-white overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-50 border-b">
+      <tr>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">Название</th>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">Владелец</th>
+        <th class="px-4 py-3 text-left font-medium text-slate-600">Тенант</th>
+        <th class="px-4 py-3 text-center font-medium text-slate-600">Активен</th>
+        <th class="px-4 py-3 text-right font-medium text-slate-600">Матчей за 7 дней</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      {% for p in profiles %}
+      <tr class="hover:bg-slate-50">
+        <td class="px-4 py-3">{{ p.name or '(без имени)' }}</td>
+        <td class="px-4 py-3 text-slate-500">{{ p.owner_email or '—' }}</td>
+        <td class="px-4 py-3 font-mono text-xs text-slate-500">{{ p.tenant_id[:8] }}…</td>
+        <td class="px-4 py-3 text-center">
+          {% if p.is_active %}
+            <span class="badge badge-success">активен</span>
+          {% else %}
+            <span class="text-slate-300">—</span>
+          {% endif %}
+        </td>
+        <td class="px-4 py-3 text-right font-medium">{{ p.match_7d }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<p class="mt-3 text-xs text-slate-400">Всего: {{ profiles | length }}</p>
+{% else %}
+{% set empty_state_title = "Шаблонов нет" %}
+{% set empty_state_hint = "Здесь появятся пользовательские шаблоны-профили площадки." %}
+{% include "_empty_state.html" %}
+{% endif %}
+{% endblock %}
