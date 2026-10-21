@@ -159,9 +159,7 @@ class RoutingWorker:
             except Exception:  # noqa: BLE001 — any break → reconnect
                 delay = _RECONNECT_BACKOFF[min(attempt, len(_RECONNECT_BACKOFF) - 1)]
                 attempt += 1
-                logger.exception(
-                    "routing: connection break, reconnect in %ss", delay
-                )
+                logger.exception("routing: connection break, reconnect in %ss", delay)
                 await self._sleep(delay)
             finally:
                 if conn is not None:
@@ -201,7 +199,9 @@ class RoutingWorker:
             result = await session.execute(_REPLAY_SQL, {"checkpoint": since})
             ids = [str(row.id) for row in result]
         if ids:
-            logger.info("routing: replay %d tenders from %s", len(ids), since.isoformat())
+            logger.info(
+                "routing: replay %d tenders from %s", len(ids), since.isoformat()
+            )
         for tender_id in ids:
             with contextlib.suppress(Exception):
                 await self.route_tender(json.dumps({"tender_id": tender_id}))

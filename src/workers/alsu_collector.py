@@ -10,4 +10,6 @@ def alsu_enabled() -> bool:
 
 
 async def collect_asset_sales(session_factory: Any) -> None:
-    raise NotImplementedError("asset-sales collector is not part of the public snapshot")
+    raise NotImplementedError(
+        "asset-sales collector is not part of the public snapshot"
+    )

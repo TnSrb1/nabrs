@@ -604,7 +604,7 @@ h4 { font-size: var(--text-lg); font-weight: 600; margin-bottom: var(--space-1);
    default of 13×13 — half the minimum of 2rem, a small target for
    a finger and a poorly distinguishable state on mobile. The row was
    20px high. The links inside the consent text are deliberately NOT stretched —
-   a forced height on an inline link breaks the rhythm of the line (CLAUDE.md). */
+   a forced height on an inline link breaks the rhythm of the line (the project rules). */
 .consent-row { min-height: 2rem; }
 .consent-row input[type="checkbox"] {
   width: 1.125rem;

@@ -75,7 +75,7 @@ function collect() {
 
   // Tap zones. Our invariant is from 2rem (32px), the navigation on mobile 2.75rem
   // (44px). The card title links are deliberately excluded: a forced height
-  // breaks the vertical rhythm of the list (CLAUDE.md, the section “Frontend”).
+  // breaks the vertical rhythm of the list (the project rules, the section “Frontend”).
   //
   // ‼️ One must measure the EFFECTIVE target, not the element. Two cases, on which
   // on 02.08 the tool nearly produced a phantom task:

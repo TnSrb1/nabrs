@@ -174,7 +174,9 @@ def canonical_email_for_abuse(email: str) -> str:
     local = local.split("+", 1)[0]
     if domain in _DOTLESS_LOCAL_DOMAINS:
         local = local.replace(".", "")
-    if not local:  # an address of the form “+tag@…” — nothing to canonicalise, we take it as is
+    if (
+        not local
+    ):  # an address of the form “+tag@…” — nothing to canonicalise, we take it as is
         return norm
     return f"{local}@{domain}"
 

@@ -98,7 +98,9 @@ def test_guard_itself_detects_a_missing_order_by():
           SELECT id FROM users WHERE email = p_email LIMIT 1
         $$
     """
-    assert _limits_without_order(broken), "the guard did not see a LIMIT without ORDER BY"
+    assert _limits_without_order(
+        broken
+    ), "the guard did not see a LIMIT without ORDER BY"
 
     fixed = broken.replace("LIMIT 1", "ORDER BY created_at, id LIMIT 1")
     assert not _limits_without_order(fixed), "the guard falsely fires on an ORDER BY"

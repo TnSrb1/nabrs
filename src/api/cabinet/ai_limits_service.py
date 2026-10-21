@@ -8,7 +8,7 @@ Therefore the remainder is needed BEFORE the refusal, not only after it.
 on top of :func:`src.ai.usage.used_count`, which is called by both ``limit_decision``
 (button levels) and ``auto_limit_decision`` (auto-analysis of the stream). There is deliberately
 no SQL of its own here — "a predicate duplicating another module’s selection is mirrored,
-not rewritten“ (CLAUDE.md): otherwise the counter would show ”5 left" while the gate
+not rewritten“ (the project rules): otherwise the counter would show ”5 left" while the gate
 refuses.
 
 ‼️ RLS: the web runs under ``tendersrb_app`` (NOBYPASSRLS), ``ai_usage`` and ``tenants``

@@ -277,7 +277,8 @@ def fold(value: Any, *, ijekavica: bool = True) -> str:
     """Normalisation for substring comparison: like :func:`normalize_text`, but
     ``None``/empty input → ``""`` (convenient for ``kw in hay`` without None checks).
 
-    ``ijekavica=False`` — the pair of :func:`fold_sql` (the SQL mirror without step 5)."""
+    ``ijekavica=False`` — the pair of :func:`fold_sql` (the SQL mirror without step 5).
+    """
     return normalize_text(value, ijekavica=ijekavica) or ""
 
 

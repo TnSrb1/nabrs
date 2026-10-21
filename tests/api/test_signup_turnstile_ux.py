@@ -71,7 +71,9 @@ def test_external_js_defines_callbacks_and_fallback():
     js = _STATIC_JS.read_text(encoding="utf-8")
     for name in ("tsrbTurnstileOk", "tsrbTurnstileReset", "tsrbTurnstileError"):
         assert f"window.{name}" in js
-    assert "setTimeout" in js  # a timeout fallback: a failure to load the widget does not kill the form
+    assert (
+        "setTimeout" in js
+    )  # a timeout fallback: a failure to load the widget does not kill the form
 
 
 @pytest.mark.parametrize("path", ["/docs", "/redoc", "/openapi.json"])

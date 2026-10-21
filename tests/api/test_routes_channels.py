@@ -929,7 +929,8 @@ def test_email_confirm_ok_notice_localized(monkeypatch, locale):
 
 def test_email_error_mutation_reintroduced_russian_is_caught(monkeypatch):
     """Mutation anchor: return a Russian literal of the e-mail error into the en catalog —
-    the en render contains Cyrillic again. Green without the mutation = the guard is blind."""
+    the en render contains Cyrillic again. Green without the mutation = the guard is blind.
+    """
     _patch_email_state(monkeypatch, None)
 
     async def _boom(*a, **k):  # pragma: no cover

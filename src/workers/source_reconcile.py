@@ -226,7 +226,9 @@ class SourceReconciler:
                     await self._email(
                         f"TenderSRB: сверка источника «{label or source_key}»", text_
                     )
-                except Exception as exc:  # noqa: BLE001 — a mail failure does not break the reconciliation
+                except (
+                    Exception
+                ) as exc:  # noqa: BLE001 — a mail failure does not break the reconciliation
                     logger.warning(
                         "reconcile[%s]: the e-mail alert did not go out (%s)",
                         source_key,

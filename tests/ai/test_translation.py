@@ -236,7 +236,8 @@ def test_slow_model_times_out_and_falls_back():
 
 def test_schema_rejects_output_without_title():
     """The fields of translate are NOT Optional: a translation with a lost title must
-    fail the validation in the client (→ AiResponseError → the original), rather than render an empty string instead of the tender’s name."""
+    fail the validation in the client (→ AiResponseError → the original), rather than render an empty string instead of the tender’s name.
+    """
     with pytest.raises(ValidationError):
         schemas.validate_output("translate", {"description": "есть"})
 
@@ -540,7 +541,8 @@ def test_description_total_timeout_falls_back_to_original():
 
 def test_description_input_truncated_at_desc_cap():
     """The input of the description is cut by the ceiling (_DESC_MAX_INPUT_CHARS = 12000), not by the
-    title-cap (6000). The paragraphs are DIFFERENT — otherwise identical chunks would be collapsed by the cache."""
+    title-cap (6000). The paragraphs are DIFFERENT — otherwise identical chunks would be collapsed by the cache.
+    """
     redis, ai = FakeRedis(), ChunkAi()
     # 12 different paragraphs of ~1.5k → ~18k characters before the ceiling.
     desc = _long_description(12, para_chars=1500)
@@ -610,7 +612,8 @@ def test_translate_tender_logs_elapsed_ms_and_cache_flag(caplog):
     """A successful model call → INFO with elapsed_ms and cached=0; a cache hit → cached=1.
     The line has neither the card text nor the title — only the id and the numbers.
 
-    MUTATION: remove logger.info in the model branch → ``elapsed_ms=`` does not get into caplog."""
+    MUTATION: remove logger.info in the model branch → ``elapsed_ms=`` does not get into caplog.
+    """
     redis, ai = FakeRedis(), FakeAi()
     with caplog.at_level("INFO", logger="src.ai.translation"):
         asyncio.run(_translate(redis=redis, client=ai))

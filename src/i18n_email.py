@@ -14,9 +14,9 @@ The workers do NOT import ``src.api.cabinet`` (layering: the cabinet pulls in st
 FastAPI, workers do not need that and it creates an api↔workers coupling). Therefore the e-mail strings
 live here — in a NEUTRAL module without external dependencies, which BOTH the workers
 and the cabinet import. Duplicating the catalog is not allowed: otherwise the two
-e-mail surfaces would diverge (CLAUDE.md — “shared vocabulary in one catalog”).
+e-mail surfaces would diverge (the project rules — “shared vocabulary in one catalog”).
 
-The two language AXES must not be mixed (CLAUDE.md): here ONLY the language of the e-mail chrome
+The two language AXES must not be mixed (the project rules): here ONLY the language of the e-mail chrome
 (the recipient’s ``users.locale``). Tender data (title, description,
 customer) and links are NOT translated — they are passed “as is”.
 

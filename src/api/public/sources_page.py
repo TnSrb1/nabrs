@@ -92,8 +92,12 @@ def _partners(key: str) -> list[str]:
         from src.dedup.linker import partner_sources
 
         return partner_sources(key)
-    except Exception as exc:  # noqa: BLE001 — the page lives without the duplicate marks
-        logger.warning("izvori: the dedup pairs are unavailable (%s)", type(exc).__name__)
+    except (
+        Exception
+    ) as exc:  # noqa: BLE001 — the page lives without the duplicate marks
+        logger.warning(
+            "izvori: the dedup pairs are unavailable (%s)", type(exc).__name__
+        )
         return []
 
 

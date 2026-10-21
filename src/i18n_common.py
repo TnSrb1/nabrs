@@ -14,10 +14,10 @@ The bot does NOT import ``src.api.cabinet`` (the cabinet pulls in starlette/Fast
 workers and the bot do not need that and it creates extra coupling). Therefore the shared vocabulary
 lives HERE — in a NEUTRAL module without external dependencies, which BOTH the cabinet
 and the bot import. Duplicating the catalog is not allowed: otherwise the same
-``tender_user_status`` string would be named differently in the bot and in the cabinet (CLAUDE.md — "shared
+``tender_user_status`` string would be named differently in the bot and in the cabinet (the project rules — "shared
 vocabulary in ONE catalog").
 
-Two axes of language must not be mixed (CLAUDE.md): here ONLY the language of the interface chrome
+Two axes of language must not be mixed (the project rules): here ONLY the language of the interface chrome
 (``users.locale``). Tender data and AI content (``profiles.target_language``) —
 a different axis, NOT translated by this catalog.
 

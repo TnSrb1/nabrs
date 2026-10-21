@@ -416,7 +416,9 @@ def test_feed_filters_ignore_garbage_and_foreign_values(monkeypatch):
     )
     assert (f.source, f.region, f.profile_id) == ("", "", "")
     assert f.sort == "date" and f.min_amount is None and f.deadline_to is None
-    assert f.lang == ""  # the axis of the interface language: the query-lang is not read in the cabinet
+    assert (
+        f.lang == ""
+    )  # the axis of the interface language: the query-lang is not read in the cabinet
 
 
 def test_feed_source_options_only_tenant_enabled(monkeypatch):
@@ -553,7 +555,9 @@ def test_feed_profile_sort_has_group_headers_in_name_order(monkeypatch):
     assert (
         html.count('class="fd-card__profile"') == 3
     )  # one tag per card, without duplicates
-    assert "Скоро дедлайн" not in html  # the urgent section is not built in the grouping
+    assert (
+        "Скоро дедлайн" not in html
+    )  # the urgent section is not built in the grouping
 
 
 def test_feed_profile_sort_links_only_this_profile_keeping_others(monkeypatch):

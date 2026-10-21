@@ -3,7 +3,7 @@
 # ADR-029: the single mutable point of mapping of the abstract tier names
 # (`cheap` / `balanced` / `premium`, used in the architecture and the business logic)
 # to the concrete Anthropic model slugs. Slugs change every 3–6 months — replacing the
-# model here, without editing the code and ARCHITECTURE.md.
+# model here, without editing the code and the architecture notes (not published).
 #
 # AI pipeline levels (ARCHITECTURE §14.1):
 #   cheap    → L1 classification  (quick)

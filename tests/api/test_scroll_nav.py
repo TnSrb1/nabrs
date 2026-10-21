@@ -278,19 +278,23 @@ def test_dashboard_channel_cta_leads_to_channel_page():
 def test_channel_bind_links_lead_somewhere():
     """The nudge “connect a channel” (_delivery_gap.html) takes the address from
     CHANNEL_BIND_LINKS. The anchor must exist on the dashboard, otherwise the click goes
-    into emptiness: the card #telegram-card is removed (owner 22.09), the link goes to the channel page. Mutation: return ``“#telegram-card”`` — the test goes red."""
+    into emptiness: the card #telegram-card is removed (owner 22.09), the link goes to the channel page. Mutation: return ``“#telegram-card”`` — the test goes red.
+    """
     resp = _authed().get("/app")
     assert resp.status_code == 200
     for link in channel_service.CHANNEL_BIND_LINKS.values():
         if link.startswith("#"):
-            assert f'id="{link[1:]}"' in resp.text, f"the anchor {link} is not on the dashboard"
+            assert (
+                f'id="{link[1:]}"' in resp.text
+            ), f"the anchor {link} is not on the dashboard"
         else:
             assert link in ("/cabinet/account#kanali",)
 
 
 def test_header_h_js_wired_sync_after_header_with_sri_in_both_layouts():
     """header_h.js sets --header-h by the actual height of the header: connected in both
-    layouts with SRI, WITHOUT defer (before the render of <main>), strictly after the header."""
+    layouts with SRI, WITHOUT defer (before the render of <main>), strictly after the header.
+    """
     for name in ("base.html", "public_base.html"):
         html = (_TEMPLATES / name).read_text(encoding="utf-8")
         match = re.search(

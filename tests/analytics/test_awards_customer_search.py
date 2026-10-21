@@ -72,7 +72,8 @@ def test_like_term_escapes_ilike_masks():
 
 def test_like_term_escapes_backslash_first():
     r"""The escape character itself is escaped, and previously masks: '\%' must not become
-    an escape of '%', otherwise the input '\%' would bypass the protection and '%' would become a mask again."""
+    an escape of '%', otherwise the input '\%' would bypass the protection and '%' would become a mask again.
+    """
     assert _like_term("\\%") == "%\\\\\\%%"
 
 

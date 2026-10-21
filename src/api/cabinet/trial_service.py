@@ -139,7 +139,9 @@ async def create_trial_request(
 
     if has_pending:
         return CreateResult(False, reason="pending")
-    if not is_upgrade and access_active(access_until, now):  # SSOT predicate (FIX-SG-01)
+    if not is_upgrade and access_active(
+        access_until, now
+    ):  # SSOT predicate (FIX-SG-01)
         return CreateResult(False, reason="active")
 
     new_id = (
@@ -203,7 +205,9 @@ async def notify_admin(
             resp.raise_for_status()
         return True
     except Exception:  # noqa: BLE001 — best-effort, fallback /trials
-        logger.warning("notify_admin: the notification could not be sent", exc_info=True)
+        logger.warning(
+            "notify_admin: the notification could not be sent", exc_info=True
+        )
         return False
 
 

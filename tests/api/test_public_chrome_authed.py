@@ -108,7 +108,8 @@ def _link(head: str, href: str) -> str:
 @pytest.mark.parametrize("path", _PATHS + ["/izvori"])
 def test_authed_menu_has_all_tenders_in_tools_and_no_sources(path):
     """owner 10.10: “All tenders” — in the “Tools” dropdown; Sources/Plans/
-    News moved from the cabinet header to the footer. Expectation — literals of href and captions."""
+    News moved from the cabinet header to the footer. Expectation — literals of href and captions.
+    """
     head = _header(_client(locale="ru").get(path).text)
     assert "Все тендеры" in _link(head, "/tenderi")
     assert "Мои совпадения" in _link(head, "/app/feed")

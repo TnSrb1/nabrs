@@ -168,7 +168,7 @@ class _FakeDb:
     def _channel_rank(uc: dict):
         """The order of choosing the channel’s row: active first, then the freshest binding.
 
-        The same order must be in `LIVE_CHANNELS_SQL` and `_LOAD_JOBS_SQL` — otherwise the verdict “the channel is live” would diverge from where the delivery goes (CLAUDE.md: “a predicate duplicating the selection of another module — mirror it”).
+        The same order must be in `LIVE_CHANNELS_SQL` and `_LOAD_JOBS_SQL` — otherwise the verdict “the channel is live” would diverge from where the delivery goes (the project rules: “a predicate duplicating the selection of another module — mirror it”).
         """
         return (uc["status"] == "active", uc["linked_at"])
 
@@ -549,7 +549,9 @@ async def test_live_telegram_delivers_end_to_end():
         pytest.param(
             [("telegram", "555", "pending")], id="awaiting confirmation (#360 opt-in)"
         ),
-        pytest.param([("telegram", "", "active")], id="active, but the addressee is empty"),
+        pytest.param(
+            [("telegram", "", "active")], id="active, but the addressee is empty"
+        ),
     ],
 )
 @pytest.mark.asyncio
@@ -624,7 +626,9 @@ async def test_digest_row_waits_outside_window_and_leaves_in_window():
 
     The regression #357: “waits” must mean “the status is not touched” — the profile simply does not take part in the pickup. If the row were picked up and failed, it would go into failed/attempts and get lost silently. The second run on the same day proves that the waiting does not eat the row: both go by ONE digest.
     """
-    morning = datetime(2026, 7, 17, 7, 0, tzinfo=BELGRADE)  # 07:00 — the window is at 09:00
+    morning = datetime(
+        2026, 7, 17, 7, 0, tzinfo=BELGRADE
+    )  # 07:00 — the window is at 09:00
     db = _world(
         now=morning,
         channels=[("telegram", "555", "active")],
@@ -649,7 +653,9 @@ async def test_digest_row_waits_outside_window_and_leaves_in_window():
     assert [len(d) for d in adapter.digests] == [2]
     assert adapter.cards == []
     assert db.statuses() == ["sent", "sent"]
-    assert len(db.attempts) == 2  # an attempt for EACH row of the batch, not per message
+    assert (
+        len(db.attempts) == 2
+    )  # an attempt for EACH row of the batch, not per message
 
 
 # --------------------------------------------------------------------------- #

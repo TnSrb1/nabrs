@@ -52,7 +52,9 @@ class TrackRecord:
     submitted: int = 0
     won: int = 0
     lost: int = 0
-    top_cpv: list[str] = field(default_factory=list)  # frequent CPVs among won, descending.
+    top_cpv: list[str] = field(
+        default_factory=list
+    )  # frequent CPVs among won, descending.
 
     @property
     def is_empty(self) -> bool:
@@ -116,6 +118,8 @@ async def build_track_record_context(session: Any, tenant_id: str) -> str | None
     try:
         record = await load_track_record(session, tenant_id)
     except Exception as exc:  # noqa: BLE001
-        logger.warning("track_record: skipped from the context (%s)", type(exc).__name__)
+        logger.warning(
+            "track_record: skipped from the context (%s)", type(exc).__name__
+        )
         return None
     return format_track_record(record)

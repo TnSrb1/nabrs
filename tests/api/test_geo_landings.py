@@ -240,7 +240,9 @@ def test_localize_cpv_falls_back_to_data_label_and_keeps_cache():
 
     stats = {"99": {"total": 1, "label": "Непознато"}}
     out = _localize_cpv(stats, "en")
-    assert out["99"]["label"] == "Непознато"  # not in the directory → an explicit fallback
+    assert (
+        out["99"]["label"] == "Непознато"
+    )  # not in the directory → an explicit fallback
     live = {"03": {"total": 1, "label": _SR_CPV_03}}
     assert _localize_cpv(live, "en")["03"]["label"] == _EN_CPV_03
     assert live["03"]["label"] == _SR_CPV_03  # cache not mutated

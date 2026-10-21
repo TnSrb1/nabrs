@@ -238,7 +238,8 @@ def _email_gap(*, pending=False):
 def test_dashboard_gap_notice_defers_to_amber_when_no_live_channel(monkeypatch):
     """The profile asks for e-mail, no live channel → one amber banner, the blue nudge is silent.
 
-    Both say “channel not connected” (owner: one banner per meaning). The expectation — from ``_delivery_warning.html``: the sign of the amber case ``data-no-channel``."""
+    Both say “channel not connected” (owner: one banner per meaning). The expectation — from ``_delivery_warning.html``: the sign of the amber case ``data-no-channel``.
+    """
     resp = _dashboard_with_delivery(monkeypatch, has_live=False, gaps=[_email_gap()])
     assert resp.status_code == 200
     assert "data-no-channel" in resp.text
@@ -255,7 +256,8 @@ def test_dashboard_hides_gap_notice_when_all_channels_live(monkeypatch):
 def test_dashboard_gap_notice_pending_is_not_duplicated(monkeypatch):
     """E-mail awaits confirmation, no live channel → only amber, without the blue nudge.
 
-    Previously the blue said “awaits confirmation”; now one banner per meaning (amber). The hint “confirm” is not shown in amber — a deliberate trade-off."""
+    Previously the blue said “awaits confirmation”; now one banner per meaning (amber). The hint “confirm” is not shown in amber — a deliberate trade-off.
+    """
     resp = _dashboard_with_delivery(
         monkeypatch, has_live=False, gaps=[_email_gap(pending=True)]
     )
@@ -465,7 +467,8 @@ def test_create_profile_success_redirects_to_result_screen(monkeypatch):
 def test_create_profile_no_channels_redirects_with_notice_flag(monkeypatch):
     """Step 2 profile_channels: a saved template WITHOUT delivery channels must not look like an ordinary success — the redirect carries a flag, which the result screen turns into a visible banner (symptom profile b0d433a4/f2cc3032).
 
-    ‼️ Branch #531 survived the move from /app to the result screen: the sign “no channels” is still separated from the ordinary success, only the display address changed."""
+    ‼️ Branch #531 survived the move from /app to the result screen: the sign “no channels” is still separated from the ordinary success, only the display address changed.
+    """
     monkeypatch.setattr(
         routes_profiles, "parse_profile_form", lambda form: ({"name": "X"}, [])
     )
@@ -701,7 +704,8 @@ def test_next_open_redirect_rejected(monkeypatch, evil):
 
 def test_activate_limit_reached_redirects_to_account_with_banner(monkeypatch):
     """A refusal by the limit with next=/cabinet/account goes THERE with the banner flag,
-    not always to /app (.claude/rules/money-ai-tiers.md — the refusal must be visible where the request came from)."""
+    not always to /app (.claude/rules/money-ai-tiers.md — the refusal must be visible where the request came from).
+    """
 
     async def _fail(*a, **kw):  # pragma: no cover - a safety net
         raise AssertionError("enabling beyond the limit must not write to the DB")
@@ -793,7 +797,9 @@ def test_dashboard_shows_limit_in_templates_block_not_account_strip(monkeypatch)
     assert "занято 2 шаблона из 3" in resp.text  # pro = 3 (tiers.PROFILE_LIMITS)
     assert 'class="card mb-6" aria-label="Подписка и лимит шаблонов"' not in resp.text
     assert "доступ до" not in resp.text
-    assert "data-dash-sub-strip" not in resp.text  # 30 d. — there is no call-to-action strip
+    assert (
+        "data-dash-sub-strip" not in resp.text
+    )  # 30 d. — there is no call-to-action strip
 
 
 def test_dashboard_sub_strip_appears_only_when_week_left(monkeypatch):
@@ -837,7 +843,8 @@ def test_dashboard_limit_matches_account_for_trial(monkeypatch):
 def test_dashboard_does_not_repeat_subscription_term_of_account(monkeypatch):
     """The subscription term lives on /cabinet/account (and as the header badge); the dashboard v2 does not repeat it (before — 5 copies). The cabinet still shows the term.
 
-    The former test required “30 days of access left” on BOTH screens — the dashboard has no such line any more by the owner’s decision 13.10."""
+    The former test required “30 days of access left” on BOTH screens — the dashboard has no such line any more by the owner’s decision 13.10.
+    """
     dash_resp = _dashboard(monkeypatch, profiles=[_profile()], days=30, tier="pro")
     assert dash_resp.status_code == 200
     account_resp = _client(sess=SESS).get("/cabinet/account")
@@ -874,7 +881,8 @@ def test_dashboard_pulse_is_hero_tile_with_window_constant(monkeypatch):
 def test_pulse_zero_explains_and_links_to_help(monkeypatch):
     """‼️ A zero without an explanation is read by the client as a breakdown (#690 weakened this test to “just 0”). The zero tile — the number + an explanation + the link “How it works →” to /help#start; the tile is NOT a link as a whole (interactive content inside <a> is invalid).
 
-    Mutation: return to _cockpit_hero.html a single <a>-block without the `else` branch — there is no explanation and no link, the test goes red."""
+    Mutation: return to _cockpit_hero.html a single <a>-block without the `else` branch — there is no explanation and no link, the test goes red.
+    """
     html = _dashboard_pulse(monkeypatch, 0).text
     assert (
         'data-count-to="0">0</p>\n      <p class="ck-tile__label">Новое для вас' in html

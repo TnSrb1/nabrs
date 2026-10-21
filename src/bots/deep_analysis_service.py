@@ -80,9 +80,7 @@ class DeepAnalysisResult:
 
     status: str  # 'success' | 'no_account' | 'gate_pro' | 'limit_exhausted'
     # | 'model_busy' | 'model_error' | 'no_tender' | 'frozen'
-    html_chunks: tuple[
-        str, ...
-    ] = ()  # ready HTML chunks for cyclic sending on success
+    html_chunks: tuple[str, ...] = ()  # ready HTML chunks for cyclic sending on success
 
 
 # The default AI client (lazy singleton for on-demand).

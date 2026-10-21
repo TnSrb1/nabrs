@@ -6,7 +6,7 @@ two real findings — the rest turned out to be an artifact of the measurement:
 * the language pills `27×32` on ALL six screens: their height had already been raised to 2rem, but the width had not, and along that axis a finger misses just the same;
 * the square of the consent checkbox `13×13` (the browser default) with a row 20px high.
 
-‼️ The checkbox was NOT a “non-working tap zone” at the same time: it lies inside `<label>`, and a click on the consent text ticks the box (checked by a click 12px from the edge of the row — `checked` became `true`). Therefore the test pins the SIZE OF THE TARGET, not the “click zone”, and does not require a height from the inline links inside the consent text: a forced height is forbidden for them (CLAUDE.md, “Frontend”).
+‼️ The checkbox was NOT a “non-working tap zone” at the same time: it lies inside `<label>`, and a click on the consent text ticks the box (checked by a click 12px from the edge of the row — `checked` became `true`). Therefore the test pins the SIZE OF THE TARGET, not the “click zone”, and does not require a height from the inline links inside the consent text: a forced height is forbidden for them (the project rules, “Frontend”).
 """
 
 from __future__ import annotations
@@ -79,7 +79,7 @@ def test_consent_links_are_not_forced_to_tap_height():
 def test_footer_links_have_min_width_not_only_min_height():
     """The footer links get 2rem on BOTH axes (the same class as .lang-pill).
 
-The measurement of 03.08 (`shot.sh`, 390×844, `?lang=en`) on /plans, /signup, /login, /help: the short caption "Help" — 28×32, min-height was already there, min-width — not.
+    The measurement of 03.08 (`shot.sh`, 390×844, `?lang=en`) on /plans, /signup, /login, /help: the short caption "Help" — 28×32, min-height was already there, min-width — not.
     """
     body = _rule("footer a")
     assert "min-height: 2rem" in body

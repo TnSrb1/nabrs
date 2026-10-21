@@ -11,7 +11,7 @@ Private project — contributions come from the core team and its agents.
    python3 -m black src tests
    bash scripts/gate.sh        # must end with GATE PASS
    ```
-4. Open a **draft** pull request using the template; describe what was checked and how.
+4. Open a **draft** pull request; describe what was checked and how.
 5. Review + own gate run → squash merge.
 
 ## RED paths — merged only by the owner

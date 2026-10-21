@@ -23,7 +23,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "CODE_MAP.md"
 
-BIG_FILE_KB = 25  # the “edit point-by-point” threshold from CLAUDE.md
+BIG_FILE_KB = 25  # the “edit point-by-point” threshold from the project rules
 SKIP_DIRS = {"__pycache__", ".git", "node_modules", ".pytest_cache", ".mypy_cache"}
 
 # The section that is NOT derived from the code: the search predicates. It lives here so that

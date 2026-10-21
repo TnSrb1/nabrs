@@ -121,7 +121,9 @@ async def test_per_tender_request_delta_matches_real_httpx_log(monkeypatch):
     # 'cheap' — 2 requests at a budget of 4, silent; 'pricey' — 17 at a budget of 16
     # (4 per card + 12 files, the ceiling), the excess is exactly one.
     assert result.budget_over_count == 1
-    assert any("950123" not in m for m in caplog_records)  # sanity: the list is non-empty — ok
+    assert any(
+        "950123" not in m for m in caplog_records
+    )  # sanity: the list is non-empty — ok
     assert any("pricey" in m and "17" in m for m in caplog_records)
 
 
@@ -210,4 +212,6 @@ async def test_page_request_is_not_charged_to_the_next_card():
 
     assert result.request_stats.total == 10  # 1 token + 1 page + 8 card
     assert result.budget_over_count == 0
-    assert result.budget_max == 8  # the most expensive card of the day, even within the budget
+    assert (
+        result.budget_max == 8
+    )  # the most expensive card of the day, even within the budget

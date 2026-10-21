@@ -91,10 +91,9 @@ def test_sr_strings_never_use_english_closing_quote():
         for location, field_path, text in _all_sr_strings()
         if "”" in text
     ]
-    assert (
-        not violations
-    ), "the sr string closes with the English quote ” instead of the Serbian “:\n" + "\n".join(
-        violations
+    assert not violations, (
+        "the sr string closes with the English quote ” instead of the Serbian “:\n"
+        + "\n".join(violations)
     )
 
 

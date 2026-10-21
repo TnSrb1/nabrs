@@ -74,7 +74,7 @@
   <!-- docs/ -->
   <rect x="20" y="835" width="600" height="100" rx="6" fill="#f7fafc" stroke="#4a5568" stroke-width="1.8"/>
   <text x="35" y="855" class="mod-ttl">docs/ — documentation (lives in the repo)</text>
-  <text x="35" y="875" class="mod-sub">CHANGELOG.md, docs/archive/ENVIRONMENT.md, RUNBOOK.md, DECISIONS.md (ADR)</text>
+  <text x="35" y="875" class="mod-sub">CHANGELOG.md, docs/archive/ENVIRONMENT.md, the operations runbook, DECISIONS.md (ADR)</text>
   <text x="35" y="890" class="mod-sub">docs/archive/SOURCES.md — the list of tender platforms and the connection plan</text>
   <text x="35" y="905" class="mod-sub">CHANNELS.md — delivery channels and the matrix “channel × plan × urgency”</text>
   <text x="35" y="920" class="mod-sub">docs/archive/OPEN_QUESTIONS.md — questions to agree on</text>

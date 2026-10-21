@@ -3,7 +3,7 @@
 Requires ``TEST_RLS_DATABASE_URL`` (a throwaway PG, see ``tests/db/test_rls_isolation.py``
 and the memo in the docs — NEVER the deploy production). Without the variable — a skip (the unit environment, the CI without PG).
 
-Why a separate file from ``tests/api/test_feed_service.py``: those tests mock the execution of the SQL, while CLAUDE.md explicitly requires checking the PREDICATE (the filter
+Why a separate file from ``tests/api/test_feed_service.py``: those tests mock the execution of the SQL, while the project rules explicitly require checking the PREDICATE (the filter
 ``?actual=`` and the sort ``?sort=deadline``) by a DB query — a mock may accidentally match by the text, but will not prove that PostgreSQL really understands
 ``CAST(:actual_only AS boolean) = false OR ...`` and ``ORDER BY deadline_at ASC
 NULLS LAST``.
@@ -287,7 +287,8 @@ async def test_dashboard_teaser_ignores_actual_toggle_on_real_db(
 @pytest.mark.asyncio
 async def test_dashboard_teaser_deadline_sort_on_real_db(sessionmaker_, feed_fixture):
     """The teaser “Deadline soon”: among the CURRENT ones the nearest deadline first, NULL last
-    — the order is the REVERSE of the “new” one (see the control of the fixture above)."""
+    — the order is the REVERSE of the “new” one (see the control of the fixture above).
+    """
     async with sessionmaker_() as db:
         by_deadline = await feed_service.get_feed_items(
             db, feed_fixture["tenant_id"], limit=10, sort="deadline"

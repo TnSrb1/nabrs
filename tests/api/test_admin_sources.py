@@ -347,6 +347,8 @@ def test_sources_page_reconcile_match_and_empty():
     )
     html = client.get("/admin/sources").text
     assert "совпало" in html and "data-reconcile-bad" not in html
-    client, _ = _client([FakeResult(items=[_src()])])  # the reconciliation has not run yet
+    client, _ = _client(
+        [FakeResult(items=[_src()])]
+    )  # the reconciliation has not run yet
     html = client.get("/admin/sources").text
     assert "data-reconcile-cell" in html and "data-reconcile-bad" not in html

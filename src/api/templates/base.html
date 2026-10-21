@@ -15,7 +15,7 @@
   <meta property="og:title" content="TenderSRB">
   <meta property="og:description" content="{% block og_description %}{{ t.og_description }}{% endblock %}">
   <meta property="og:type" content="website">
-  <link rel="stylesheet" href="{{ static_url('css/app.css') }}" integrity="sha384-kV5xCIiMWFNIK88aRXtndv9eH6fTCNm10mvKC4VsMUzmfsbH3kxDqLUDLzEw17Wz" crossorigin="anonymous">
+  <link rel="stylesheet" href="{{ static_url('css/app.css') }}" integrity="sha384-i2EWDj2LoGTWCkuQ/ucxkgrnt02cjIxuloYOj5J7x+T5UnMCGgFpollEW23wD+Fn" crossorigin="anonymous">
   <script src="{{ static_url('js/htmx.min.js') }}" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
   <script src="{{ static_url('js/confirm_dialogs.js') }}" integrity="sha384-H/a0gd2xR130nVjoDGEWr/eTy/mKIQlhuu1Y+OtCkqVwW8etBzREJypWkhiJgnVx" crossorigin="anonymous"></script>
   {# GSAP 3.12.5 from the jsDelivr CDN (SRI pinned). The vendored copy is not part of the public snapshot (GreenSock Standard License). The site CSP must allow script-src https://cdn.jsdelivr.net. `defer` keeps execution order: GSAP runs before its consumers from the scripts block. #}

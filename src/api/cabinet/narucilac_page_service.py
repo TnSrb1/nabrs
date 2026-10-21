@@ -6,7 +6,7 @@ find one of their tenders. Here the same analytics layer gets its own entry
 point: the subscriber picks the customer himself (search by name) and sees the profile —
 who wins, at what prices, how concentrated the market is.
 
-What is reused AS IS (one gating axis, one predicate per meaning — CLAUDE.md), and not copied:
+What is reused AS IS (one gating axis, one predicate per meaning — the project rules), and not copied:
 
 - ``_gate`` — freeze BEFORE the plan + Pro+ by the same predicate as the bot and the tender page. No new thresholds or plan lists here;
 - ``customer_award_stats`` / ``customer_yearly_trend`` — the same aggregations;

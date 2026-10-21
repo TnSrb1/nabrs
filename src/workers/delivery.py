@@ -394,7 +394,9 @@ def digest_due(
         return False
     if last_sent_at is None:
         return True
-    if last_sent_at.tzinfo is None:  # for the case of a naive time from fakes/the driver
+    if (
+        last_sent_at.tzinfo is None
+    ):  # for the case of a naive time from fakes/the driver
         last_sent_at = last_sent_at.replace(tzinfo=timezone.utc)
     return last_sent_at.astimezone(tz).date() < local_now.date()
 
@@ -454,7 +456,9 @@ class DeliveryWorker:
                 processed = await self.poll_once()
             except asyncio.CancelledError:
                 raise
-            except Exception:  # noqa: BLE001 — a cycle failure does not break the worker
+            except (
+                Exception
+            ):  # noqa: BLE001 — a cycle failure does not break the worker
                 logger.exception("delivery: polling cycle error")
                 processed = 0
             # if the batch is empty — we sleep the interval; if it is full — straight to the next one
@@ -618,7 +622,9 @@ class DeliveryWorker:
             window = digest_window(
                 row.delivery_schedule, getattr(row, "digest_cron", None)
             )
-            if window is None:  # The SQL has already filtered, but the verdict is by the code
+            if (
+                window is None
+            ):  # The SQL has already filtered, but the verdict is by the code
                 continue
             due_by_profile[str(row.profile_id)] = digest_due(
                 window,
@@ -787,7 +793,9 @@ class DeliveryWorker:
                 result = DeliveryResult(
                     ok=False, error_text=f"канал не реализован: {exc}"
                 )
-            except Exception as exc:  # noqa: BLE001 — a failure does not break the other batches
+            except (
+                Exception
+            ) as exc:  # noqa: BLE001 — a failure does not break the other batches
                 logger.exception(
                     "delivery: digest send failure profile=%s rows=%d",
                     lead.profile_id,
@@ -861,7 +869,9 @@ class DeliveryWorker:
             )
             await session.execute(_SET_FAILED_SQL, {"id": outbox_id})
             await session.commit()
-        logger.warning("delivery: outbox=%s without a delivery target → failed", outbox_id)
+        logger.warning(
+            "delivery: outbox=%s without a delivery target → failed", outbox_id
+        )
 
     # -- anti-spam: the daily limit per profile -------------------------------- #
 
@@ -957,7 +967,9 @@ class DeliveryWorker:
                 "delivery: channel=%s does not support send_text — the limit summary was not sent",
                 job.channel,
             )
-        except Exception:  # noqa: BLE001 — a failure of the summary does not roll back the suppress
+        except (
+            Exception
+        ):  # noqa: BLE001 — a failure of the summary does not roll back the suppress
             logger.warning(
                 "delivery: limit summary send failure profile=%s", job.profile_id
             )

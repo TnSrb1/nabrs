@@ -183,8 +183,12 @@ async def _attach_reconcile(db, sources: list[SourceRow]) -> None:
     then the column is empty, the page lives on."""
     try:
         rows = (await db.execute(_RECONCILE_SQL)).all()
-    except Exception as exc:  # noqa: BLE001 — reconciliation must not bring the admin down
-        logger.warning("admin sources: reconciliation unavailable (%s)", type(exc).__name__)
+    except (
+        Exception
+    ) as exc:  # noqa: BLE001 — reconciliation must not bring the admin down
+        logger.warning(
+            "admin sources: reconciliation unavailable (%s)", type(exc).__name__
+        )
         await db.rollback()
         return
     by_key = {s.source_key: s for s in sources}
@@ -212,9 +216,7 @@ async def silent_sources(db, *, now: datetime | None = None) -> list[SourceRow]:
     try:
         return [s for s in await list_sources(db, now=now) if s.silent]
     except Exception as exc:  # noqa: BLE001
-        logger.warning(
-            "admin sources: silence check failed (%s)", type(exc).__name__
-        )
+        logger.warning("admin sources: silence check failed (%s)", type(exc).__name__)
         return []
 
 

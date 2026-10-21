@@ -4,7 +4,7 @@
    only to the logged-in user for their own tenant (RLS in the route). The body of the tender (title /
    description) is not translated; the chrome / copyright — sr / ru / en (t = TENDER[lang]). #}
 {# The Excel back-fill of June 2026 left _x000D_ in part of title / customer_name —
-   we clean it at the render, tenders_normalized is not touched (CLAUDE.md). #}
+   we clean it at the render, tenders_normalized is not touched (the project rules). #}
 {% set _title = (tender.title | clean_seo) or ui.brand %}
 {% set _customer = tender.customer_name | clean_seo %}
 {# SEO tail from the tender data: amount + deadline enrich the search snippet #}

@@ -557,7 +557,9 @@ async def test_default_admin_email_goes_to_allowlist_and_info_inbox_without_tran
 
     monkeypatch.setenv("CABINET_ADMIN_EMAILS", "op1@example.com, Op2@example.com")
     monkeypatch.setattr(adapters, "email_sender_from_env", lambda: None)
-    assert await _admin_email_from_env("s", "b") == 0  # there is no transport — a silent no-op
+    assert (
+        await _admin_email_from_env("s", "b") == 0
+    )  # there is no transport — a silent no-op
 
     mock = MockEmailSender()
     monkeypatch.setattr(adapters, "email_sender_from_env", lambda: mock)

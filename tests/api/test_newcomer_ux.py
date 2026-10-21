@@ -358,10 +358,18 @@ def test_indexable_boundary_90_days():
     sec = timedelta(seconds=1)
     assert is_indexable(now + day, None, now)  # open
     assert is_indexable(now - 90 * day + sec, None, now)  # closed 90d without a second
-    assert not is_indexable(now - 90 * day, None, now)  # exactly 90d — outside (strictly >)
-    assert not is_indexable(now - 91 * day, now, now)  # the deadline decides, not published
-    assert is_indexable(None, now - 10 * day, now)  # without a deadline — by publication
-    assert not is_indexable(None, None, now)  # without dates — the freshness is not proven
+    assert not is_indexable(
+        now - 90 * day, None, now
+    )  # exactly 90d — outside (strictly >)
+    assert not is_indexable(
+        now - 91 * day, now, now
+    )  # the deadline decides, not published
+    assert is_indexable(
+        None, now - 10 * day, now
+    )  # without a deadline — by publication
+    assert not is_indexable(
+        None, None, now
+    )  # without dates — the freshness is not proven
     # SQL mirror: the same boundary and the same reference point.
     assert INDEXABLE_SQL == (
         "COALESCE(deadline_at, published_at) > now() - interval '90 days'"
@@ -396,9 +404,13 @@ def test_sitemap_window_30_days():
     now = datetime(2026, 10, 14, 12, tzinfo=timezone.utc)
     day = timedelta(days=1)
     assert is_sitemap_indexable(now + day, None, now)  # open
-    assert is_sitemap_indexable(now - 29 * day, None, now)  # closed 29d — in the sitemap
+    assert is_sitemap_indexable(
+        now - 29 * day, None, now
+    )  # closed 29d — in the sitemap
     assert not is_sitemap_indexable(now - 31 * day, None, now)  # closed 31d — not
-    assert is_sitemap_indexable(None, now - 29 * day, now)  # without a deadline — by publication
+    assert is_sitemap_indexable(
+        None, now - 29 * day, now
+    )  # without a deadline — by publication
     assert not is_sitemap_indexable(None, None, now)  # without dates — no
     # SQL mirror: the same 30-day window, the same reference point.
     assert SITEMAP_SQL == (

@@ -8,7 +8,7 @@ plus the operator’s mailbox ``ENTERPRISE_CONTACT_EMAIL`` (info@nab.rs). The ma
 emails; it does NOT let into the admin: ``is_platform_admin`` reads one allowlist.
 
 The language of the emails — Russian literals: the admin is operator-facing and out of i18n scope
-(``CLAUDE.md`` §i18n). The client catalogs (``i18n_email``/``i18n_common``/
+(the project rules §i18n). The client catalogs (``i18n_email``/``i18n_common``/
 ``cabinet.i18n``) have nothing to do with it here.
 
 ‼️ PII (defect #347): ``smtplib.SMTPRecipientsRefused`` puts the recipient’s address

@@ -200,7 +200,7 @@ _PENDING_TTL_SEC = 7 * 24 * 3600
 class PendingEnrichStore:
     """The unfetched ``source_uid`` of one source because of 429 — Redis, not the DB.
 
-    A flat scheme (CLAUDE.md — “no nested structures”): a SET of the rows
+    A flat scheme (the project rules — “no nested structures”): a SET of the rows
     ``ingest:<source_key>:pending_enrich`` + a timestamp
     ``ingest:<source_key>:pending_updated``. The approach is the same as in
     :class:`src.parsers.guards.CountStore`: Redis was chosen because it is ALREADY in the contour (``REDIS_URL``, ``src/workers/routing.py``) — a new migration is not needed (RED). ``redis=None`` (not configured) or a client failure → all methods no-op / an empty result + a WARNING on failure: the state speeds up the pass, and is not the condition of its working.
@@ -239,7 +239,8 @@ class PendingEnrichStore:
 
     async def add(self, source_key: str, uids: set[str]) -> None:
         """Adds ``uids`` to the set — if it is already at the limit, it does NOT add
-        (WARNING) instead of digging into a partial addition: the rule is simple and predictable (“the set must not grow infinitely”)."""
+        (WARNING) instead of digging into a partial addition: the rule is simple and predictable (“the set must not grow infinitely”).
+        """
         if self._redis is None or not uids:
             return
         uids_key = self._uids_key(source_key)
@@ -319,7 +320,8 @@ async def _admin_email_from_env(subject: str, body: str) -> int:
         )
     except Exception as exc:  # noqa: BLE001 — the alerting does not break the worker
         logger.warning(
-            "ingest: the e-mail alert about the silence was not sent (%s)", type(exc).__name__
+            "ingest: the e-mail alert about the silence was not sent (%s)",
+            type(exc).__name__,
         )
         return 0
 
@@ -352,7 +354,9 @@ class SilenceAlertGate:
         try:
             raw = await self._redis.get(self._key(source_key))
         except Exception:  # noqa: BLE001
-            logger.warning("ingest: Redis unavailable for reading silence_alert_sent_at")
+            logger.warning(
+                "ingest: Redis unavailable for reading silence_alert_sent_at"
+            )
             return True
         if raw is None:
             return True
@@ -373,7 +377,9 @@ class SilenceAlertGate:
                 ex=self._cooldown_sec * 2,
             )
         except Exception:  # noqa: BLE001
-            logger.warning("ingest: Redis unavailable for writing silence_alert_sent_at")
+            logger.warning(
+                "ingest: Redis unavailable for writing silence_alert_sent_at"
+            )
 
 
 # --- sources --------------------------------------------------------------- #
@@ -1036,8 +1042,12 @@ class IngestWorker:
                         },
                     )
                 await session.commit()
-        except Exception:  # noqa: BLE001 — the seed is not a condition of ingest working
-            logger.warning("ingest: the auto-seed of sources rows failed", exc_info=True)
+        except (
+            Exception
+        ):  # noqa: BLE001 — the seed is not a condition of ingest working
+            logger.warning(
+                "ingest: the auto-seed of sources rows failed", exc_info=True
+            )
 
     async def run(self) -> None:
         """The endless scheduler: a pass over the sources → sleep by the interval."""
@@ -1092,7 +1102,9 @@ class IngestWorker:
             sources: list[tuple[str, str | None, SourceAdapter]] = [
                 (k, None, self._adapter_factory(k)) for k in keys
             ]
-            if self._reconciler is None:  # lives between passes: holds the backoff of failures
+            if (
+                self._reconciler is None
+            ):  # lives between passes: holds the backoff of failures
                 self._reconciler = SourceReconciler(
                     session_factory=self._session_factory,
                     alert=self._health.alert,
@@ -1101,7 +1113,8 @@ class IngestWorker:
             await self._reconciler.reconcile_enabled(sources, now=now)
         except Exception as exc:  # noqa: BLE001 — monitoring does not break the worker
             logger.warning(
-                "ingest: the reconciliation with the sources failed (%s)", type(exc).__name__
+                "ingest: the reconciliation with the sources failed (%s)",
+                type(exc).__name__,
             )
 
     async def _check_silence(self) -> None:
@@ -1169,9 +1182,12 @@ class IngestWorker:
                 await self._admin_emailer(
                     f"TenderSRB: проверить источник «{label}»", text_
                 )
-            except Exception as exc:  # noqa: BLE001 — a mail failure does not break the worker
+            except (
+                Exception
+            ) as exc:  # noqa: BLE001 — a mail failure does not break the worker
                 logger.warning(
-                    "ingest: the e-mail alert about the silence was not sent (%s)", type(exc).__name__
+                    "ingest: the e-mail alert about the silence was not sent (%s)",
+                    type(exc).__name__,
                 )
             await self._silence_gate.mark_sent(now=now, source_key=gate_key)
 
@@ -1200,7 +1216,8 @@ class IngestWorker:
                 )
             else:
                 logger.info(
-                    "ingest: source %s is disabled (enabled=false), skipping", source_key
+                    "ingest: source %s is disabled (enabled=false), skipping",
+                    source_key,
                 )
             return interval
 
@@ -1367,7 +1384,8 @@ class IngestWorker:
             Exception
         ) as exc:  # noqa: BLE001 — the collection of property does not break the tender pass
             logger.warning(
-                "ingest[alsu]: the collection of notices failed — %s", _format_fail_reason(exc)
+                "ingest[alsu]: the collection of notices failed — %s",
+                _format_fail_reason(exc),
             )
 
     async def _maybe_recheck_documents(
@@ -1382,7 +1400,9 @@ class IngestWorker:
             return None
         try:
             checked, changed = await self._recheck_documents(adapter, source_key)
-        except Exception as exc:  # noqa: BLE001 — the failure is visible as a broken pass
+        except (
+            Exception
+        ) as exc:  # noqa: BLE001 — the failure is visible as a broken pass
             reason = _format_fail_reason(exc)
             logger.warning(
                 "ingest[%s]: document recheck failed — %s", source_key, reason
@@ -1520,7 +1540,9 @@ class IngestWorker:
             return
         try:
             await collect_plans(adapter, self._session_factory)
-        except Exception as exc:  # noqa: BLE001 — the collection of plans does not break the tender pass
+        except (
+            Exception
+        ) as exc:  # noqa: BLE001 — the collection of plans does not break the tender pass
             logger.warning(
                 "ingest[%s]: the collection of plans failed — %s",
                 source_key,
@@ -1790,7 +1812,9 @@ class IngestWorker:
                                 session, adapter, raw
                             )
                             await session.commit()
-                        except Exception:  # noqa: BLE001 — one line does not break the pass
+                        except (
+                            Exception
+                        ):  # noqa: BLE001 — one line does not break the pass
                             with contextlib.suppress(Exception):
                                 await session.rollback()
                             errors += 1
@@ -1897,7 +1921,9 @@ class IngestWorker:
                     {"source_key": source_key, "uids": list(uids)},
                 )
             ).all()
-        except Exception:  # noqa: BLE001 — the state reconciliation does not break the pass
+        except (
+            Exception
+        ):  # noqa: BLE001 — the state reconciliation does not break the pass
             with contextlib.suppress(Exception):
                 await session.rollback()
             logger.warning(

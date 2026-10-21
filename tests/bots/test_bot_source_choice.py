@@ -54,7 +54,9 @@ class _SourcesSession:
     async def execute(self, stmt, params=None):
         text = str(stmt)
         assert "FROM sources" in text, text
-        if "ANY(" in text:  # the choice: the enabled ones + the ones already in the profile
+        if (
+            "ANY(" in text
+        ):  # the choice: the enabled ones + the ones already in the profile
             keys = set((params or {}).get("keys") or [])
             rows = [r for r in self.rows if r.enabled or r.source_key in keys]
         else:  # list_enabled_sources

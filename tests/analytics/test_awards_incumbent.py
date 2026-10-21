@@ -130,7 +130,7 @@ def test_name_key_sql_formula_is_pinned():
 def test_every_by_name_predicate_uses_the_shared_key(sql):
     """No by-name predicate compares the name LITERALLY.
 
-    One predicate per meaning (CLAUDE.md): if one of the SQLs forgot to normalize, this block
+    One predicate per meaning (the project rules): if one of the SQLs forgot to normalize, this block
     will diverge from the neighbouring one on the same page (the profile 30, the feed 21).
     """
     assert _CUSTOMER_NAME_KEY + " = :name" in sql
@@ -245,7 +245,9 @@ def test_recent_awards_sql_aggregates_per_decision_not_per_lot():
     assert "count(*)" in sql  # the number of lots of the decision
     # winner_name — in the grouping key: for some rows winner_pib is empty, and
     # grouping by the PIB alone would glue different PIB-less winners together.
-    assert "NULLS LAST" in sql  # decisions without a date do not displace the fresh ones from the top
+    assert (
+        "NULLS LAST" in sql
+    )  # decisions without a date do not displace the fresh ones from the top
 
 
 # --------------------------------------------------------------------------- #

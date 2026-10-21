@@ -6,7 +6,7 @@ What we pin:
 * the chain of revisions 0039 → 0040 (a single head — the guard is
   ``test_0038_user_channel_locale::test_single_alembic_head``);
 * ‼️ the tables are PLATFORM ones: neither ``tenant_id``, nor a policy, nor RLS. A tenant column would drag
-  ``FORCE ROW LEVEL SECURITY`` in its wake (the CLAUDE.md invariant), and FORCE applies also to the OWNER — the privileged worker
+  ``FORCE ROW LEVEL SECURITY`` in its wake (the invariant from the project rules), and FORCE applies also to the OWNER — the privileged worker
   (which goes without ``SET app.current_tenant_id``) would read 0 rows from its own table.
   The test guards exactly this: “a tenant_id will not appear here”;
 * ``day`` — the PRIMARY KEY of the snapshot: the target of ``ON CONFLICT (day) DO UPDATE``, a repeated

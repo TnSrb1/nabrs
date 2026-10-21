@@ -4,7 +4,7 @@ The defect (found by the owner on the live site 25.07): on the English page “M
 
 The owner’s decision: the translation language = the interface language (``users.locale``). On the Serbian interface there is no button at all — the original of the tender is already Serbian, there is nothing to translate into.
 
-‼️ The separation of the axes is kept (CLAUDE.md): ``?lang=`` on the content routes still does NOT repaint the chrome (the route sets ``cabinet_ignore_query_lang``), it only says into which language to translate the CONTENT.
+‼️ The separation of the axes is kept (the project rules): ``?lang=`` on the content routes still does NOT repaint the chrome (the route sets ``cabinet_ignore_query_lang``), it only says into which language to translate the CONTENT.
 """
 
 from __future__ import annotations

@@ -67,7 +67,9 @@ from src.workers.adapters.base import DeliveryAdapter
 logger = logging.getLogger(__name__)
 
 DEFAULT_TZ = "Europe/Belgrade"
-SEND_HOUR = 9  # we send not earlier than 9:00 in the tenant’s tz (the analogue of SUMMARY_HOUR)
+SEND_HOUR = (
+    9  # we send not earlier than 9:00 in the tenant’s tz (the analogue of SUMMARY_HOUR)
+)
 THRESHOLDS_DAYS: tuple[int, ...] = (7, 1)
 
 # The threshold “access has already expired” — a log marker, separate from THRESHOLDS_DAYS
@@ -451,7 +453,9 @@ class SubscriptionReminderWorker:
                 subject=subject_builder(threshold, locale),
                 text_body=body_builder(threshold, row.access_until, tz, locale),
             )
-        except Exception as exc:  # noqa: BLE001 — a channel failure does not roll the log back
+        except (
+            Exception
+        ) as exc:  # noqa: BLE001 — a channel failure does not roll the log back
             # ‼️ NOT logger.exception and NOT %s of exc: the subscriber’s address is PII, and the
             # the text of the SMTP error contains it (`SMTPRecipientsRefused` puts the
             # recipient right into the arguments, the traceback prints them in full).

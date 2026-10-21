@@ -11,7 +11,7 @@ the limit". Here TWO promises are checked:
    “will appear automatically” — a promise that will not come true in this state.
 
 The expectations are taken from the RENDER of the routes (not from the code model): a test that pinned
-the wrong contract already let a 404 through to prod (CLAUDE.md).
+the wrong contract already let a 404 through to prod (the project rules).
 """
 
 from __future__ import annotations
@@ -203,6 +203,8 @@ async def test_limits_view_lists_every_paid_level_and_marks_unavailable():
     session = _LimitsSession(status="active", tier="lite", used=0)
     view = await ai_limits_service.get_ai_limits(session, tid=SESS["tid"])
     by_level = {row.level: row for row in view.rows}
-    assert by_level["standard"].state == "unavailable"  # there is no auto-analysis on lite
+    assert (
+        by_level["standard"].state == "unavailable"
+    )  # there is no auto-analysis on lite
     assert by_level["translate"].limit == _TIER_LIMITS["lite"]["translate"]
     assert "quick" not in by_level  # we do not show an unreachable level to the client

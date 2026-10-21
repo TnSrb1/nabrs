@@ -365,7 +365,8 @@ async def test_create_profile_drops_unknown_source_and_stamps_opt_in():
 @pytest.mark.asyncio
 async def test_update_profile_keeps_opt_in_of_kept_source_and_paused_key():
     """An edit does not reset the subscription moment of the remaining source; a key
-    set in the profile does not drop out, even if the source was temporarily switched off."""
+    set in the profile does not drop out, even if the source was temporarily switched off.
+    """
     existing = SimpleNamespace(
         id="p1",
         tenant_id=TID,

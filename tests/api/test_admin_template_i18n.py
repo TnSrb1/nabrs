@@ -171,4 +171,6 @@ def test_admin_route_reads_translation_fields():
     assert 'f"name_{lang}"' in src
     assert 'f"description_{lang}"' in src
     assert 'for lang in ("sr", "en")' in src
-    assert "i18n=i18n" in src, "the collected translations are not passed to the service"
+    assert (
+        "i18n=i18n" in src
+    ), "the collected translations are not passed to the service"

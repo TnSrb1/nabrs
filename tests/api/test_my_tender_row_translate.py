@@ -4,7 +4,7 @@ without a toggle (the defect class #464 — it was: the `_my_tender_row.html` he
 eNabavke and was not translated at all, the only tender render point in the cabinet
 without `_card_title.html`).
 
-Mutation check (see CLAUDE.md §Pre-push checklist item 7): remove the
+Mutation check (see the project rules §Pre-push checklist item 7): remove the
 `{% if row.profile_id %}` branch from `_my_tender_row.html` (return only the
 external link) — `test_row_with_profile_renders_internal_toggle` goes red.
 
@@ -66,9 +66,7 @@ def test_row_with_profile_renders_internal_toggle():
     assert "Показать перевод" in html
     assert f'href="/app/tenders/{_TENDER}?profile_id={_PROFILE}"' in html
     assert f'href="{_SOURCE_URL}"' not in html, "the link must be internal"
-    assert (
-        'target="_blank"' not in html
-    ), "the internal link does not open in a new tab"
+    assert 'target="_blank"' not in html, "the internal link does not open in a new tab"
     assert 'class="fn-row__title"' in html, "the row’s class must not be lost"
 
 

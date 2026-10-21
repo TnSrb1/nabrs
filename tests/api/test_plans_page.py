@@ -86,7 +86,9 @@ def test_plans_page_anon_sees_all_cards():
     client = _client()
     resp = client.get("/plans")
     assert resp.status_code == 200
-    assert "Free" not in resp.text  # there is no public Free (the owner’s decision 30.09)
+    assert (
+        "Free" not in resp.text
+    )  # there is no public Free (the owner’s decision 30.09)
     assert "€0" not in resp.text
     assert "Pro" in resp.text
     assert "Business" in resp.text

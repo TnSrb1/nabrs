@@ -189,7 +189,9 @@ async def test_email_without_transport_is_fail_closed(monkeypatch):
     db = _FakeDb(pending=[_row()])
     _states(monkeypatch, email=("a@example.com", "ru"))
     assert await _notifier(db, email=None).poll_once() == 0
-    assert db.recorded == []  # no silent loss: it will go out when the mail is configured
+    assert (
+        db.recorded == []
+    )  # no silent loss: it will go out when the mail is configured
 
 
 @pytest.mark.asyncio

@@ -7,7 +7,7 @@ Babel) plus :func:`bot_t`. The locale resolver lives in ``telegram.py``
 (the language of THIS chat, set by the ``/language`` command, 0038) → ``users.locale``
 (the language of the cabinet) → ru.
 
-Do not mix the two axes of the language (CLAUDE.md): here ONLY the interface language of the bot’s chrome
+Do not mix the two axes of the language (the project rules): here ONLY the interface language of the bot’s chrome
 (the ``users.locale`` axis, refined by the language of the channel). The body of the AI analysis and the
 tender data (title/description) are another axis (``profiles.target_language``) and are NOT translated by this catalog.
 

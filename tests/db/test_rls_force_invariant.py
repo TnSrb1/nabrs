@@ -1,4 +1,4 @@
-"""The CLAUDE.md invariant: every tenant-scoped table under FORCE ROW LEVEL SECURITY.
+"""The invariant from the project rules: every tenant-scoped table under FORCE ROW LEVEL SECURITY.
 
 Why a separate test (a regression of 0031→0032). ``ENABLE ROW LEVEL SECURITY``
 makes the policies bind everyone EXCEPT the table owner; ``FORCE``
@@ -64,8 +64,7 @@ def _render(start: str, end: str) -> str:
         text=True,
     )
     assert proc.returncode == 0, (
-        f"alembic upgrade {start}:{end} --sql (offline) did not render:\n"
-        + proc.stderr
+        f"alembic upgrade {start}:{end} --sql (offline) did not render:\n" + proc.stderr
     )
     return proc.stdout
 

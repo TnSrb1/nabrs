@@ -74,7 +74,7 @@ The dependencies are injected (the AI client, the session factory, the batch siz
 the limits) — for unit tests with a mocked DB and a fake AI client.
 
 ‼️ **The role contour — verified by action on 15.08.2026, not inferred from the docstring**
-(in the project the docstring about the role had already been wrong for nine weeks, CLAUDE.md). In the container
+(in the project the docstring about the role had already been wrong for nine weeks, the project rules). In the container
 ``deploy-ai-1`` ``DATABASE_URL`` points to the role ``tendersrb``, which has ``rolsuper=t`` and ``rolbypassrls=t`` — RLS does not touch it at all, and ``set_tenant`` is not needed here (a run in the container: ``current_user='tendersrb'``,
 ``SELECT count(*) FROM ai_usage`` returned rows with an empty ``app.current_tenant_id``). The wording “the owner of the RLS tables bypasses it” would be WRONG: ``ai_usage`` is under **FORCE** RLS, and FORCE applies to the owner too —
 it is the BYPASSRLS attribute of the role that works. Cross-tenant AI accounting is a server operation (DB_SCHEMA §4). The web has a DIFFERENT contour (``tendersrb_app``, NOBYPASSRLS):
@@ -246,7 +246,9 @@ class AiWorker:
                 processed = await self.poll_once()
             except asyncio.CancelledError:
                 raise
-            except Exception:  # noqa: BLE001 — a cycle failure does not break the worker
+            except (
+                Exception
+            ):  # noqa: BLE001 — a cycle failure does not break the worker
                 logger.exception("ai: polling cycle error")
                 processed = 0
             if processed < self._batch_size:

@@ -6,7 +6,7 @@ The scope 2b — the chrome of the onboarding (FSM), the command handlers (/prof
 
 The method (as in 2a): under en/sr there are NO Russian letters ``U+044B U+044D U+0449 U+044A U+0451 U+0439`` in the chrome (they are absent both in Serbian Latin and in English), under ru the previous Russian canon. The data-values are excluded from the check: the test data are chosen in Latin, so that any Russian letter = untranslated chrome.
 
-Two AXES (CLAUDE.md): ``users.locale`` (the chrome, the axis of this test) ≠
+Two AXES (the project rules): ``users.locale`` (the chrome, the axis of this test) ≠
 ``profiles.target_language`` (AI content; in the wizard the user chooses exactly
 it, and it is NOT the language of the onboarding chrome).
 """
@@ -93,7 +93,9 @@ def test_build_summary_chrome_localized(locale):
     # Data in Latin: the content language sr → «Srpski», the words in Latin.
     data = {"language": "sr", "keywords": ["gradnja", "putevi"], "region": "RS-All"}
     text = tg._build_summary(data, locale)
-    assert not RU_ONLY.search(text), f"Russian letters in the summary under {locale}: {text!r}"
+    assert not RU_ONLY.search(
+        text
+    ), f"Russian letters in the summary under {locale}: {text!r}"
 
 
 def test_build_summary_ru_canon_preserved():
@@ -132,7 +134,9 @@ def _profile_data(
 def test_render_profile_chrome_localized(locale):
     data, profiles = _profile_data()
     text = tg._render_profile(data, profiles, locale)
-    assert not RU_ONLY.search(text), f"Russian letters in /profile under {locale}: {text!r}"
+    assert not RU_ONLY.search(
+        text
+    ), f"Russian letters in /profile under {locale}: {text!r}"
 
 
 def test_render_profile_ru_canon_preserved():
@@ -216,7 +220,9 @@ def test_render_profile_no_tenant_skips_access_line():
 def test_render_profile_account_and_access_chrome_localized(locale):
     data, profiles = _profile_data(email="test@example.com", access_until=None)
     text = tg._render_profile(data, profiles, locale)
-    assert not RU_ONLY.search(text), f"Russian letters in /profile under {locale}: {text!r}"
+    assert not RU_ONLY.search(
+        text
+    ), f"Russian letters in /profile under {locale}: {text!r}"
 
 
 # --------------------------------------------------------------------------- #
@@ -304,7 +310,9 @@ async def test_cmd_status_localized(locale):
     ):
         await tg.cmd_status(message)
     text = _last(message.answer)
-    assert not RU_ONLY.search(text), f"Russian letters in /status under {locale}: {text!r}"
+    assert not RU_ONLY.search(
+        text
+    ), f"Russian letters in /status under {locale}: {text!r}"
 
 
 @pytest.mark.asyncio
@@ -350,7 +358,9 @@ async def test_cmd_watching_list_localized(locale):
     ):
         await tg.cmd_watching(message)
     text = _last(message.answer)
-    assert not RU_ONLY.search(text), f"Russian letters in /watching under {locale}: {text!r}"
+    assert not RU_ONLY.search(
+        text
+    ), f"Russian letters in /watching under {locale}: {text!r}"
 
 
 @pytest.mark.parametrize("locale", ["en", "sr"])

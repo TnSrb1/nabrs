@@ -332,7 +332,8 @@ def test_dashboard_hides_todo_section_when_nothing_burns():
 def test_dashboard_shows_burning_deadline_with_urgent_accent(monkeypatch):
     """Cockpit: a burning deadline gets into the ROKOVI agenda with an accent.
 
-    v2 (owner 13.10): there is no “Do now” block — it is merged into ROKOVI (“Deadlines” in ru)."""
+    v2 (owner 13.10): there is no “Do now” block — it is merged into ROKOVI (“Deadlines” in ru).
+    """
     monkeypatch.setattr(
         routes_profiles.feed_service,
         "get_calendar_deadlines",
@@ -483,7 +484,8 @@ def test_dashboard_downgrade_notice_shows_plans_gate_cta(monkeypatch):
 
 def test_dashboard_teaser_links_tender_to_cabinet_card(monkeypatch):
     """The cockpit teaser does not carry the artifact badges, but keeps the entry to AI analysis:
-    the heading leads to the tender card in the cabinet (the full set — on /app/feed)."""
+    the heading leads to the tender card in the cabinet (the full set — on /app/feed).
+    """
     item_no_actions = FeedItem(
         tender_id="t-3",
         title="Набавка канцеларијског материјала",

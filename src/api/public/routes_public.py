@@ -259,7 +259,9 @@ async def help_center(
     try:
         async with session_factory() as db:
             sources_view = await get_sources_view(db)
-    except Exception as exc:  # noqa: BLE001 — the help lives without the list of sources
+    except (
+        Exception
+    ) as exc:  # noqa: BLE001 — the help lives without the list of sources
         logger.warning("help sources unavailable: %s", type(exc).__name__)
     canonical, hreflang = seo_canonical_and_hreflang(request, settings.cabinet_base_url)
     response = templates.TemplateResponse(

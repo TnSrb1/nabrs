@@ -118,7 +118,8 @@ def test_each_tender_appears_once_on_the_page(monkeypatch):
     the teaser tab = three copies).
 
     Mutation: remove the `shown_ids` filter in routes_profiles.dashboard — tender t-0,
-    which is both in the agenda and in the deliveries, will appear twice, and the test goes red."""
+    which is both in the agenda and in the deliveries, will appear twice, and the test goes red.
+    """
     _stub(
         monkeypatch,
         deadlines=_deadlines(12),
@@ -136,7 +137,8 @@ def test_each_tender_appears_once_on_the_page(monkeypatch):
 def test_blocks_follow_mobile_order_and_removed_blocks_are_gone(monkeypatch):
     """Columns in the DOM: alert → hero → [main: ROKOVI, NOVO, TEMPLATES] → [side:
     calendar, VESTI]. The mobile order "ROKOVI → NOVO → VESTI → TEMPLATES →
-    calendar" is set by CSS `order` (see below). What the owner removed is not brought back."""
+    calendar" is set by CSS `order` (see below). What the owner removed is not brought back.
+    """
     _stub(monkeypatch, deadlines=_deadlines(3), feed=[_feed_item("t-90")], live=False)
     monkeypatch.setattr(
         routes_profiles.svc, "list_profiles", _async([_p("p-1", "Градња")])

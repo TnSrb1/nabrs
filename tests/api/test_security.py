@@ -207,7 +207,9 @@ def test_email_last4(email, expected):
 
 def test_b64d_accepts_unpadded_standard_input():
     # _b64e gives urlsafe-without-padding; we make sure _b64d completes it
-    raw = b"\xfb\xff\xbe"  # the characters that give '-' and '_' in the urlsafe alphabet
+    raw = (
+        b"\xfb\xff\xbe"  # the characters that give '-' and '_' in the urlsafe alphabet
+    )
     encoded = security._b64e(raw)
     assert security._b64d(encoded) == raw
     # the same string through the standard base64 gives another alphabet

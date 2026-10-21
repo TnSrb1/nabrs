@@ -3,7 +3,7 @@ must be defined in app.css (a design-system component or a row of the Tailwind s
 
 The same check — for classes that JS sets via `.className = '…'`
 and `classList.add|remove|toggle(...)` (`src/api/static/js/*.js`). There is no
-Tailwind build, so “the class is not in the subset” is a real, not hypothetical, bug: cpv_widget.js set classes outside app.css five times, and they silently did not apply (the CPV translation stuck to the title without a space, see CLAUDE.md).
+Tailwind build, so “the class is not in the subset” is a real, not hypothetical, bug: cpv_widget.js set classes outside app.css five times, and they silently did not apply (the CPV translation stuck to the title without a space, see the project rules).
 
 Dynamic/third-party classes that are not CSS utilities and must not be defined in app.css — in an explicit WHITELIST below, with a reason.
 """

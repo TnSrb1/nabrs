@@ -155,4 +155,7 @@ def test_known_declarations_from_code_facts() -> None:
     assert "cap_s_deadline" not in short_keys(caps["ukck_nabavke"])
     assert caps["mod_nabavke"].original_link is True
     assert caps["ukck_nabavke"].original_link is False
-    assert caps["ukck_nabavke"].public_url == "https://src-ukck.example.invalid/javne-nabavke/"
+    assert (
+        caps["ukck_nabavke"].public_url
+        == "https://src-ukck.example.invalid/javne-nabavke/"
+    )

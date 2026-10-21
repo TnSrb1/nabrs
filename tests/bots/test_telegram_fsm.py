@@ -355,7 +355,8 @@ async def test_reset_for_linked_account_points_to_cabinet_and_changes_nothing() 
 @pytest.mark.asyncio
 async def test_onboarding_keywords_match_or_semantics_and_render() -> None:
     """keywords_include from the onboarding = OR by words (matcher.keywords_match
-    sees each word as a separate group), and /profile renders the words of the new format as a flat list."""
+    sees each word as a separate group), and /profile renders the words of the new format as a flat list.
+    """
     from src.bots.telegram import _render_profile
     from src.workers.matching import keywords_match
 

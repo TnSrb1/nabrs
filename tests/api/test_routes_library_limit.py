@@ -96,7 +96,9 @@ def test_trial_limit_counts_as_pro_on_library(monkeypatch):
     resp = _client(sess={"uid": _UID, "tid": _TID}).get("/library")
     assert resp.status_code == 200
     assert "Занято 1 из 3" in resp.text
-    assert 'href="/profiles/new/confirm?preset=all"' in resp.text  # the limit is not exhausted
+    assert (
+        'href="/profiles/new/confirm?preset=all"' in resp.text
+    )  # the limit is not exhausted
 
 
 def test_trial_limit_counts_as_pro_on_library_detail(monkeypatch):

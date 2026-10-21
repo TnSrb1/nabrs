@@ -430,7 +430,9 @@ class EmailAdapter(DeliveryAdapter):
                 html_body=f"<html><body><p>{html.escape(text)}</p></body></html>",
                 locale=norm_locale(locale),
             )
-        except Exception as exc:  # noqa: BLE001 — we do not put the address into the log/error (PII)
+        except (
+            Exception
+        ) as exc:  # noqa: BLE001 — we do not put the address into the log/error (PII)
             logger.error(
                 "delivery/email: the summary e-mail failed error=%s", type(exc).__name__
             )

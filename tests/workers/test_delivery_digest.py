@@ -233,7 +233,9 @@ def test_due_false_before_window_hour():
 def test_due_true_inside_window_uses_tenant_tz():
     # 07:00 UTC = 09:00 Belgrade: by UTC the window has NOT come, by the tenant’s tz — it has.
     now = _utc(16, 7)
-    assert now.hour < DIGEST_MORNING_HOUR  # the premise of the test: the UTC hour is smaller
+    assert (
+        now.hour < DIGEST_MORNING_HOUR
+    )  # the premise of the test: the UTC hour is smaller
     assert digest_due(
         (DIGEST_MORNING_HOUR, None), tz=BELGRADE, now=now, last_sent_at=None
     )

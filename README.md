@@ -7,6 +7,7 @@
 **Serbian public tenders, filtered for you — with an AI that tells you whether to bid.**
 
 [![Live](https://img.shields.io/badge/live-app.nab.rs-1f3760?style=flat-square)](https://app.nab.rs)
+[![CI](https://github.com/TnSrb1/nabrs/actions/workflows/ci.yml/badge.svg)](https://github.com/TnSrb1/nabrs/actions/workflows/ci.yml)
 [![Status](https://img.shields.io/badge/status-production-2ea44f?style=flat-square)](#numbers)
 [![License](https://img.shields.io/badge/license-proprietary-c07f1a?style=flat-square)](LICENSE)
 
@@ -21,7 +22,7 @@
 ![Claude](https://img.shields.io/badge/Anthropic_Claude-191919?style=flat-square&logo=anthropic&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker_Compose-2496ED?style=flat-square&logo=docker&logoColor=white)
 
-[Live app](https://app.nab.rs) · [Architecture](docs/diagrams/architecture.svg) · [Decisions (ADR)](docs/DECISIONS.md) · [Code map](docs/CODE_MAP.md) · [Database schema](docs/DB_SCHEMA.md)
+[Live app](https://app.nab.rs) · [Architecture](docs/diagrams/architecture.svg) · [AI pipeline](docs/AI_PIPELINE.md) · [Agentic delivery](docs/AGENTIC_DELIVERY.md) · [Decisions (ADR)](docs/DECISIONS.md) · [Code map](docs/CODE_MAP.md) · [Database schema](docs/DB_SCHEMA.md)
 
 </div>
 
@@ -48,12 +49,21 @@ Everything else — the web app, the Telegram bot, the workers, the database lay
 
 <sub>Production, Serbian locale, desktop. Captured with <code>scripts/shots/shot.sh</code>; the landing shot is dated 19 October 2026 on its tender card.</sub>
 
+### AI analysis
+
+| Requirements with exact quotes | Limit running out | Limit used up |
+|:---:|:---:|:---:|
+| <img src="docs/assets/screenshots/ai-deep-requirements.png" alt="Specification analysis: match score, reasons, risks, and a list of requirements, each with its source document and the exact quote; a notice says 5 of 6 parts were analysed" width="300"> | <img src="docs/assets/screenshots/ai-limit-soft.png" alt="Deep analysis button with the remaining allowance: 2 of 10 left, the limit is running out" width="300"> | <img src="docs/assets/screenshots/ai-limit-exhausted.png" alt="Monthly limit used up: used 10 of 10, with a button to move to a higher plan" width="300"> |
+
+<sub>English locale, desktop width. Rendered by the real application on a fake database with an invented tender (no real data), with <code>scripts/shots/shot.sh</code>, 20 October 2026. How the analysis works: [AI pipeline](docs/AI_PIPELINE.md).</sub>
+
 ## What it does
 
-- **Collects tenders** from Serbian public procurement portals and TED notices for the Western Balkans, normalised into one schema. Seven sources are live; the rest of the registered adapters are switched off until enabled in the `sources` table.
+- **Collects tenders** from Serbian public procurement portals and TED notices for the Western Balkans, normalised into one schema. Eight sources are enabled and seven have delivered data (see [Numbers](#numbers)); the rest of the registered adapters are switched off until enabled in the `sources` table.
 - **Matches** every notice against each subscriber's templates: keywords (with Serbian Latin/Cyrillic folding and stemming), CPV codes, regions, budget and sources.
 - **Explains with AI** — a relevance verdict, a deep analysis of the technical specification, a "bid or not" assessment and a document checklist. Usage is metered per plan.
-- **Delivers** to Telegram ([@nabrs_bot](https://t.me/nabrs_bot)) and email, with deadline reminders and award notifications.
+- **Reads every document format** — `.pdf`, `.doc`, `.docx`, `.odt`, `.rtf`, `.xls`, `.xlsx`, `.txt` and `.zip` archives are turned into text; scanned files are marked, not silently skipped. Long documentation can be analysed step by step, with every requirement backed by an exact quote that a checker has found in the source. That mode is behind a feature flag and is off in production as of 20 October 2026. See [AI pipeline](docs/AI_PIPELINE.md).
+- **Delivers** to Telegram ([@nabrs_bot](https://t.me/nabrs_bot)) and email, with deadline reminders, award notifications and a "tender changed" message (new deadline, amount or documents) to subscribers who already received the tender, at most once a day per tender.
 - **Web cabinet** — a feed with sorting and filters, a template wizard built from ready-made packages, an account hub (plan, channels, templates) and a dashboard whose tabs switch without a page reload.
 - **Public catalogue** — tenders by CPV category and a CPV code directory, indexed for search engines.
 - **Procurement plans** (buyers' intentions before a tender exists) — collection is implemented behind a feature flag that is **off**; no plan data is collected or shown yet.
@@ -93,6 +103,18 @@ Every stage is a standalone worker process. Stages communicate through PostgreSQ
 | Infra | Docker Compose, Caddy, Ubuntu 24.04 VPS |
 | Quality | pytest, ruff, black, mypy ratchet, disposable PostgreSQL for database tests |
 
+## How the AI part works
+
+<img src="docs/assets/ai-pipeline-animated.svg" alt="Animated AI pipeline: documents, text extraction, gate before the call, fast verdicts, step-by-step analysis with a quote critic, and the usage ledger" width="100%">
+
+<sub>Animated: each stage is highlighted in turn. Details and the code behind each stage: [`docs/AI_PIPELINE.md`](docs/AI_PIPELINE.md).</sub>
+
+## How it is built
+
+<img src="docs/assets/agentic-delivery-animated.svg" alt="Animated agentic delivery: value check, brief, isolated worktree, mutation check, draft pull request, independent gate, second-agent review, merge, automatic rollout, production check and knowledge layers" width="100%">
+
+<sub>Animated: each phase is highlighted in turn. Roles, rules and evidence: [`docs/AGENTIC_DELIVERY.md`](docs/AGENTIC_DELIVERY.md).</sub>
+
 ## Engineering practices
 
 - **Row-level security with `FORCE`.** Every tenant-scoped table has a policy, `ENABLE` and `FORCE` row-level security. The application role is not the table owner, so the policy applies to it. Cross-tenant access goes only through `SECURITY DEFINER` functions. Integration tests run against a throwaway PostgreSQL instance.
@@ -104,14 +126,15 @@ Every stage is a standalone worker process. Stages communicate through PostgreSQ
 
 ## Numbers
 
-As of 19 October 2026.
+As of 20 October 2026.
 
 | Metric | Value |
 |---|---|
-| Tenders processed | 58,210 |
-| Notifications delivered | 28,660 |
-| Live sources | 7 (jnportal, ted_balkan, cejn, cfcu, eeas, nis, worldbank) |
-| Automated tests | 7,561 (private repository; this snapshot runs a subset, see [Running the tests](#running-the-tests)) |
+| Tenders processed | 60,539 |
+| Notifications delivered | 28,745 |
+| Sources | 8 enabled, 7 with data (jnportal, bih_enabavke, cejn, nis, ted_balkan, worldbank, cfcu); the eighth has produced no tenders yet |
+| Automated tests | 7,718 collected (private repository; this snapshot runs a subset, see [Running the tests](#running-the-tests)) |
+| Database migrations | 58 (head `0058`) |
 | Architecture decision records | 27 (in [`docs/DECISIONS.md`](docs/DECISIONS.md); 7 more are withheld because they contain operational or connector detail) |
 
 ## Repository layout
@@ -152,6 +175,8 @@ Tests that need the unpublished connectors, deployment files or operational data
 
 | Document | Purpose |
 |---|---|
+| [`docs/AI_PIPELINE.md`](docs/AI_PIPELINE.md) | The AI path of a tender: documents, gate, verdicts, step-by-step analysis, ledger |
+| [`docs/AGENTIC_DELIVERY.md`](docs/AGENTIC_DELIVERY.md) | How the product is built with coordinator and worker agents under a human owner |
 | [`docs/DECISIONS.md`](docs/DECISIONS.md) | Architecture Decision Records |
 | [`docs/DB_SCHEMA.md`](docs/DB_SCHEMA.md) | Data model and row-level security |
 | [`docs/CODE_MAP.md`](docs/CODE_MAP.md) | Where each route, table and module lives (generated) |

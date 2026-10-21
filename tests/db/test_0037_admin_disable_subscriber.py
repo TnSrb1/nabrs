@@ -62,10 +62,10 @@ def test_functions_are_security_definer_with_fixed_search_path(
     joined = _sql(migration, monkeypatch)
     body = joined.split(f"FUNCTION {fn}", 1)[1]
     head = body.split("$$", 1)[0]
-    assert "SECURITY DEFINER" in head, f"{fn}: without DEFINER the app role will not pass the RLS"
     assert (
-        "SET search_path = public" in head
-    ), f"{fn}: the search_path must be fixed"
+        "SECURITY DEFINER" in head
+    ), f"{fn}: without DEFINER the app role will not pass the RLS"
+    assert "SET search_path = public" in head, f"{fn}: the search_path must be fixed"
 
 
 @pytest.mark.parametrize(

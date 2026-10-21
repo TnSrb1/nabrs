@@ -445,7 +445,9 @@ async def verify_email_token(
     user.email_verified_at = moment
     token.consumed_at = moment
     # activate the tenant (if it is still trial) — it is already trial from signup
-    locale = user.locale  # into the signed session: the chrome does not read the DB on render
+    locale = (
+        user.locale
+    )  # into the signed session: the chrome does not read the DB on render
     email = user.email
     await session.commit()
     if first_confirmation and email_sender is not None and email:

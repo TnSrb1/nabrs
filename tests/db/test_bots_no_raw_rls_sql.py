@@ -86,7 +86,9 @@ def test_scanner_sees_sql_at_all():
     moved to another helper) — and the hole would come back unnoticed.
     """
     total = sum(len(sql_strings(p.read_text())) for p in _bot_modules())
-    assert total > 10, f"the scanner found only {total} SQL rows in src/bots — it is broken"
+    assert (
+        total > 10
+    ), f"the scanner found only {total} SQL rows in src/bots — it is broken"
 
 
 def test_scanner_flags_synthetic_raw_sql():

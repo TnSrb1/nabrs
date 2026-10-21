@@ -251,7 +251,9 @@ async def test_dispatch_no_target_skips_send():
 async def test_dispatch_unknown_channel_marks_failed():
     session = _FakeSession([])
     worker = _worker(session)
-    await worker._dispatch_one(_job(channel="viber"))  # there is no adapter in the worker's registry
+    await worker._dispatch_one(
+        _job(channel="viber")
+    )  # there is no adapter in the worker's registry
     assert any("status='failed'" in s for s, _ in session.calls)
 
 

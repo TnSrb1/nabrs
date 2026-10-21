@@ -158,7 +158,7 @@ def _auth_context(request: Request) -> dict:
         # sr = the original / ru = the machine translation — the htmx fragments /title and /description)
         # sets ``request.state.cabinet_ignore_query_lang``: then the chrome of the fragment
         # resolves WITHOUT the query and follows the interface language of the user, rather than
-        # the translation toggle (do not mix the two axes — CLAUDE.md).
+        # the translation toggle (do not mix the two axes — the project rules).
         include_query = not getattr(request.state, "cabinet_ignore_query_lang", False)
         user_locale = request.state.cabinet_user_locale
         if user_locale is None and getattr(
@@ -168,7 +168,7 @@ def _auth_context(request: Request) -> dict:
             # resend) resolve the language by the contour of the SHOWCASE — ?lang= → cookie →
             # Accept-Language → sr, and not by the cabinet fallback ru. The client comes
             # here directly from the public pages, and the default must match. The fallback
-            # is stated EXPLICITLY by this resolver (CLAUDE.md §i18n), and not by the module
+            # is stated EXPLICITLY by this resolver (the project rules §i18n), and not by the module
             # DEFAULT of the cabinet. The string catalog is the cabinet one; only the language changes.
             # The marker is set by deps.use_public_lang_for_anon, hanging on these routes.
             cab = cabinet_context_for_lang(public_resolve_lang(request))
@@ -280,7 +280,7 @@ templates.env.filters["procedure_label"] = procedure_label
 
 # The service marker of the documents (### file name), which the parser inserts between
 # the texts of the specification documents — we render it as the document heading, not as text
-# (CLAUDE.md: the client must not see our separator). A common filter for both
+# (the project rules: the client must not see our separator). A common filter for both
 # display places of the description (the cabinet and the public card) — not two copies of the parsing.
 templates.env.filters["description_blocks"] = split_description_blocks
 templates.env.filters["description_html"] = _description_html

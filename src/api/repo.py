@@ -100,7 +100,7 @@ async def list_tenders_for_sitemap(
 
     Only the tenders of the sitemap (open + closed ≤30 days, :mod:`src.domain.indexing`), the same filter as in :func:`count_tenders`.
 
-    ``ORDER BY id`` is mandatory (a deterministic pagination of the chunks, CLAUDE.md: ``LIMIT`` without ``ORDER BY`` is a non-deterministic choice).
+    ``ORDER BY id`` is mandatory (a deterministic pagination of the chunks, the project rules: ``LIMIT`` without ``ORDER BY`` is a non-deterministic choice).
     """
     result = await session.execute(
         select(TenderNormalized.id, TenderNormalized.last_changed_at)
@@ -561,7 +561,7 @@ async def latest_open_example(session) -> Row | None:
     """The freshest OPEN tender with a non-empty description or price — the example on the home page.
 
     ``deadline_at > now()`` as the first condition — by the deadline index (open ones ~2K).
-    ``ORDER BY published_at DESC NULLS LAST, id`` — a deterministic choice (CLAUDE.md: ``LIMIT`` without a full ``ORDER BY`` is non-deterministic).
+    ``ORDER BY published_at DESC NULLS LAST, id`` — a deterministic choice (the project rules: ``LIMIT`` without a full ``ORDER BY`` is non-deterministic).
     """
     result = await session.execute(
         text(f"""

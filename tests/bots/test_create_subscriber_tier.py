@@ -37,5 +37,7 @@ async def test_create_subscriber_tenant_tier_is_lite():
     )
     tenant = next(o for o in _added(session) if type(o).__name__ == "Tenant")
     assert tenant.tier == "lite", "the bot must write the internal canon, not 'free'"
-    assert tenant.status == "trial"  # the trial rights are given by effective_tier by the status
+    assert (
+        tenant.status == "trial"
+    )  # the trial rights are given by effective_tier by the status
     session.commit.assert_awaited_once()

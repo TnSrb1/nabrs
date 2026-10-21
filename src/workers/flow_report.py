@@ -45,7 +45,9 @@ from src.workers.flow_observability import (
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_POLL_INTERVAL = 3600.0  # once an hour — the summary is idempotent, the check is cheap
+DEFAULT_POLL_INTERVAL = (
+    3600.0  # once an hour — the summary is idempotent, the check is cheap
+)
 _DEFAULT_REPORT_HOUR_UTC = 6
 
 # Indicators 2/4: the last 24h of tenders_normalized (a public table without
@@ -203,8 +205,12 @@ class FlowReportWorker:
                 await self.poll_once()
             except asyncio.CancelledError:
                 raise
-            except Exception as exc:  # noqa: BLE001 — observation does not break the contour
-                logger.error("flow_report: cycle did not complete (%s)", type(exc).__name__)
+            except (
+                Exception
+            ) as exc:  # noqa: BLE001 — observation does not break the contour
+                logger.error(
+                    "flow_report: cycle did not complete (%s)", type(exc).__name__
+                )
             await self._sleep(self._poll_interval)
 
     async def poll_once(self) -> str | None:
@@ -236,7 +242,9 @@ class FlowReportWorker:
         if self._alert is not None:
             try:
                 await self._alert(message)
-            except Exception as exc:  # noqa: BLE001 — the channel does not break the worker
+            except (
+                Exception
+            ) as exc:  # noqa: BLE001 — the channel does not break the worker
                 logger.warning(
                     "flow_report: the summary for %s not sent (%s)",
                     day,

@@ -104,7 +104,9 @@ async def test_no_banner_when_region_empty_and_no_query_run():
     s = _Session([_Result(_preview_rows(3)), _Result(_coverage_rows(9))])
     notice = await get_region_hidden_notice(s, _TID, [_profile(pid="A", regions=[])])
     assert notice is None
-    assert s.queries == []  # mutation: remove the p.regions filter → a query would appear here
+    assert (
+        s.queries == []
+    )  # mutation: remove the p.regions filter → a query would appear here
 
 
 @pytest.mark.asyncio

@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" role="img" font-family="system-ui,Segoe UI,Arial,sans-serif" aria-label="Animated AI pipeline: tender documents are extracted to text, a gate checks plan limit and subscription before any paid call, fast verdicts run on capped text, deep analysis runs step by step with a quote critic and synthesis, and every call is recorded in a usage ledger.">
+<defs>
+<marker id="m-34e39b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#34e39b"/></marker>
+<marker id="m-38e1ff" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#38e1ff"/></marker>
+<marker id="m-b18cff" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b18cff"/></marker>
+<marker id="m-ff8fa3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ff8fa3"/></marker>
+<marker id="m-ffd166" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ffd166"/></marker>
+</defs>
+<style>
+@keyframes n-0_5{0%{opacity:1}15.556%{opacity:1}16.667%{opacity:0.28}82.222%{opacity:0.28}83.333%{opacity:1}100%{opacity:1}}
+.n-0_5{animation:n-0_5 36s linear infinite}
+@keyframes n-1_5{0%{opacity:0.28}15.556%{opacity:0.28}16.667%{opacity:1}32.222%{opacity:1}33.333%{opacity:0.28}82.222%{opacity:0.28}83.333%{opacity:1}98.889%{opacity:1}100%{opacity:0.28}}
+.n-1_5{animation:n-1_5 36s linear infinite}
+@keyframes n-2_5{0%{opacity:0.28}32.222%{opacity:0.28}33.333%{opacity:1}48.889%{opacity:1}50%{opacity:0.28}82.222%{opacity:0.28}83.333%{opacity:1}98.889%{opacity:1}100%{opacity:0.28}}
+.n-2_5{animation:n-2_5 36s linear infinite}
+@keyframes n-3_5{0%{opacity:0.28}48.889%{opacity:0.28}50%{opacity:1}65.556%{opacity:1}66.667%{opacity:0.28}82.222%{opacity:0.28}83.333%{opacity:1}98.889%{opacity:1}100%{opacity:0.28}}
+.n-3_5{animation:n-3_5 36s linear infinite}
+@keyframes n-4_5{0%{opacity:0.28}65.556%{opacity:0.28}66.667%{opacity:1}98.889%{opacity:1}100%{opacity:0.28}}
+.n-4_5{animation:n-4_5 36s linear infinite}
+@keyframes e-0_5{0%{opacity:1}15.556%{opacity:1}16.667%{opacity:0.12}82.222%{opacity:0.12}83.333%{opacity:1}100%{opacity:1}}
+.e-0_5{animation:e-0_5 36s linear infinite}
+@keyframes e-1_5{0%{opacity:0.12}15.556%{opacity:0.12}16.667%{opacity:1}32.222%{opacity:1}33.333%{opacity:0.12}82.222%{opacity:0.12}83.333%{opacity:1}98.889%{opacity:1}100%{opacity:0.12}}
+.e-1_5{animation:e-1_5 36s linear infinite}
+@keyframes e-2_5{0%{opacity:0.12}32.222%{opacity:0.12}33.333%{opacity:1}48.889%{opacity:1}50%{opacity:0.12}82.222%{opacity:0.12}83.333%{opacity:1}98.889%{opacity:1}100%{opacity:0.12}}
+.e-2_5{animation:e-2_5 36s linear infinite}
+@keyframes e-3_5{0%{opacity:0.12}48.889%{opacity:0.12}50%{opacity:1}65.556%{opacity:1}66.667%{opacity:0.12}82.222%{opacity:0.12}83.333%{opacity:1}98.889%{opacity:1}100%{opacity:0.12}}
+.e-3_5{animation:e-3_5 36s linear infinite}
+@keyframes e-4_5{0%{opacity:0.12}65.556%{opacity:0.12}66.667%{opacity:1}98.889%{opacity:1}100%{opacity:0.12}}
+.e-4_5{animation:e-4_5 36s linear infinite}
+@keyframes c-0{0%{opacity:1}15.556%{opacity:1}16.667%{opacity:0}98.889%{opacity:0}100%{opacity:1}}
+.c-0{animation:c-0 36s linear infinite}
+@keyframes c-1{0%{opacity:0}15.556%{opacity:0}16.667%{opacity:1}32.222%{opacity:1}33.333%{opacity:0}100%{opacity:0}}
+.c-1{animation:c-1 36s linear infinite}
+@keyframes c-2{0%{opacity:0}32.222%{opacity:0}33.333%{opacity:1}48.889%{opacity:1}50%{opacity:0}100%{opacity:0}}
+.c-2{animation:c-2 36s linear infinite}
+@keyframes c-3{0%{opacity:0}48.889%{opacity:0}50%{opacity:1}65.556%{opacity:1}66.667%{opacity:0}100%{opacity:0}}
+.c-3{animation:c-3 36s linear infinite}
+@keyframes c-4{0%{opacity:0}65.556%{opacity:0}66.667%{opacity:1}82.222%{opacity:1}83.333%{opacity:0}100%{opacity:0}}
+.c-4{animation:c-4 36s linear infinite}
+@keyframes c-5{0%{opacity:0}82.222%{opacity:0}83.333%{opacity:1}98.889%{opacity:1}100%{opacity:0}}
+.c-5{animation:c-5 36s linear infinite}
+.cap{opacity:0}
+@media (prefers-reduced-motion:reduce){.nd,.ed,.dot{animation:none}.cap{display:none}}
+</style>
+<rect width="1200" height="640" fill="#0b1830"/>
+<text x="40" y="34" font-size="14" font-weight="700" fill="#74d3c4" letter-spacing="1.5">AI PIPELINE · FROM A TENDER'S FILES TO A CHECKED ANALYSIS</text>
+<path id="a1" class="ed e-0_5" d="M270 120 H330" fill="none" stroke="#34e39b" stroke-width="2" marker-end="url(#m-34e39b)"/>
+<path id="a2" class="ed e-1_5" d="M570 120 H630" fill="none" stroke="#ffd166" stroke-width="2" marker-end="url(#m-ffd166)"/>
+<path id="a3" class="ed e-1_5" d="M870 120 H930" fill="none" stroke="#ffd166" stroke-width="2" marker-end="url(#m-ffd166)"/>
+<path id="b1" class="ed e-2_5" d="M750 170 V210 H114 V250" fill="none" stroke="#38e1ff" stroke-width="2" marker-end="url(#m-38e1ff)"/>
+<path id="b2" class="ed e-3_5" d="M750 170 V210 H308 V250" fill="none" stroke="#b18cff" stroke-width="2" marker-end="url(#m-b18cff)"/>
+<path id="c1" class="ed e-3_5" d="M392 315 H418" fill="none" stroke="#b18cff" stroke-width="2" marker-end="url(#m-b18cff)"/>
+<path id="c2" class="ed e-3_5" d="M586 315 H612" fill="none" stroke="#b18cff" stroke-width="2" marker-end="url(#m-b18cff)"/>
+<path id="c3" class="ed e-3_5" d="M780 315 H806" fill="none" stroke="#b18cff" stroke-width="2" marker-end="url(#m-b18cff)"/>
+<path id="c4" class="ed e-3_5" d="M974 315 H1000" fill="none" stroke="#b18cff" stroke-width="2" marker-end="url(#m-b18cff)"/>
+<path id="d1" class="ed e-4_5" d="M502 380 V450" fill="none" stroke="#ff8fa3" stroke-width="2" marker-end="url(#m-ff8fa3)"/>
+<path id="d2" class="ed e-4_5" d="M890 380 V415 H700 V450" fill="none" stroke="#ff8fa3" stroke-width="2" marker-end="url(#m-ff8fa3)"/>
+<path id="d3" class="ed e-4_5" d="M1084 380 V450" fill="none" stroke="#ff8fa3" stroke-width="2" marker-end="url(#m-ff8fa3)"/>
+<g class="nd n-0_5"><rect x="30" y="70" width="240" height="100" rx="12" fill="#161e30" stroke="#34e39b" stroke-width="2"/><text x="150" y="94" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Tender documents</text><text x="150" y="114" font-size="12" fill="#c4d0e8" text-anchor="middle">.pdf .doc .docx .odt .rtf</text><text x="150" y="131" font-size="12" fill="#c4d0e8" text-anchor="middle">.xls .xlsx .txt .zip</text><text x="150" y="148" font-size="12" fill="#c4d0e8" text-anchor="middle">up to 12 files, 300k chars</text></g>
+<g class="nd n-0_5"><rect x="330" y="70" width="240" height="100" rx="12" fill="#161e30" stroke="#34e39b" stroke-width="2"/><text x="450" y="94" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Text extraction</text><text x="450" y="114" font-size="12" fill="#c4d0e8" text-anchor="middle">one status per file:</text><text x="450" y="131" font-size="12" fill="#c4d0e8" text-anchor="middle">ok, needs_ocr,</text><text x="450" y="148" font-size="12" fill="#c4d0e8" text-anchor="middle">unsupported, error</text></g>
+<g class="nd n-1_5"><rect x="630" y="70" width="240" height="100" rx="12" fill="#161e30" stroke="#ffd166" stroke-width="2"/><text x="750" y="94" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Gate before the call</text><text x="750" y="114" font-size="12" fill="#c4d0e8" text-anchor="middle">plan limit for the level</text><text x="750" y="131" font-size="12" fill="#c4d0e8" text-anchor="middle">subscription status</text><text x="750" y="148" font-size="12" fill="#c4d0e8" text-anchor="middle">cache hit: no charge</text></g>
+<g class="nd n-1_5"><rect x="930" y="70" width="240" height="100" rx="12" fill="#161e30" stroke="#ffd166" stroke-width="2"/><text x="1050" y="94" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Refusal is visible</text><text x="1050" y="114" font-size="12" fill="#c4d0e8" text-anchor="middle">limit notice at the click</text><text x="1050" y="131" font-size="12" fill="#c4d0e8" text-anchor="middle">no model call made</text><text x="1050" y="148" font-size="12" fill="#c4d0e8" text-anchor="middle">nothing is charged</text></g>
+<g class="nd n-2_5"><rect x="30" y="250" width="168" height="130" rx="12" fill="#161e30" stroke="#38e1ff" stroke-width="2"/><text x="114" y="274" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Fast verdicts</text><text x="114" y="294" font-size="12" fill="#c4d0e8" text-anchor="middle">relevance (auto)</text><text x="114" y="311" font-size="12" fill="#c4d0e8" text-anchor="middle">bid: go / caution /</text><text x="114" y="328" font-size="12" fill="#c4d0e8" text-anchor="middle">no_go (button)</text><text x="114" y="345" font-size="12" fill="#c4d0e8" text-anchor="middle">text cap 50k chars</text></g>
+<g class="nd n-3_5"><rect x="224" y="250" width="168" height="130" rx="12" fill="#161e30" stroke="#b18cff" stroke-width="2"/><text x="308" y="274" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Scout (no model)</text><text x="308" y="294" font-size="12" fill="#c4d0e8" text-anchor="middle">&gt; 40k chars or</text><text x="308" y="311" font-size="12" fill="#c4d0e8" text-anchor="middle">&gt; 4 readable docs</text><text x="308" y="328" font-size="12" fill="#c4d0e8" text-anchor="middle">means step-by-step</text><text x="308" y="345" font-size="12" fill="#c4d0e8" text-anchor="middle">else the plain path</text></g>
+<g class="nd n-3_5"><rect x="418" y="250" width="168" height="130" rx="12" fill="#161e30" stroke="#b18cff" stroke-width="2"/><text x="502" y="274" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Steps (cheap tier)</text><text x="502" y="294" font-size="12" fill="#c4d0e8" text-anchor="middle">chunk &lt;= 30k chars</text><text x="502" y="311" font-size="12" fill="#c4d0e8" text-anchor="middle">overlap 1.5k chars</text><text x="502" y="328" font-size="12" fill="#c4d0e8" text-anchor="middle">sees chunk + summary</text><text x="502" y="345" font-size="12" fill="#c4d0e8" text-anchor="middle">at most 20 steps</text></g>
+<g class="nd n-3_5"><rect x="612" y="250" width="168" height="130" rx="12" fill="#161e30" stroke="#b18cff" stroke-width="2"/><text x="696" y="274" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Critic (no model)</text><text x="696" y="294" font-size="12" fill="#c4d0e8" text-anchor="middle">keeps a requirement</text><text x="696" y="311" font-size="12" fill="#c4d0e8" text-anchor="middle">only if its quote is</text><text x="696" y="328" font-size="12" fill="#c4d0e8" text-anchor="middle">found word for word</text><text x="696" y="345" font-size="12" fill="#c4d0e8" text-anchor="middle">in the document</text></g>
+<g class="nd n-3_5"><rect x="806" y="250" width="168" height="130" rx="12" fill="#161e30" stroke="#b18cff" stroke-width="2"/><text x="890" y="274" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Synthesis</text><text x="890" y="294" font-size="12" fill="#c4d0e8" text-anchor="middle">tier of the level</text><text x="890" y="311" font-size="12" fill="#c4d0e8" text-anchor="middle">reads the journal,</text><text x="890" y="328" font-size="12" fill="#c4d0e8" text-anchor="middle">not the raw text</text><text x="890" y="345" font-size="12" fill="#c4d0e8" text-anchor="middle">input &lt;= 45k chars</text></g>
+<g class="nd n-3_5"><rect x="1000" y="250" width="168" height="130" rx="12" fill="#161e30" stroke="#b18cff" stroke-width="2"/><text x="1084" y="274" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Result</text><text x="1084" y="294" font-size="12" fill="#c4d0e8" text-anchor="middle">analysis + journal</text><text x="1084" y="311" font-size="12" fill="#c4d0e8" text-anchor="middle">journal made by code</text><text x="1084" y="328" font-size="12" fill="#c4d0e8" text-anchor="middle">partial coverage</text><text x="1084" y="345" font-size="12" fill="#c4d0e8" text-anchor="middle">is flagged</text></g>
+<g class="nd n-3_5"><rect x="30" y="450" width="350" height="100" rx="12" fill="#161e30" stroke="#b18cff" stroke-width="2" stroke-dasharray="6 4"/><text x="205" y="474" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Feature flag AI_STEPWISE</text><text x="205" y="494" font-size="12" fill="#c4d0e8" text-anchor="middle">off | auto | on</text><text x="205" y="511" font-size="12" fill="#c4d0e8" text-anchor="middle">off by default: plain path</text></g>
+<g class="nd n-4_5"><rect x="418" y="450" width="330" height="100" rx="12" fill="#161e30" stroke="#ff8fa3" stroke-width="2"/><text x="583" y="474" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Usage ledger (ai_usage)</text><text x="583" y="494" font-size="12" fill="#c4d0e8" text-anchor="middle">each step recorded at once</text><text x="583" y="511" font-size="12" fill="#c4d0e8" text-anchor="middle">real tokens and cost</text><text x="583" y="528" font-size="12" fill="#c4d0e8" text-anchor="middle">synthesis takes one unit</text></g>
+<g class="nd n-4_5"><rect x="800" y="450" width="370" height="100" rx="12" fill="#161e30" stroke="#ff8fa3" stroke-width="2"/><text x="985" y="474" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">What the customer sees</text><text x="985" y="494" font-size="12" fill="#c4d0e8" text-anchor="middle">requirements with quotes</text><text x="985" y="511" font-size="12" fill="#c4d0e8" text-anchor="middle">analysed N of M chunks</text><text x="985" y="528" font-size="12" fill="#c4d0e8" text-anchor="middle">remaining limit</text></g>
+<g id="dots">
+<circle class="dot e-0_5" r="5" fill="#34e39b"><animateMotion dur="1.20s" begin="-0.00s" repeatCount="indefinite"><mpath href="#a1"/></animateMotion></circle>
+<circle class="dot e-0_5" r="5" fill="#34e39b"><animateMotion dur="1.20s" begin="-0.60s" repeatCount="indefinite"><mpath href="#a1"/></animateMotion></circle>
+<circle class="dot e-1_5" r="5" fill="#ffd166"><animateMotion dur="1.20s" begin="-0.25s" repeatCount="indefinite"><mpath href="#a2"/></animateMotion></circle>
+<circle class="dot e-1_5" r="5" fill="#ffd166"><animateMotion dur="1.20s" begin="-0.85s" repeatCount="indefinite"><mpath href="#a2"/></animateMotion></circle>
+<circle class="dot e-1_5" r="5" fill="#ffd166"><animateMotion dur="1.20s" begin="-0.50s" repeatCount="indefinite"><mpath href="#a3"/></animateMotion></circle>
+<circle class="dot e-1_5" r="5" fill="#ffd166"><animateMotion dur="1.20s" begin="-1.10s" repeatCount="indefinite"><mpath href="#a3"/></animateMotion></circle>
+<circle class="dot e-2_5" r="5" fill="#38e1ff"><animateMotion dur="7.96s" begin="-0.75s" repeatCount="indefinite"><mpath href="#b1"/></animateMotion></circle>
+<circle class="dot e-2_5" r="5" fill="#38e1ff"><animateMotion dur="7.96s" begin="-4.73s" repeatCount="indefinite"><mpath href="#b1"/></animateMotion></circle>
+<circle class="dot e-3_5" r="5" fill="#b18cff"><animateMotion dur="5.80s" begin="-0.00s" repeatCount="indefinite"><mpath href="#b2"/></animateMotion></circle>
+<circle class="dot e-3_5" r="5" fill="#b18cff"><animateMotion dur="5.80s" begin="-2.90s" repeatCount="indefinite"><mpath href="#b2"/></animateMotion></circle>
+<circle class="dot e-3_5" r="5" fill="#b18cff"><animateMotion dur="1.20s" begin="-0.25s" repeatCount="indefinite"><mpath href="#c1"/></animateMotion></circle>
+<circle class="dot e-3_5" r="5" fill="#b18cff"><animateMotion dur="1.20s" begin="-0.85s" repeatCount="indefinite"><mpath href="#c1"/></animateMotion></circle>
+<circle class="dot e-3_5" r="5" fill="#b18cff"><animateMotion dur="1.20s" begin="-0.50s" repeatCount="indefinite"><mpath href="#c2"/></animateMotion></circle>
+<circle class="dot e-3_5" r="5" fill="#b18cff"><animateMotion dur="1.20s" begin="-1.10s" repeatCount="indefinite"><mpath href="#c2"/></animateMotion></circle>
+<circle class="dot e-3_5" r="5" fill="#b18cff"><animateMotion dur="1.20s" begin="-0.75s" repeatCount="indefinite"><mpath href="#c3"/></animateMotion></circle>
+<circle class="dot e-3_5" r="5" fill="#b18cff"><animateMotion dur="1.20s" begin="-1.35s" repeatCount="indefinite"><mpath href="#c3"/></animateMotion></circle>
+<circle class="dot e-3_5" r="5" fill="#b18cff"><animateMotion dur="1.20s" begin="-0.00s" repeatCount="indefinite"><mpath href="#c4"/></animateMotion></circle>
+<circle class="dot e-3_5" r="5" fill="#b18cff"><animateMotion dur="1.20s" begin="-0.60s" repeatCount="indefinite"><mpath href="#c4"/></animateMotion></circle>
+<circle class="dot e-4_5" r="5" fill="#ff8fa3"><animateMotion dur="1.20s" begin="-0.25s" repeatCount="indefinite"><mpath href="#d1"/></animateMotion></circle>
+<circle class="dot e-4_5" r="5" fill="#ff8fa3"><animateMotion dur="1.20s" begin="-0.85s" repeatCount="indefinite"><mpath href="#d1"/></animateMotion></circle>
+<circle class="dot e-4_5" r="5" fill="#ff8fa3"><animateMotion dur="2.89s" begin="-0.50s" repeatCount="indefinite"><mpath href="#d2"/></animateMotion></circle>
+<circle class="dot e-4_5" r="5" fill="#ff8fa3"><animateMotion dur="2.89s" begin="-1.94s" repeatCount="indefinite"><mpath href="#d2"/></animateMotion></circle>
+<circle class="dot e-4_5" r="5" fill="#ff8fa3"><animateMotion dur="1.20s" begin="-0.75s" repeatCount="indefinite"><mpath href="#d3"/></animateMotion></circle>
+<circle class="dot e-4_5" r="5" fill="#ff8fa3"><animateMotion dur="1.20s" begin="-1.35s" repeatCount="indefinite"><mpath href="#d3"/></animateMotion></circle>
+</g>
+<g font-size="13" fill="#c4d0e8"><circle cx="46" cy="588" r="6" fill="#34e39b"/><text x="60" y="593">Documents</text><circle cx="270" cy="588" r="6" fill="#ffd166"/><text x="284" y="593">Gate before the call</text><circle cx="494" cy="588" r="6" fill="#38e1ff"/><text x="508" y="593">Fast verdicts</text><circle cx="718" cy="588" r="6" fill="#b18cff"/><text x="732" y="593">Step-by-step analysis</text><circle cx="942" cy="588" r="6" fill="#ff8fa3"/><text x="956" y="593">Ledger after the call</text></g>
+<text class="cap c-0" x="600" y="620" font-size="14" fill="#eef2fb" text-anchor="middle">Documents: each file becomes text with a status per file; unreadable files are counted, not hidden.</text>
+<text class="cap c-1" x="600" y="620" font-size="14" fill="#eef2fb" text-anchor="middle">Gate: plan limit and subscription status are checked before any paid call; a refusal is shown to the customer.</text>
+<text class="cap c-2" x="600" y="620" font-size="14" fill="#eef2fb" text-anchor="middle">Fast verdicts: relevance on delivery and a bid verdict (go, caution, no go) read a capped text.</text>
+<text class="cap c-3" x="600" y="620" font-size="14" fill="#eef2fb" text-anchor="middle">Step-by-step: small steps read the whole text, a critic checks quotes, synthesis reads the checked journal.</text>
+<text class="cap c-4" x="600" y="620" font-size="14" fill="#eef2fb" text-anchor="middle">Ledger: every paid call is recorded after it runs, and the customer sees coverage and remaining limit.</text>
+<text class="cap c-5" x="600" y="620" font-size="14" fill="#eef2fb" text-anchor="middle">All stages together.</text>
+</svg>

@@ -92,8 +92,7 @@ def _tender_breadcrumb(base: str, lang: str, name: str, canonical_url: str) -> d
 
 
 async def _related_links(db, tender, base: str, lang: str) -> list[dict]:
-    """Interlinking to the pages of step 2 (TASK geo_landings) — only to the sections that really exist: a section / region below the threshold :data:`MIN_TENDERS_FOR_PAGE` gives a 404, and a link to it would be a defect rather than interlinking.
-    """
+    """Interlinking to the pages of step 2 (TASK geo_landings) — only to the sections that really exist: a section / region below the threshold :data:`MIN_TENDERS_FOR_PAGE` gives a 404, and a link to it would be a defect rather than interlinking."""
     t = TENDER[lang]
     cpv_stats = await geo_cache.get_cpv_stats(db)
     reg_stats = await geo_cache.get_region_stats(db)
@@ -220,7 +219,7 @@ async def tender_page(
         source_name = await source_label(db, getattr(tender, "source_key", None))
 
     # Canonical / og:url — from CABINET_BASE_URL, NOT from request.url_for: behind the proxy
-    # uvicorn sees http, while production serves https (CLAUDE.md, fact 26.09.2026).
+    # uvicorn sees http, while production serves https (the project rules, fact 26.09.2026).
     canonical_url = f"{base}/tender/{tender.id}"
     offer = _tender_json_ld(tender, canonical_url)
     json_ld_list = (

@@ -25,7 +25,11 @@ class ViberAdapter(DeliveryAdapter):
         return True
 
     def format(self, job: DeliveryJob) -> FormattedMessage:
-        raise NotImplementedError("ViberAdapter.format is not implemented (a later sprint)")
+        raise NotImplementedError(
+            "ViberAdapter.format is not implemented (a later sprint)"
+        )
 
     async def send(self, job: DeliveryJob, message: FormattedMessage) -> DeliveryResult:
-        raise NotImplementedError("ViberAdapter.send is not implemented (a later sprint)")
+        raise NotImplementedError(
+            "ViberAdapter.send is not implemented (a later sprint)"
+        )

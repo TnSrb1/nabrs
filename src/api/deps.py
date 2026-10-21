@@ -53,7 +53,9 @@ def get_redis() -> Any | None:
         return _redis_client
     url = os.getenv("REDIS_URL")
     if not url:
-        logger.warning("REDIS_URL is not set — the card translation cache is disabled (VG-26)")
+        logger.warning(
+            "REDIS_URL is not set — the card translation cache is disabled (VG-26)"
+        )
         return None
     try:
         import redis.asyncio as aioredis
@@ -61,7 +63,8 @@ def get_redis() -> Any | None:
         _redis_client = aioredis.from_url(url)
     except Exception as exc:  # noqa: BLE001 — the cache is not critical, the card lives
         logger.warning(
-            "The Redis client was not created (%s) — translation is disabled", type(exc).__name__
+            "The Redis client was not created (%s) — translation is disabled",
+            type(exc).__name__,
         )
         return None
     return _redis_client
@@ -186,7 +189,9 @@ async def resolve_cabinet_locale(
                         await db.execute(_USER_LOCALE_SQL, {"uid": session["uid"]})
                     ).first()
                     locale = getattr(row, "locale", None) if row is not None else None
-            except Exception:  # noqa: BLE001 — the language resolution must not bring down the page
+            except (
+                Exception
+            ):  # noqa: BLE001 — the language resolution must not bring down the page
                 logger.warning("cabinet locale resolve failed, falling back to request")
                 locale = None
     request.state.cabinet_user_locale = locale
@@ -249,7 +254,9 @@ async def resolve_cabinet_whoami(
                         row.whoami_access_until,
                         datetime.now(timezone.utc),
                     )
-        except Exception:  # noqa: BLE001 — the identification must not bring down the page
+        except (
+            Exception
+        ):  # noqa: BLE001 — the identification must not bring down the page
             logger.warning("cabinet whoami resolve failed, header omits identity")
     request.state.cabinet_whoami_email = email
     request.state.cabinet_whoami_tenant_name = tenant_name

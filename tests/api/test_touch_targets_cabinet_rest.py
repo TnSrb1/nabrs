@@ -35,7 +35,9 @@ def test_feed_profile_badge_reaches_two_rem():
     body = _rule(".fd-card__profile")
     assert body, "the rule .fd-card__profile not found"
     assert "min-height: 2rem" in body, body
-    assert "inline-flex" in body, "without a flex min-height there will be no real height"
+    assert (
+        "inline-flex" in body
+    ), "without a flex min-height there will be no real height"
 
 
 def test_inline_actions_in_main_reach_two_rem():

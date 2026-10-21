@@ -109,4 +109,6 @@ def test_no_russian_literals_returned_from_signup():
         and node.value != doc
         and _CYR.search(node.value)
     ]
-    assert not leaks, f"Russian literals in signup (they must be in the catalog): {leaks}"
+    assert (
+        not leaks
+    ), f"Russian literals in signup (they must be in the catalog): {leaks}"

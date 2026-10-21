@@ -44,7 +44,7 @@ router = APIRouter(tags=["cabinet"])
 _EMAIL_CONFIRM_PER_USER = FixedWindowRateLimiter(max_hits=3, window_sec=15 * 60)
 
 # A KEY of the cabinet chrome catalog (not a ready text): the template localises it via ``t`` by the
-# user’s locale (the two i18n axes are not mixed — CLAUDE.md).
+# user’s locale (the two i18n axes are not mixed — the project rules).
 _RATE_LIMIT_ERROR = "emp_err_rate_limit"
 
 

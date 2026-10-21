@@ -1,5 +1,5 @@
 """Anti-regression (UI touch/htmx): the tap zones of interactive elements and the visible
-response of the htmx actions (CLAUDE.md, “Frontend”: tap zones from 2rem; any
+response of the htmx actions (the project rules, “Frontend”: tap zones from 2rem; any
 htmx action gives a visible response via .htmx-request).
 
 The diagnosis (24.07, a measurement in the DOM of headless Chromium): the language switcher (20px),
@@ -55,7 +55,8 @@ _VOID_ELEMENTS = {
 
 def _htmx_actions_without_indicator(text: str) -> list[str]:
     """The predicate of the brief: hx-get|hx-post|hx-delete|hx-patch without hx-indicator NEITHER
-    on the tag itself, NOR on an ancestor. Returns readable snippets of the violations."""
+    on the tag itself, NOR on an ancestor. Returns readable snippets of the violations.
+    """
     cleaned = _JINJA_RE.sub(" ", text)
     ancestor_has_indicator: list[bool] = []
     violations: list[str] = []
@@ -133,7 +134,9 @@ def test_touch_targets_reach_two_rem():
         ".fd-card__cta",
     ):
         body = _rule_body(css_text, selector)
-        assert _min_height_rem(body) >= 2.0, f"{selector}: the tap zone is less than the 2rem norm"
+        assert (
+            _min_height_rem(body) >= 2.0
+        ), f"{selector}: the tap zone is less than the 2rem norm"
 
 
 def test_card_title_translate_button_reuses_act_btn():
@@ -144,7 +147,9 @@ def test_card_title_translate_button_reuses_act_btn():
     buttons = re.findall(r'<button\b[^>]*class="([^"]*)"[^>]*hx-get=', text)
     assert buttons, "the translation toggle buttons not found in _card_title.html"
     for classes in buttons:
-        assert "act-btn" in classes.split(), f"a button without .act-btn: class={classes!r}"
+        assert (
+            "act-btn" in classes.split()
+        ), f"a button without .act-btn: class={classes!r}"
         assert (
             "underline" not in classes.split()
         ), f"the old class is not removed: class={classes!r}"
@@ -152,7 +157,8 @@ def test_card_title_translate_button_reuses_act_btn():
 
 def test_plans_faq_reuses_faq_item_component():
     """The FAQ on /plans was on bare Tailwind classes without a tap zone (the summary
-    24px) — the fix reuses .faq-item/.faq-item__q (already >2rem high, used in help.html), instead of introducing a new component."""
+    24px) — the fix reuses .faq-item/.faq-item__q (already >2rem high, used in help.html), instead of introducing a new component.
+    """
     text = (TEMPLATES_DIR / "plans.html").read_text(encoding="utf-8")
     assert 'class="faq-item"' in text
     assert 'class="faq-item__q"' in text

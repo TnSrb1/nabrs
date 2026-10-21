@@ -206,14 +206,18 @@ async def test_probe_correction_seen_once_and_original_record_stays_unchanged():
 
     seen = {**_LIST_PART, CORRECTION_KEY: {"notice_id": 222, "note": "x"}}
     new = {**_LIST_PART, CORRECTION_KEY: {"notice_id": 333, "note": "x"}}
-    assert await probe(session, "fake", "42", seen) is True  # Correction already accepted
+    assert (
+        await probe(session, "fake", "42", seen) is True
+    )  # Correction already accepted
     assert await probe(session, "fake", "42", new) is False  # new one — we take it
     # the original notice record after the Correction is still "not changed"
     assert await probe(session, "fake", "42", dict(_LIST_PART)) is True
 
 
 # --- document recheck: deadline/status do not roll back -------------------- #
-_STALE = datetime(2026, 10, 20, 9, 0, tzinfo=timezone.utc)  # deadline at the moment of intake (raw)
+_STALE = datetime(
+    2026, 10, 20, 9, 0, tzinfo=timezone.utc
+)  # deadline at the moment of intake (raw)
 _MOVED = datetime(2026, 10, 27, 9, 0, tzinfo=timezone.utc)  # repoll moved deadline_at
 _DOCS = SimpleNamespace(index=[{"name": "TZ.docx", "version": "v2"}], text="tekst")
 

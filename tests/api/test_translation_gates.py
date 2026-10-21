@@ -211,7 +211,7 @@ def _setup(monkeypatch, session, *, redis=None):
 
 def _setup_tracking(monkeypatch, session, *, redis=None):
     """As ``_setup``, but the ``session_factory`` is a counter of active/created sessions
-    (VG-SPEND: a DB session must not live during the model call, CLAUDE.md)."""
+    (VG-SPEND: a DB session must not live during the model call, the project rules)."""
     monkeypatch.setattr(routes_tender_ai.svc, "get_tender_analyses", _async(_data()))
     factory = _TrackingFactory(session)
     ai = _FakeAiTrackingSessions(factory)
@@ -256,7 +256,9 @@ def test_frozen_tenant_never_calls_the_model(monkeypatch, frag):
 
     # owner 10.10: the frozen cabinet is open (the common gate does not take it away), but the translation gate
     # holds the freeze axis itself — the original instead of the translation, the model was not called.
-    assert resp.status_code == 200, "The cabinet is open to the frozen one (owner 10.10)"
+    assert (
+        resp.status_code == 200
+    ), "The cabinet is open to the frozen one (owner 10.10)"
     assert ai.calls == [], "a frozen tenant has no right to call the model"
     assert session.usage_writes == [], "nothing to charge — there was no call"
 
@@ -280,7 +282,9 @@ def test_exhausted_limit_never_calls_the_model(monkeypatch, frag):
     assert resp.status_code == 200
     assert ai.calls == [], "the limit is exhausted — we do not call the model"
     assert session.usage_writes == []
-    assert _EXHAUSTED_RU in resp.text.lower(), "the reason of the refusal is named, not a “glitch”"
+    assert (
+        _EXHAUSTED_RU in resp.text.lower()
+    ), "the reason of the refusal is named, not a “glitch”"
 
 
 @pytest.mark.parametrize("frag", [_DESC_FRAG, _TITLE_FRAG])
@@ -397,8 +401,12 @@ def test_cache_hit_costs_neither_call_nor_limit(monkeypatch, frag):
     second = client.get(f"{frag}&lang=ru")
 
     assert second.status_code == 200
-    assert len(ai.calls) == calls_after_first, "the second showing — from the cache, without the model"
-    assert len(session.usage_writes) == writes_after_first, "a cache hit does not charge"
+    assert (
+        len(ai.calls) == calls_after_first
+    ), "the second showing — from the cache, without the model"
+    assert (
+        len(session.usage_writes) == writes_after_first
+    ), "a cache hit does not charge"
     assert session.used == 1  # the counter did not move since the first translation
 
 
@@ -418,7 +426,9 @@ def test_original_lang_calls_neither_model_nor_gate(monkeypatch, frag):
     assert resp.status_code == 200
     assert ai.calls == []
     assert session.usage_writes == []
-    assert _UNAVAILABLE_RU not in resp.text  # this is not a refusal, but the regular original
+    assert (
+        _UNAVAILABLE_RU not in resp.text
+    )  # this is not a refusal, but the regular original
 
 
 @pytest.mark.parametrize("frag", [_DESC_FRAG, _TITLE_FRAG])
@@ -445,7 +455,7 @@ def test_model_called_with_no_open_db_session(monkeypatch, frag):
     is closed — we prove it by the COUNTER of the active sessions of the factory double, not by the text
     of the code. The translation of the description holds the call up to 60 s, of the heading — up to 20 s: holding
     a pool connection all this time means putting the whole cabinet down on a mass click
-    “Translate” (a small pool, a public test — CLAUDE.md).
+    “Translate” (a small pool, a public test — the project rules).
     """
     session = _GateSession(tier="pro", used=0)
     ai, factory, client = _setup_tracking(monkeypatch, session)
@@ -480,7 +490,9 @@ def test_cache_hit_never_opens_charge_session(monkeypatch):
     second = client.get(f"{_DESC_FRAG}&lang=ru")
 
     assert second.status_code == 200
-    assert len(ai.calls) == 1, "the second showing — from the cache, the model was not called"
+    assert (
+        len(ai.calls) == 1
+    ), "the second showing — from the cache, the model was not called"
     sessions_for_cache_hit = factory.created - before_second
     # Exactly one session fewer — the very one that would have been opened for the charge.
     assert sessions_for_cache_hit == sessions_for_real_translate - 1

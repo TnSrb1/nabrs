@@ -135,7 +135,9 @@ async def placeholders_for(session_factory: Any, lang: str) -> dict[str, str]:
     try:
         async with session_factory() as db:
             return (await get_sources_view(db)).placeholders(lang)
-    except Exception as exc:  # noqa: BLE001 — the page lives without the frequency from the DB
+    except (
+        Exception
+    ) as exc:  # noqa: BLE001 — the page lives without the frequency from the DB
         logger.warning("izvori: the frequency is unavailable (%s)", type(exc).__name__)
         return SourcesView().placeholders(lang)
 

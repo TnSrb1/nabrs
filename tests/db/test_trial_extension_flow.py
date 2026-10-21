@@ -164,7 +164,9 @@ def test_extension_request_created_once_and_banner_shows_pending(client):
     )
     assert second.status_code == 303
     rows = _requests(world["tid"])
-    assert len(rows) == 1, "A repeat while a request is pending must not multiply a duplicate"
+    assert (
+        len(rows) == 1
+    ), "A repeat while a request is pending must not multiply a duplicate"
     assert rows[0].status == "pending"
     assert rows[0].comment == "extension_request"
     page = c.get("/app/feed", cookies=_cookie(world))

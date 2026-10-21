@@ -498,7 +498,7 @@ async def preview_count(
     otherwise the filter silently hides tenders with an empty ``regions``.
 
     ‼️ Mirror of the “All tenders” mode (0043). ``PREVIEW_WHERE_A`` is a tender-centric
-    copy of ``STAGE_A_SQL``, and both selections must answer the same way (the CLAUDE.md invariant
+    copy of ``STAGE_A_SQL``, and both selections must answer the same way (the invariant from the project rules
     “a predicate that duplicates another module’s selection — mirror it”). A profile without a topic and without
     ``match_all`` is now not matched by the routing at all, so the preview must show 0 too: otherwise the form would promise "≈2000 tenders in 30
     days" to exactly the profile that will not get a single email.

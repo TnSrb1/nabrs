@@ -617,7 +617,7 @@ def split_feed_by_urgency(
 
     The urgency is computed by the same predicate that draws the badge
     (:func:`templating._days_left`), not by its own arithmetic — otherwise the section
-    “Deadline soon” and the badge color would diverge (CLAUDE.md: one predicate per
+    “Deadline soon” and the badge color would diverge (the project rules: one predicate per
     meaning). An expired deadline does NOT get into “burning”: one can no longer apply,
     and the emphasis on it is a false alarm.
 
@@ -924,7 +924,7 @@ class CalendarEvent:
     ``title``/``subtitle`` — ready CONTENT (the tender name, the authority): we do not localize it
     (the owner’s decision “as is”). The chrome labels of the event —
     ``title_key``/``subtitle_key``: the service hands out the catalog KEY, and the template
-    assembles the string by locale (the two i18n contours — CLAUDE.md). Thus on the English
+    assembles the string by locale (the two i18n contours — the project rules). Thus on the English
     cockpit there is no Russian “Subscription expires” and no Russian funnel statuses.
     """
 
@@ -1148,7 +1148,7 @@ def urgent_events(events, window_days: int = 7) -> list[CalendarEvent]:
     This is a DERIVATIVE of the calendar, not a second selection: the block "needs
     action" and the calendar must talk about the same tenders — if the
     selections diverge, a burning deadline would be in one block and vanish from the other
-    (CLAUDE.md: one predicate per meaning). The end of the subscription does not get here —
+    (the project rules: one predicate per meaning). The end of the subscription does not get here —
     it has its own emphasis in the hero strip, and it is not a “tender action”.
     """
     return [

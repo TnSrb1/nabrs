@@ -149,7 +149,8 @@ async def test_create_blocked_when_access_active():
 @pytest.mark.asyncio
 async def test_upgrade_request_created_despite_active_access():
     """An UPGRADE application (comment 'upgrade_request:…') is created EVEN with an active
-    access_until — otherwise a trial user silently loses the request for a subscription."""
+    access_until — otherwise a trial user silently loses the request for a subscription.
+    """
     s = _Session(
         [
             _Result(items=[SimpleNamespace(has_pending=False, access_until=_future())]),

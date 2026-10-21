@@ -311,7 +311,9 @@ async def test_synthesis_gets_journal_not_raw_text_and_usage_per_step(level):
     assert meta["steps_cost_usd"] == pytest.approx(0.012)
     assert [r["doc"] for r in result.output["requirements"]] == ["doc0.pdf", "doc1.pdf"]
     assert result.output["summary"] == "итог"
-    assert result.cost_usd == 0.1  # only the merge; the steps are already recorded separately
+    assert (
+        result.cost_usd == 0.1
+    )  # only the merge; the steps are already recorded separately
 
 
 @pytest.mark.asyncio
@@ -383,7 +385,9 @@ async def test_failed_step_spend_recorded_and_all_failed_raises():
     all_bad = FakeClient(extract_errors={i: AiResponseError("x") for i in range(10)})
     with pytest.raises(AiResponseError):
         await analyze_tender(all_bad, req, record_spend=Recorder(), mode="auto")
-    assert not [c for c in all_bad.calls if c.level == "deep"]  # the premium was not called
+    assert not [
+        c for c in all_bad.calls if c.level == "deep"
+    ]  # the premium was not called
 
 
 @pytest.mark.asyncio

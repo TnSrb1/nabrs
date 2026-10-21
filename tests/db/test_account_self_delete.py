@@ -71,7 +71,11 @@ async def sup():
             await conn.execute(
                 text("DELETE FROM tenants WHERE id = CAST(:t AS uuid)"), {"t": tid}
             )
-        for tender in tenders:  # the note was deleted by the service itself — we do not look through them
+        for (
+            tender
+        ) in (
+            tenders
+        ):  # the note was deleted by the service itself — we do not look through them
             await conn.execute(
                 text("DELETE FROM tenders_normalized WHERE id = :id"), {"id": tender}
             )

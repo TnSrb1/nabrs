@@ -5,7 +5,7 @@ Before 0043 “show everything” was not a mode — it followed from the EMPTIN
 The tests pin three sides of one contract:
 
 1. routing (``STAGE_A_SQL``) — without a topic and without ``match_all`` the profile does not match;
-2. the preview and the showcase counters — the same rule, otherwise the form promises tenders to a profile that will not get a single e-mail (the CLAUDE.md invariant “a predicate that duplicates the selection of another module — mirror it”);
+2. the preview and the showcase counters — the same rule, otherwise the form promises tenders to a profile that will not get a single e-mail (the invariant from the project rules “a predicate that duplicates the selection of another module — mirror it”);
 3. parsing of the form — in the “All tenders” mode the AI is switched off FORCIBLY: ~170 announcements a day through the model is direct money.
 """
 
@@ -35,7 +35,9 @@ def test_stage_a_requires_match_all_or_topic():
     branch = re.search(
         r"AND \(\s*p\.match_all = true(.*?)\n      \)", _ROUTING_SQL, flags=re.S
     )
-    assert branch, "no match_all branch in STAGE_A_SQL — a profile without a topic sends everything again"
+    assert (
+        branch
+    ), "no match_all branch in STAGE_A_SQL — a profile without a topic sends everything again"
     body = branch.group(1)
     assert "keywords_include" in body
     assert "classifications->'include'" in body
@@ -54,7 +56,9 @@ class _ExplodingDB:
     """A session that fails on any request — proves that the DB was not reached."""
 
     async def execute(self, *args, **kwargs):  # pragma: no cover - must not be called
-        raise AssertionError("the preview must not go to the DB for a profile without a topic")
+        raise AssertionError(
+            "the preview must not go to the DB for a profile without a topic"
+        )
 
 
 @pytest.mark.asyncio

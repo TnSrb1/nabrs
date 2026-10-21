@@ -10,7 +10,7 @@ Srbijašume — last record 14.08.2020, MUP — deadlines up to 28.12.2020).
 
 The guards live in a COMMON layer, not as a copy in each adapter: “the source is silent” and
 “we have been banned” mean the same thing for all sources, and diverged copies of the
-predicate would quietly diverge in verdicts (CLAUDE.md — “one predicate per meaning”).
+predicate would quietly diverge in verdicts (the project rules — “one predicate per meaning”).
 
 Reliability contract (‼️ read before editing)
 ---------------------------------------------
@@ -24,7 +24,7 @@ Reliability contract (‼️ read before editing)
   a guard whose only output is Telegram would be a mute decoration on any
   channel failure. ‼️ The earlier note “the keys don’t reach the container, the contour is blind”
   is STALE: `ADMIN_BOT_TOKEN`/`TG_ALERTS_CHAT_ID` are present both in
-  `/etc/<app>/secrets.env`, in `HOST_KEYS` (`deploy/up.sh`), and in the
+  `/etc/<app>/secrets.env`, in `HOST_KEYS` (the rollout script), and in the
   `environment:` of the `ingest` service — verified in the container on 03.08.2026, the alert
   is alive. The unconditional log stays for the reason above, not “because TG is silent”.
 
@@ -477,7 +477,7 @@ class GuardReporter:
     HOST_KEYS → environment:, verified in the container on 03.08.2026) — the guard’s
     TG alert works.
 
-    There is no PII here by design (source_key + the failure class), but the CLAUDE.md rule
+    There is no PII here by design (source_key + the failure class), but the rule from the project rules
     is observed in exceptions too: the CLASS of the error is logged, without ``exc_info``.
     """
 

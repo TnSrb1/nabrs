@@ -52,7 +52,9 @@ def test_get_doc_replaces_placeholder_with_localized_fallback(caplog):
     joined = " ".join(r.getMessage() for r in warnings)
     assert "unfilled" in joined
     assert "precizirati rokove" not in joined  # sr key; ru key — below
-    assert "уточнить сроки" in joined  # the service marker of the retention period (owner)
+    assert (
+        "уточнить сроки" in joined
+    )  # the service marker of the retention period (owner)
     assert "дата вступления в силу" not in joined  # filled 10.10.2026
 
 

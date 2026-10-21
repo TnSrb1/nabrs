@@ -67,7 +67,7 @@ from typing import Callable, Iterable, Iterator, Optional
 #  Constants specific to TenderSRB
 # --------------------------------------------------------------------------- #
 
-REQUIRED_PINS = {"ruff": "0.15.16", "black": "26.5.1"}  # CI pins (STATE.md)
+REQUIRED_PINS = {"ruff": "0.15.16", "black": "26.5.1"}  # CI pins (the project state log)
 
 # AI tier slugs expected in infra/config.yaml
 EXPECTED_AI_TIERS = ("cheap", "balanced", "premium")
@@ -147,7 +147,7 @@ SKIP_DIRS = {
 
 LARGE_FILE_LINES = 1500  # the threshold of a “large” file (drift risk on edits)
 LARGE_TRACKED_BYTES = 1_000_000  # 1 MB — the threshold of a large binary in git
-STATE_STALE_DAYS = 14  # the “staleness” threshold of STATE.md
+STATE_STALE_DAYS = 14  # the “staleness” threshold of the project state log
 EXTERNAL_TIMEOUT = 240  # sec per external tool
 
 
@@ -1600,10 +1600,10 @@ def audit_data(ctx: Ctx) -> list[Finding]:
 def audit_docs(ctx: Ctx) -> list[Finding]:
     p = Probe(ctx, "DOCS")
 
-    state = ctx.read("docs/STATE.md")
+    state = None  # the state log is not part of the public snapshot
     if state is None:
-        p.high(
-            "docs/STATE.md not found",
+        p.info(
+            "the project state log is not in the public snapshot",
             detail="The single source of truth on the project state.",
         )
     else:
@@ -1617,22 +1617,22 @@ def audit_docs(ctx: Ctx) -> list[Finding]:
                 age = (datetime.now(timezone.utc) - d).days
                 if age > STATE_STALE_DAYS:
                     p.med(
-                        f"STATE.md is stale: updated {age} days ago ({m.group(1)})",
-                        fix="Update STATE.md in every working PR (worker).",
+                        f"The project state log is stale: updated {age} days ago ({m.group(1)})",
+                        fix="Update the project state log in every working PR (worker).",
                     )
                 else:
-                    p.ok(f"STATE.md is fresh (updated {age} days ago)")
+                    p.ok(f"The project state log is fresh (updated {age} days ago)")
             except ValueError:
-                p.info("STATE.md: the UPDATED date was not parsed")
+                p.info("The project state log: the UPDATED date was not parsed")
         else:
-            p.low("There is no UPDATED field in STATE.md")
+            p.low("There is no UPDATED field in the project state log")
         # required sections
         req = ["LAST", "NOW", "NEXT", "BLOCKED"]
         miss = [s for s in req if not re.search(rf"\b{s}\b", state)]
         if miss:
-            p.low("STATE.md has no sections: " + ", ".join(miss))
+            p.low("The project state log has no sections: " + ", ".join(miss))
         else:
-            p.ok("STATE.md contains LAST/NOW/NEXT/BLOCKED")
+            p.ok("The project state log contains LAST/NOW/NEXT/BLOCKED")
 
     # ADR
     dec = ctx.read("docs/DECISIONS.md")

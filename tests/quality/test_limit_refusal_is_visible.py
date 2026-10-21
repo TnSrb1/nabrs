@@ -87,7 +87,7 @@ _DECISION_SOURCES = {
 # A refusal point = a place that CALLS the gate of the limit. The predicate is by the call, not by
 # the comparison with a string: the refusal is written in different ways (``== "exhausted"`` for the button levels,
 # levels, ``!= “ok”`` for the auto-analysis), but ALL call the gate — «a new paid call
-# = the gate BEFORE the call» (CLAUDE.md). The comparison with a string is left as a second
+# = the gate BEFORE the call» (the project rules). The comparison with a string is left as a second
 # signal: it catches also the wrappers that merely retell the decision.
 _GATE_CALL_RE = re.compile(r"\b(auto_)?limit_decision\s*\(")
 _REFUSAL_RE = re.compile(r"""==\s*["'](exhausted|demo_exhausted)["']""")

@@ -136,7 +136,8 @@ async def test_cmd_profile_single_profile_not_worse_than_before():
 @pytest.mark.asyncio
 async def test_cmd_profile_null_is_active_shown_as_disabled():
     """‼️ NULL is_active — an oversight of create_profile bypassing the web form; the matching
-    (``WHERE p.is_active = true``) on NULL silently returns nothing — the list must show the profile as DISABLED, not as active."""
+    (``WHERE p.is_active = true``) on NULL silently returns nothing — the list must show the profile as DISABLED, not as active.
+    """
     p_null = _profile("Без формы", None, keywords=[{"all_of": ["x"]}])
     session = _make_env([p_null])
     text = await _run_cmd_profile(session)
@@ -171,7 +172,8 @@ async def test_cmd_profile_match_all_shown_without_jargon():
 
 def test_list_profiles_order_by_sql():
     """A guard WITHOUT a DB: the ORDER BY order is is_active DESC NULLS LAST, name, id,
-    otherwise the /profile list is not deterministic between runs (the Telegram limit cut will shuffle the profiles between messages)."""
+    otherwise the /profile list is not deterministic between runs (the Telegram limit cut will shuffle the profiles between messages).
+    """
     import asyncio
 
     captured: dict[str, str] = {}
@@ -193,7 +195,8 @@ def test_list_profiles_order_by_sql():
 
 def test_render_profile_truncates_by_profile_count_with_hidden_note():
     """The Telegram limit of 4096 characters — we cut by WHOLE profiles and explicitly name
-    how many are hidden (a small ``max_len`` emulates the limit without inflating the test data to the real 4096 characters)."""
+    how many are hidden (a small ``max_len`` emulates the limit without inflating the test data to the real 4096 characters).
+    """
     profiles = [
         SimpleNamespace(
             id=i,

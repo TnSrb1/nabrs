@@ -307,7 +307,7 @@ _CUSTOMER_RECENT_AWARDS_BY_NAME = text(f"""
 # ‼️ This predicate MUST match the sample of the profile
 # (``_CUSTOMER_SUMMARY_BY_NAME_ALL``): the list promises N decisions — the profile must
 # show the same N. Hence also the call ``customer_award_stats(customer_name=...)``
-# WITHOUT ``customer_pib`` in the page service (CLAUDE.md: one predicate per meaning).
+# WITHOUT ``customer_pib`` in the page service (the project rules: one predicate per meaning).
 # For the same reason the grouping key is the normalized one: the profile matches by
 # ``_CUSTOMER_NAME_KEY``, and if the list grouped by the verbatim name, "ZAVOD …
 # SABAC" would stand in the list twice (21 and 9), while the profile would show for each row
@@ -480,7 +480,9 @@ _COMPETITOR_TOP_CUSTOMERS_WINDOW = text(
 #  Concentration constants
 # --------------------------------------------------------------------------- #
 
-MONOPOLY_TOP1_PCT = 70  # the “monopoly” threshold of one supplier (the share of top-1, %)
+MONOPOLY_TOP1_PCT = (
+    70  # the “monopoly” threshold of one supplier (the share of top-1, %)
+)
 
 # --------------------------------------------------------------------------- #
 #  DTO

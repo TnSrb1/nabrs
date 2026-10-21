@@ -305,7 +305,8 @@ async def test_list_users_no_filter_uses_sql_pagination():
 
 def test_admin_users_search_filters_rendered_rows():
     """The route GET /admin/users?q=... returns only the matching rows. Mutation:
-    remove applying the filter → beta@other.com would appear in the HTML → the assert fails."""
+    remove applying the filter → beta@other.com would appear in the HTML → the assert fails.
+    """
     rows = [
         _scan_row(email="alpha@company.rs"),
         _scan_row(
@@ -548,7 +549,8 @@ def test_admin_templates_renders():
 )
 def test_cross_tenant_sql_calls_security_definer_function(attr, expected_fn):
     """FIX-ADMIN-RLS: every cross-tenant SQL constant of admin_service calls the corresponding
-    SECURITY DEFINER function app_admin_* (migration 0025), and not a raw SELECT/UPDATE on users/tenants/profiles/delivery_outbox."""
+    SECURITY DEFINER function app_admin_* (migration 0025), and not a raw SELECT/UPDATE on users/tenants/profiles/delivery_outbox.
+    """
     sql = str(getattr(svc, attr))
     assert expected_fn in sql
     assert "UPDATE tenants" not in sql
@@ -1149,7 +1151,8 @@ def test_admin_users_garbage_sort_keeps_default_order():
 
 def test_admin_users_sort_links_keep_filters_and_mark_active_column():
     """Headers are links: they keep q and tier, reset page; the active <th>
-    carries aria-sort. Mutation: do not pass filter_qs to the macro → q/tier disappear."""
+    carries aria-sort. Mutation: do not pass filter_qs to the macro → q/tier disappear.
+    """
     results = [
         FakeResult(items=[_SORT_ROWS[3]]),  # bravo: tier=pro → passes the filter
         FakeResult(

@@ -46,9 +46,7 @@ class Plan:
     draft_per_month: Optional[
         int
     ]  # bid draft (VG-10): _TIER_LIMITS['draft'] (0=no, None=∞)
-    analytics: (
-        bool  # analytics of the customer/competitor/re-procurements (VG-06), Pro+ (_is_pro_plus)
-    )
+    analytics: bool  # analytics of the customer/competitor/re-procurements (VG-06), Pro+ (_is_pro_plus)
     # The “Email notifications” row — ONLY for the /plans showcase (SHOWCASE_FEATURE_KEYS),
     # it is not part of the cabinet ladder (FEATURE_KEYS). Free — False, because
     # a newcomer does not get onto Free by themselves: after the trial (TRIAL_DAYS) ``access_until``
@@ -348,7 +346,7 @@ def upsell_for_level(
     It answers the question “the client hit the limit — what to offer them”: the owner’s requirement of 15.08.2026
     “offer a pricier tier with a larger limit of AI requests”. Returns ``None`` if there is nothing to offer — the client is already at the top of the ladder or has unlimited at this level. ``None`` does NOT mean “stay silent”: the caller must still show the fact of exhaustion, just without a CTA.
 
-    ‼️ The axes are not mixed (CLAUDE.md): the thresholds are taken ONLY from the gating (``src.ai.usage._TIER_LIMITS``), the name and the price — ONLY from here. There is no third place with numbers, so “150 verdicts in Business” cannot diverge from what the gate actually lets through.
+    ‼️ The axes are not mixed (the project rules): the thresholds are taken ONLY from the gating (``src.ai.usage._TIER_LIMITS``), the name and the price — ONLY from here. There is no third place with numbers, so “150 verdicts in Business” cannot diverge from what the gate actually lets through.
 
     ``starter`` does not get into the output: it is legacy and hidden from the showcase (:func:`upgrade_targets` goes along the ladder of the sold plans). Enterprise does not get in either — it has a separate contact CTA, not self-service.
     """

@@ -228,7 +228,7 @@ def parse_profile_form(form: Mapping[str, Any]) -> tuple[dict, list[str]]:
     # The “All tenders” mode (0043): the whole portal stream without selection by topic.
     # ‼️ AI is switched OFF in this mode FORCIBLY, not by a hint in the markup:
     # the stream is ~170 notices a day, analyzing each one with the model is direct money,
-    # and “a new paid call = gate + limit + metering” (CLAUDE.md). To silently give
+    # and “a new paid call = gate + limit + metering” (the project rules). To silently give
     # such a profile the deep level would mean opening unlimited spend to whoever
     # simply pressed “Show all”. A client who needs AI sets a topic.
     match_all = _to_bool(form.get("match_all"))

@@ -56,7 +56,8 @@ class EmailSender(ABC):
     ) -> None:
         """``locale`` — the recipient’s language; ``“sr”`` → the email only in Latin
         (owner 10.10.2026: the tender data is in Cyrillic, at the display boundary — Latin). A missing language = “as is”: the caller passes ``users.locale``.
-        ``from_email`` — an override of ``From`` (otherwise the configured sender); ``reply_to`` — ``Reply-To`` (if not given, it is not set)."""
+        ``from_email`` — an override of ``From`` (otherwise the configured sender); ``reply_to`` — ``Reply-To`` (if not given, it is not set).
+        """
         raise NotImplementedError
 
 

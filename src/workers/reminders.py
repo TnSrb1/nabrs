@@ -238,7 +238,9 @@ class ReminderWorker:
                     logger.info("reminders: reminders sent per cycle: %d", sent)
             except asyncio.CancelledError:
                 raise
-            except Exception:  # noqa: BLE001 — a cycle failure does not break the worker
+            except (
+                Exception
+            ):  # noqa: BLE001 — a cycle failure does not break the worker
                 logger.exception("reminders: polling cycle error")
             await self._sleep(self._poll_interval)
 
@@ -247,7 +249,9 @@ class ReminderWorker:
         sent = 0
         for channel in self._enabled_channels:
             adapter = self._adapters.get(channel)
-            if adapter is None:  # the channel is in enabled, but there is no adapter — skipping
+            if (
+                adapter is None
+            ):  # the channel is in enabled, but there is no adapter — skipping
                 continue
             for row in await self._load_candidates(channel):
                 threshold = self._threshold_for(row.deadline_at, row.tz)

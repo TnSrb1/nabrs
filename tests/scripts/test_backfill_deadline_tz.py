@@ -25,7 +25,9 @@ from scripts.backfill_deadline_tz import (
 )
 
 _CUTOFF_DT = datetime(2026, 7, 22, 12, 0, tzinfo=timezone.utc)
-_CUTOFF = _CUTOFF_DT  # the boundary goes into the bind as an aware datetime, not a string
+_CUTOFF = (
+    _CUTOFF_DT  # the boundary goes into the bind as an aware datetime, not a string
+)
 
 
 class _Row:
@@ -239,7 +241,9 @@ async def test_dry_run_scans_all_batches_without_hanging(patch_session):
     """the dry-run marks nothing → the pagination holds only on the cursor by id."""
     rows = [_Row(_uid(i), None) for i in range(1, 8)]
     session = patch_session(_FakeSession(rows, forbid_writes=True))
-    await run(apply=False, batch_size=2, before_ts=_CUTOFF)  # it would loop → it will fall
+    await run(
+        apply=False, batch_size=2, before_ts=_CUTOFF
+    )  # it would loop → it will fall
     assert session.updates == []
 
 

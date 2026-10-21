@@ -473,7 +473,8 @@ async def logout(
     settings: CabinetSettings = Depends(deps.get_settings),
 ):
     """Logout: POST + the session’s CSRF token. Without a session — simply to login (idempotent).
-    A wrong token — 403, and the session stays: a foreign site cannot log the user out."""
+    A wrong token — 403, and the session stays: a foreign site cannot log the user out.
+    """
     response = RedirectResponse(url="/login", status_code=303)
     if session is None:
         deps.clear_session_cookie(response)

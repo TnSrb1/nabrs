@@ -121,7 +121,7 @@ async def dead_channels(session, tenant_id: str) -> list[str]:
 def _delivery_gaps(profiles, states: dict[str, ChannelState]) -> list[dict]:
     """Channels that the ACTIVE profile asks for, but there is no live addressee.
 
-    “Setting ≠ fact” (CLAUDE.md): ``profiles.delivery_channels`` — WHERE to send
+    “Setting ≠ fact” (the project rules): ``profiles.delivery_channels`` — WHERE to send
     (the setting), ``states`` (the freshest ``user_channels`` row, THE SAME selection
     as delivery’s — :func:`src.workers.matching.channel_states`) — whether there is a
     live addressee. Their gap = silently lost delivery (case #340).
@@ -247,7 +247,7 @@ def parse_email_address(raw: str) -> tuple[str | None, str | None]:
 
     The second element is a KEY of the cabinet chrome catalog (``emp_err_*``), not a ready text:
     the service layer does not know the user’s language, it localizes the template through ``t`` (the two
-    i18n axes are not mixed — CLAUDE.md). ``_MAX_EMAIL_LENGTH`` (254, RFC 5321)
+    i18n axes are not mixed — the project rules). ``_MAX_EMAIL_LENGTH`` (254, RFC 5321)
     is baked into the text of the key ``emp_err_too_long`` — a constant, not a runtime parameter.
     """
     address = security.normalize_email(raw)

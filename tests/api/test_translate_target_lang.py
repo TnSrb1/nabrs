@@ -124,7 +124,9 @@ def test_en_interface_title_button_targets_en_and_model_gets_en(monkeypatch):
     original = client.get(_TITLE_FRAG)
     assert original.status_code == 200
     assert _TITLE_SR in original.text
-    assert "&amp;lang=en" in original.text, "the button must pull the translation into en"
+    assert (
+        "&amp;lang=en" in original.text
+    ), "the button must pull the translation into en"
     assert "&amp;lang=ru" not in original.text, "Russian is no longer privileged"
     assert spy.calls == [], "the model is not called on the original"
 

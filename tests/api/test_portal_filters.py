@@ -583,7 +583,9 @@ def test_mock_non_timeout_db_error_is_not_swallowed():
 def test_parse_short_tokens_ignored():
     f = parse_filters({"q": "a škola 5 b"})
     assert f.q_tokens == ("skola",)
-    assert not parse_filters({"q": "a b"}).active  # only short ones → there is no filter
+    assert not parse_filters(
+        {"q": "a b"}
+    ).active  # only short ones → there is no filter
     assert not parse_filters({"q": "я"}).active
 
 

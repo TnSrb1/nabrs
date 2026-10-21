@@ -499,7 +499,8 @@ async def test_confirm_email_rejects_unknown_token(raw):
 async def test_confirm_email_rejects_token_issued_for_another_address():
     """‼️ A double opt-in bypass: "register your own address → get the email → register
     someone else’s → click your own link". The token was issued for attacker@evil.rs, and the
-    pending one is now victim@company.rs: the hash will not match, the address will not activate."""
+    pending one is now victim@company.rs: the hash will not match, the address will not activate.
+    """
     token = _token(token_hash=_confirm_hash("raw-token", "attacker@evil.rs"))
     session = _TokenStoreSession(
         channel_rows=[
@@ -688,7 +689,7 @@ async def test_pending_email_is_not_reported_as_dead_channel():
 
 # --------------------------------------------------------------------------- #
 # Onboarding of the email channel: the gap “channel setup ↔ live recipient”
-# “Setting ≠ fact” (CLAUDE.md): delivery_channels — WHERE to send, states — whether
+# “Setting ≠ fact” (the project rules): delivery_channels — WHERE to send, states — whether
 # there is a live recipient. Their gap = silently lost delivery (case #340).
 # --------------------------------------------------------------------------- #
 
@@ -754,7 +755,9 @@ async def test_delivery_channel_status_flags_live_channel_and_gaps():
     )
     status = await svc.delivery_channel_status(session, "t-1", [_prof(["email"])])
     assert status["has_live_channel"] is True  # telegram live
-    assert [g["channel"] for g in status["gaps"]] == ["email"]  # email requested, but absent
+    assert [g["channel"] for g in status["gaps"]] == [
+        "email"
+    ]  # email requested, but absent
 
 
 @pytest.mark.asyncio

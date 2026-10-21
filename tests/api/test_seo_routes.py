@@ -151,7 +151,9 @@ def test_llms_txt_markdown_with_pricing_and_links():
     assert resp.status_code == 200
     assert resp.headers["content-type"].startswith("text/markdown")
     assert "# TenderSRB" in resp.text
-    assert "29 EUR/mes." in resp.text  # the Pro price from the catalog, not a literal in the test
+    assert (
+        "29 EUR/mes." in resp.text
+    )  # the Pro price from the catalog, not a literal in the test
     assert "https://nab.rs/help" in resp.text
     assert "https://nab.rs/sitemap.xml" in resp.text
     assert "## English" in resp.text

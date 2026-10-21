@@ -261,7 +261,7 @@ async def used_count(
     The ONLY place where the spend is read: both the gate (:func:`limit_decision`,
     :func:`auto_limit_decision`) and the remainder counter in the cabinet (:func:`usage_snapshot`)
     call this one. A predicate that duplicates another module’s query must be
-    mirrored, not rewritten (CLAUDE.md): otherwise the client sees one
+    mirrored, not rewritten (the project rules): otherwise the client sees one
     number while another one refuses them.
 
     ``period`` — the accounting period ``YYYY-MM`` or ``None`` = over ALL periods
@@ -599,9 +599,7 @@ async def finalize_with_insert(
                 )
                 return None
             await session.commit()
-            logger.info(
-                "ai: UNIQUE race → using the existing analysis=%s", existing
-            )
+            logger.info("ai: UNIQUE race → using the existing analysis=%s", existing)
             return existing
         analysis_id = str(refreshed.id)
 

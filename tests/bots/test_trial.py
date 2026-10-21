@@ -188,7 +188,8 @@ async def test_decide_deny_no_grant():
 @pytest.mark.asyncio
 async def test_decide_approve_upgrade_uses_billing_path():
     """approve of an upgrade request → the billing path: a manual subscription + set_tier +
-    grant_access + audit. The tier set = Plan.tier, the plan is visible in the outcome."""
+    grant_access + audit. The tier set = Plan.tier, the plan is visible in the outcome.
+    """
     session = AsyncMock()
     session.execute = AsyncMock(
         side_effect=[

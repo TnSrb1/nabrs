@@ -247,7 +247,7 @@ Each day of parsing is +110 tenders in the permanent archive. This is the core o
 **Context:** owner raised the risk of “loops” in which Claude Code burns tokens without progress. Typical scenarios: read-edit-read-edit, test-fix-test-fix, search-rephrase-search, a doc rabbit hole, a lint-fix cascade.
 
 **Decision:** introduce 7 hard behavior rules for Claude Code on the staging VPS. The rules are recorded in three places:
-1. **`CLAUDE.md`** in the repo root (≤200 lines) — Claude Code sees it at every session.
+1. **the project rules** in the repo root (≤200 lines) — Claude Code sees it at every session.
 2. **`.claude/settings.json`** — machine-readable limits and deny rules (Sprint-9.1).
 3. **`docs/archive/AUTONOMY_PLAN.md`** — a human-readable methodology for owner/partner.
 
@@ -427,7 +427,7 @@ Old tokens that ended up in the chat are not migrated — they are replaced by a
 **Date:** 2026-05-12 (revised 2026-05-26 in Chat 14)
 **Status:** accepted (revised); supersedes the original ADR-018 of 2026-05-12 (Chat 7, PIB-as-hard-required)
 
-**Context:** the original ADR-018 required binding the trial to a Serbian DOO’s PIB as the only anti-abuse mechanism. After ADR-033 (multi-country foundations) this approach breaks for non-Serbian customers and for Serbian individuals/preduzetnik without a DOO. The research `docs/research/MAX_anti_abuse_universal.md` (B4) showed: a universal `anti_abuse_identifier` + a low-friction stack (Turnstile + Kickbox + an opt-in €1 verification charge) wins on CAC and removes the geographic block. Benchmarks of 6 SaaS cases (Plausible, Ghost, Linear, Notion, Calendly, Cal.com) show: in the B2B segment with ACV €50–500/month nobody requires KYC/PIB/phone OTP on a trial.
+**Context:** the original ADR-018 required binding the trial to a Serbian DOO’s PIB as the only anti-abuse mechanism. After ADR-033 (multi-country foundations) this approach breaks for non-Serbian customers and for Serbian individuals/preduzetnik without a DOO. The research note (B4) showed: a universal `anti_abuse_identifier` + a low-friction stack (Turnstile + Kickbox + an opt-in €1 verification charge) wins on CAC and removes the geographic block. Benchmarks of 6 SaaS cases (Plausible, Ghost, Linear, Notion, Calendly, Cal.com) show: in the B2B segment with ACV €50–500/month nobody requires KYC/PIB/phone OTP on a trial.
 
 **Decision:** a 14-day trial, activated via a universal `anti_abuse_identifier`. The PIB of a DOO is one of the identifier subtypes for Serbian tenants, not the only possible one.
 
@@ -493,7 +493,7 @@ Comparison with Twilio Verify SMS to Serbia (rejected): $460/month per 1 000 sig
 ### Impact on the DB schema and architecture
 
 - **DB_SCHEMA.md v1.1** (PR-3): the table `anti_abuse_identifiers` with the fields `identifier_type`, `value_hash` (SHA-256), `value_last4`, `risk_score_at_signup`, `verification_method`, `verified_at`, `expires_at`, `region` (CHAR(2) FK to `countries.code`). A UNIQUE constraint on `(value_hash)` globally (anti-multi-account across 12 months — via `expires_at`).
-- **ARCHITECTURE.md v3.0** (PR-3): the `KYCProvider` interface in §14 (after the AI pipeline) or in §1.5 multi-country foundations; the mapping `tenants.country_code → KYCProvider`.
+- **the architecture notes (not published) v3.0** (PR-3): the `KYCProvider` interface in §14 (after the AI pipeline) or in §1.5 multi-country foundations; the mapping `tenants.country_code → KYCProvider`.
 - **Sprint-19** (web cabinet, signup flow): the implementation of Turnstile + Kickbox + email confirmation.
 - **Sprint-21** (Paddle in full): the SetupIntent step-up flow, an instant refund after confirmation, recording `card_fingerprint` in the identifier.
 - **Sprint-22** (KYC for RS): the implementation of `KYCProvider('apr_rs')` with a lookup in `apr.gov.rs`.
@@ -502,7 +502,7 @@ Comparison with Twilio Verify SMS to Serbia (rejected): $460/month per 1 000 sig
 
 The old ADR-018 (PIB hard-required) is **not implemented in code** — Sprint-19/21/22 are still ahead. This revision is applied at the first implementation. No data migration is needed. After ADR-033 the field `tenants.pib` was renamed to `tenants.tax_id` (composite UNIQUE `(country_code, tax_id) WHERE tax_id IS NOT NULL`); the link with `anti_abuse_identifiers.value_hash` goes through SHA-256(`tax_id_normalized`).
 
-**Source:** `docs/research/MAX_anti_abuse_universal.md` (B4), 23 sources of empirical evidence, 2026-05.
+**Source:** research note B4, 23 sources of empirical evidence, 2026-05.
 
 ---
 
@@ -563,7 +563,7 @@ After a correct installation of the App with the permissions **All repositories 
 5. **Files that Claude does NOT edit via the MCP even technically having the rights:**
    - `infra/secrets/*` — secrets, even templates, require a conscious check by owner.
    - `.github/workflows/*` — CI changes can break the pipeline; edited by owner or by Claude Code on the VPS with a local check.
-   - Files marked “owner only” in `CLAUDE.md` or in this ADR (as they appear).
+   - Files marked “owner only” in the project rules or in this ADR (as they appear).
 
 **Technical consequences:**
 
@@ -601,7 +601,7 @@ After a correct installation of the App with the permissions **All repositories 
 
 **Context:** on a 24-month horizon the project must connect 5–10 heterogeneous sources: jnportal (Serbia, JSON/mobile app), obnova (HTML + a multilingual version), tendersinfo (international commercial, API), EBRD (RSS + API), UNDP (static HTML), potentially others. Each has its own format, schedule and quirks. If the parsing/normalization logic is “baked” into shared code, adding a new source requires revising the core and regressions in the existing ones. This violates the requirement “add a source in one sprint”.
 
-**Decision:** each source is implemented as a class inheriting `SourceAdapter` with a fixed interface (see `docs/ARCHITECTURE.md` section 4.1). The adapter encapsulates **everything** source-specific: the HTTP client, pagination, parsing raw → a `RawTender` structure, forming a stable `source_uid`, normalization into the common `NormalizedTender` model, optional document download.
+**Decision:** each source is implemented as a class inheriting `SourceAdapter` with a fixed interface (see the architecture notes (not published) section 4.1). The adapter encapsulates **everything** source-specific: the HTTP client, pagination, parsing raw → a `RawTender` structure, forming a stable `source_uid`, normalization into the common `NormalizedTender` model, optional document download.
 
 **A hybrid “registry in code + config in the DB”:**
 - **In code** (`src/parsers/<source>/`): the adapter class itself. Registered at start-up through the decorator `@register_source`. Changes go through review via a PR.
@@ -666,7 +666,7 @@ Applied in `DB_SCHEMA.md` v1.1.
 
 3. **`canonical_tenders`** — a group of duplicates from different platforms. Several `tenders_normalized` may point to one `canonical_tender_id`. One of them is `primary` (by priority: jnportal > obnova > EBRD > UNDP > tendersinfo).
 
-For the full details of the deduplication algorithm, RLS and embeddings, see `docs/ARCHITECTURE.md` section 5.
+For the full details of the deduplication algorithm, RLS and embeddings, see the architecture notes (not published) section 5.
 
 **Alternatives rejected:**
 - **One tenders table without a raw/normalized split** — we lose the ability to recompute normalization when the logic is updated without re-downloading.
@@ -712,7 +712,7 @@ For the full details of the deduplication algorithm, RLS and embeddings, see `do
 
 **Target SLA:** from the INSERT into `tenders_normalized` to the outbox record — p95 < 5 sec at 1000 active profiles.
 
-For the full details of the schema, the SQL query and update handling, see `docs/ARCHITECTURE.md` sections 6 and 7.
+For the full details of the schema, the SQL query and update handling, see the architecture notes (not published) sections 6 and 7.
 
 **Alternatives rejected:**
 - A materialized view refreshed by cron — we lose real time.
@@ -767,7 +767,7 @@ For the full details of the schema, the SQL query and update handling, see `docs
 
 **Failover:** retry → at 30 min of downtime we postpone L2, L3 → to the user “try again later”. Long-term unavailability — a fallback to OpenAI/Gemini (phase 2).
 
-Full details — `docs/ARCHITECTURE.md` section 8.
+Full details — the architecture notes (not published) section 8.
 
 **Alternatives rejected:**
 - A single level — always Sonnet — kills the unit economics of Starter.
@@ -808,7 +808,7 @@ Full details — `docs/ARCHITECTURE.md` section 8.
 
 9. **Read confirmation:** `tender_views` is written on a click in Telegram/Email/Viber or on opening the card. The open rate metric per profile is feedback for tuning.
 
-Full details — `docs/ARCHITECTURE.md` section 9.
+Full details — the architecture notes (not published) section 9.
 
 **Alternatives rejected:**
 - A direct channel call from routing — produces all the bugs listed.
@@ -864,11 +864,11 @@ Full details — `docs/ARCHITECTURE.md` section 9.
 **Date:** 2026-05-24
 **Status:** accepted in Chat 10
 
-**Context:** ADR-008 (Chat 1) fixed the AI stack with concrete model slugs: `claude-haiku-4-5-20251001` (level 1), `claude-sonnet-4-6` (level 2), `claude-opus-4-7` (level 3). These slugs change every 3-6 months in Anthropic's catalog — in a year the architecture document is outdated in the AI stack part. In PR #21 (`ARCHITECTURE.md` v2.0) the decision was made to use tier names instead of slugs, which revealed the need for an explicit ADR to separate the levels of abstraction.
+**Context:** ADR-008 (Chat 1) fixed the AI stack with concrete model slugs: `claude-haiku-4-5-20251001` (level 1), `claude-sonnet-4-6` (level 2), `claude-opus-4-7` (level 3). These slugs change every 3-6 months in Anthropic's catalog — in a year the architecture document is outdated in the AI stack part. In PR #21 (the architecture notes (not published) v2.0) the decision was made to use tier names instead of slugs, which revealed the need for an explicit ADR to separate the levels of abstraction.
 
 **Decision:** two-level naming of Claude models in the project:
 
-1. **The architectural level — tier names.** In `docs/ARCHITECTURE.md`, in code at the business-logic level, in `BUSINESS_OPS.md`, in marketing materials — abstract names are used:
+1. **The architectural level — tier names.** In the architecture notes (not published), in code at the business-logic level, in `BUSINESS_OPS.md`, in marketing materials — abstract names are used:
    - `cheap` — fast classification (level 1)
    - `balanced` — the standard analysis (level 2)
    - `premium` — the deep analysis (level 3)
@@ -891,7 +891,7 @@ Full details — `docs/ARCHITECTURE.md` section 9.
 **Relation to ADR-008:** ADR-008 is not canceled. It remains as a historical record “AI = Anthropic Claude only, 3 analysis levels”. ADR-029 extends ADR-008 with a naming rule. The concrete slugs from the text of ADR-008 are the historical reality as of Chat 1, the current mapping is in `infra/config.yaml`.
 
 **Alternatives rejected:**
-- **Keep slugs in the architecture** (as in `ARCHITECTURE.md` v1.0) — obsolescence every 3-6 months.
+- **Keep slugs in the architecture** (as in the architecture notes (not published) v1.0) — obsolescence every 3-6 months.
 - **Tier only, without storing the slug in the DB** — loss of the ability to audit (in 6 months we could not say which model wrote “this nonsense”).
 - **Configuration in env variables instead of config.yaml** — env is poorly suited to a structured mapping and will fall apart when growing to 5+ models.
 
@@ -911,7 +911,7 @@ Full details — `docs/ARCHITECTURE.md` section 9.
 **Date:** 2026-05-24
 **Status:** accepted in Chat 10
 
-**Context:** in Chat 10 the project needed an actually deployed landing page at the demand of Paddle KYC and Viber for Business (both require a working website, not “coming soon”). MAX carried out research (PR #23, `docs/research/landing-stack.md`) — compared 5 stack options on 8 criteria, gave a recommendation.
+**Context:** in Chat 10 the project needed an actually deployed landing page at the demand of Paddle KYC and Viber for Business (both require a working website, not “coming soon”). A research agent carried out research (PR #23) — compared 5 stack options on 8 criteria, gave a recommendation.
 
 **Decision (owner after reviewing the research):**
 
@@ -970,7 +970,7 @@ Full details — `docs/ARCHITECTURE.md` section 9.
 **Consequences:**
 - The landing infrastructure cost — $0/month permanently (on a 24-month horizon).
 - For the Paddle and Viber KYC — a real website at `https://nab.rs/` (after owner deploys).
-- When content grows to 9+ pages — migration to Astro per the plan in `site/README.md` (1-2 days for MAX).
+- When content grows to 9+ pages — migration to Astro per the plan in `site/README.md` (1-2 days for the research assistant).
 - Lighthouse score target 95+ on mobile — without a heavy JS bundle, checked after the deploy.
 
 ---
@@ -982,7 +982,7 @@ Full details — `docs/ARCHITECTURE.md` section 9.
 
 **Context:** the project must be extensible to any country (UZ, KZ as the first candidates). Architecture v2.0 is ~60% universal, but 7 country-dependent points are hardcoded to Serbia: tenants.pib, cpv_codes, regions ISO 3166-2:RS, anti-abuse via APR, the AI system prompt, the absence of `country_code` on key tables, the absence of an abstraction over procurement classifiers.
 
-Research: PR #29 `MAX_universality_report.md` + PR #40 `MAX_universal_architecture.md` (B8, merged).
+Research: PR #29 + PR #40 (B8, merged).
 
 **Decision:** apply the foundational DDL before Sprint-13. A full country-pack mechanism (KYC providers, locale packs, plugin discovery) is postponed until an actual second country.
 
@@ -998,7 +998,7 @@ Research: PR #29 `MAX_universality_report.md` + PR #40 `MAX_universal_architectu
 8. The AI system prompt is parametrised by `{{country_name}}` and `target_language`.
 9. `subscriptions.payment_processor` (enum: `paddle`, `corvuspay`, `uzcard`, `kaspi`, `stripe`) — groundwork for a future ADR.
 
-The full DDL is in B8 §5 (`docs/research/MAX_universal_architecture.md`). It is applied in `docs/DB_SCHEMA.md` v1.1 by a separate brief for MAX.
+The full DDL is in B8 §5. It is applied in `docs/DB_SCHEMA.md` v1.1 by a separate brief for the research assistant.
 
 ### Impact on existing ADRs
 
@@ -1021,7 +1021,7 @@ The full DDL is in B8 §5 (`docs/research/MAX_universal_architecture.md`). It is
 ### Consequences
 
 1. PR #29 (`max/universality-research`) — owner merges with Squash and merge.
-2. A separate brief for MAX in Chat 15 — apply the DDL in `docs/DB_SCHEMA.md` v1.1 and update `docs/ARCHITECTURE.md` to v3.0.
+2. A separate brief for the research assistant in Chat 15 — apply the DDL in `docs/DB_SCHEMA.md` v1.1 and update the architecture notes (not published) to v3.0.
 3. Sprint-13 relies on the universal schema. The first code is written with `country_code='RS'` by default.
 
 **Closes:** Q-20.

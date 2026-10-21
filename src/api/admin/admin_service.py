@@ -352,7 +352,8 @@ def _humanize_age(dt: datetime | None) -> str:
 class IngestHealth:
     """Ingest stream health (VG-29.2): freshness and volume of inflow from the
     NON-RLS tables tenders_normalized / tender_awards. Read-only, no cross-tenant
-    bypasses — the operator sees whether the tender/award stream is “alive” without SSH."""
+    bypasses — the operator sees whether the tender/award stream is “alive” without SSH.
+    """
 
     last_tender_at: datetime | None
     tenders_1h: int
@@ -427,7 +428,8 @@ class DeliveryHealth:
     """Delivery/queue health (VG-29.3): delivery_outbox backlog + freshness of the
     reminder workers. Cross-tenant aggregates go through SECURITY DEFINER
     (0026, FORCE RLS bypass) — the operator sees whether the delivery queue got stuck and
-    whether the background processes are alive, without SSH. Only COUNT/MAX, no tenant rows."""
+    whether the background processes are alive, without SSH. Only COUNT/MAX, no tenant rows.
+    """
 
     pending_total: int
     failed_24h: int
@@ -1124,7 +1126,9 @@ async def _decide_reregister(
             body = f"{body}\n\n{comment}"
         try:
             await email_sender.send(to=row.email, subject=subject, text_body=body)
-        except Exception as exc:  # noqa: BLE001 — the decision is already in the DB; no PII in the log
+        except (
+            Exception
+        ) as exc:  # noqa: BLE001 — the decision is already in the DB; no PII in the log
             logger.warning(
                 "reregister: decision email not sent (%s)", type(exc).__name__
             )

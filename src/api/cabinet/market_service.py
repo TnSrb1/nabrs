@@ -238,7 +238,9 @@ async def get_shared(
         try:
             async with session_factory() as db:
                 data = await compute_shared(db, today)
-        except Exception as exc:  # noqa: BLE001 — the dashboard lives without the market too
+        except (
+            Exception
+        ) as exc:  # noqa: BLE001 — the dashboard lives without the market too
             logger.warning("vesti market unavailable: %s", type(exc).__name__)
             _fail_until = time.monotonic() + FAIL_TTL_SECONDS
             return None
@@ -293,7 +295,9 @@ async def get_personal(db: Any, tenant_id: str) -> dict[str, Any] | None:
             if not pats:
                 return None
             row = (await db.execute(_PERSONAL_SQL, {"ccs": ccs, "pats": pats})).one()
-    except Exception as exc:  # noqa: BLE001 — a timeout or failure does not break the dashboard
+    except (
+        Exception
+    ) as exc:  # noqa: BLE001 — a timeout or failure does not break the dashboard
         logger.warning("vesti personal unavailable: %s", type(exc).__name__)
         return None
     return {"new": int(row.new_n or 0), "expiring": int(row.expiring_n or 0)}

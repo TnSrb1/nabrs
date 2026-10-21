@@ -98,7 +98,9 @@ def test_mypy_debt_did_not_grow(actual: Counter[str]) -> None:
         for path, count in actual.items()
         if count > MYPY_DEBT.get(path, 0)
     }
-    assert not grown, "The mypy debt grew — fix the errors, rather than the baseline:\n" + "\n".join(
+    assert (
+        not grown
+    ), "The mypy debt grew — fix the errors, rather than the baseline:\n" + "\n".join(
         f"  {path}: было {was}, стало {now}"
         + ("  ← файла не было в baseline вообще" if was == 0 else "")
         for path, (was, now) in sorted(grown.items())

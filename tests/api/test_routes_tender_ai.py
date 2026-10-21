@@ -337,7 +337,9 @@ def test_customer_success_renders_export_button(monkeypatch):
     monkeypatch.setattr(cust, "get_narucilac_analytics", _async(bundle))
     resp = _client(sess=SESS).get(f"/app/tenders/{_TENDER}?profile_id={_PROFILE}")
     assert resp.status_code == 200
-    assert "Экспорт в CSV" in resp.text  # t.export_csv (the single key of the CSV export)
+    assert (
+        "Экспорт в CSV" in resp.text
+    )  # t.export_csv (the single key of the CSV export)
     # The button leads to the CSV route of the customer with the profile of the current tender.
     assert f"/app/tenders/{_TENDER}/analytics.csv?profile_id={_PROFILE}" in resp.text
     assert "kind=customer" in resp.text

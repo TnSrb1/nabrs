@@ -345,9 +345,7 @@ async def test_cache_lookup_skips_analysis_older_than_last_changed_and_refreshes
                     level="bid",
                     result=_res(),
                 )
-                assert new_id == str(
-                    old_id
-                )  # same id: the outbox may reference it
+                assert new_id == str(old_id)  # same id: the outbox may reference it
                 await a.commit()
             async with AsyncSession(app) as a:
                 await set_tenant(a, tenant)

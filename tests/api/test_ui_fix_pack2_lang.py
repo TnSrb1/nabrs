@@ -218,7 +218,9 @@ def test_anon_lang_click_renders_and_persists_choice(path, key):
     """A click on the pill: the page is in en AND the choice survived the transition to another screen."""
     client = _client()
     resp = client.get(f"{path}?lang=en")
-    assert resp.status_code == 200  # not 303 — it no longer leads the anonymous user anywhere
+    assert (
+        resp.status_code == 200
+    )  # not 303 — it no longer leads the anonymous user anywhere
     assert 'lang="en"' in resp.text
     assert CABINET["en"][key] in resp.text
     assert client.cookies.get("lang") == "en"

@@ -5,7 +5,7 @@ The scope 2a — only the input points: ``cmd_start`` (the hint “the profile a
 We check: under en/sr the chrome of the input handlers is localised (there are no RUSSIAN letters
 ``U+044B U+044D U+0449 U+044A U+0451 U+0439`` — they are absent both in Serbian Latin and in English), and under ru the previous Russian text is kept (the backward compatibility of the canon). The parity of the catalog keys is held by a separate test — otherwise a new key in one language would silently drop a KeyError only under this language in production.
 
-Two AXES (CLAUDE.md): ``users.locale`` (the interface/chrome of the bot) ≠
+Two AXES (the project rules): ``users.locale`` (the interface/chrome of the bot) ≠
 ``profiles.target_language`` (AI content). Here only the interface chrome.
 """
 
@@ -91,7 +91,9 @@ async def test_cmd_help_localized_no_russian(locale):
     with patch("src.bots.telegram.session_scope", _fake_scope), _patch_locale(locale):
         await cmd_help(message)
     text = _last_text(message)
-    assert not RU_ONLY.search(text), f"Russian letters in the help under {locale}: {text!r}"
+    assert not RU_ONLY.search(
+        text
+    ), f"Russian letters in the help under {locale}: {text!r}"
     # the anchor commands are in place — the help stayed meaningful
     assert "/start" in text
     assert "/help" in text
@@ -155,7 +157,9 @@ async def test_cmd_start_existing_hint_localized_no_russian(locale):
     ):
         await cmd_start(message, state, None)
     text = _last_text(message)
-    assert not RU_ONLY.search(text), f"Russian letters in /start under {locale}: {text!r}"
+    assert not RU_ONLY.search(
+        text
+    ), f"Russian letters in /start under {locale}: {text!r}"
     # stayed meaningful: /profile is kept, there is no /reset advice any more
     assert "/profile" in text
     assert "/reset" not in text

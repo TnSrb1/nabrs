@@ -41,7 +41,9 @@ def test_web_settable_status_active_is_visible_to_reminders():
     The key promise of VG-17w (“marked Participating in the cabinet → the reminder in TG will fire”) holds on three facts, and each is checked here: the stage is reachable from the web, the worker sends by exactly it, and it is one table.
     """
     assert "active" in STATUSES, "a stage cannot be set from the web"
-    assert "active" in _WATCH_STATUSES, "the worker does not send reminders by the stage"
+    assert (
+        "active" in _WATCH_STATUSES
+    ), "the worker does not send reminders by the stage"
     assert "tender_user_status" in str(svc._SET_STATUS_SQL)
 
 
@@ -54,7 +56,9 @@ def test_web_writes_the_status_it_was_given():
     assert ":status" in sql, "the stage must come through the bind"
     assert "SET status = EXCLUDED.status" in sql, "the update must take the new stage"
     for literal in ("'watching'", "'active'", "'new'"):
-        assert literal not in sql, f"the hard-coded stage {literal} in the SQL of the stage change"
+        assert (
+            literal not in sql
+        ), f"the hard-coded stage {literal} in the SQL of the stage change"
 
 
 def test_my_page_predicate_is_derived_from_statuses():
@@ -64,6 +68,8 @@ def test_my_page_predicate_is_derived_from_statuses():
     """
     for status in STATUSES:
         if status == "new":
-            assert f"'{status}'" not in svc._MY_STATUS_IN, "the default new — is not “mine”"
+            assert (
+                f"'{status}'" not in svc._MY_STATUS_IN
+            ), "the default new — is not “mine”"
         else:
             assert f"'{status}'" in svc._MY_STATUS_IN

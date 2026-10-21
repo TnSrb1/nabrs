@@ -168,7 +168,9 @@ def test_partial_failure_falls_back_to_whole_original_not_mix(monkeypatch):
 
     assert resp.status_code == 200
     assert _DESC_SR in resp.text  # the original in full
-    assert "Перевод машинный" not in resp.text  # this is NOT a translation — there is no mark
+    assert (
+        "Перевод машинный" not in resp.text
+    )  # this is NOT a translation — there is no mark
     assert "недоступен" in resp.text  # a quiet mark that the original is shown
 
 
@@ -189,7 +191,8 @@ def test_foreign_or_missing_tender_404_and_never_translates(monkeypatch):
 def test_tender_without_description_does_not_500(monkeypatch):
     """A direct visit to the fragment of a tender without a description — 200, not 500.
 
-    The detail does not draw a skeleton if there is no description, but the endpoint must survive a direct request (None.split() would break the template)."""
+    The detail does not draw a skeleton if there is no description, but the endpoint must survive a direct request (None.split() would break the template).
+    """
     data = TenderAnalyses(
         tender_id=_TENDER,
         profile_id=_PROFILE,

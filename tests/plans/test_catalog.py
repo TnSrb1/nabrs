@@ -105,7 +105,10 @@ def test_display_plans_excludes_enterprise():
     assert len(plans) == 2
     keys = [p.key for p in plans]
     assert "enterprise" not in keys
-    assert keys == ["pro", "business"]  # there is no public Free (the owner’s decision 30.09)
+    assert keys == [
+        "pro",
+        "business",
+    ]  # there is no public Free (the owner’s decision 30.09)
     assert get_plan("free") is not None  # but the internal Free stays in the catalog
     assert get_plan("free").showcase is False
 

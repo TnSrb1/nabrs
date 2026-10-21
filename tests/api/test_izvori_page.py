@@ -54,7 +54,12 @@ TED_BALKAN_OFF = _row(
     False,
 )
 BIH_OFF = _row(
-    "bih_enabavke", "e-Nabavke BiH", ["BA"], "https://open.src-ejn.example.invalid", 3600, False
+    "bih_enabavke",
+    "e-Nabavke BiH",
+    ["BA"],
+    "https://open.src-ejn.example.invalid",
+    3600,
+    False,
 )
 
 

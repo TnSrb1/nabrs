@@ -4,7 +4,7 @@ The scope 2c — the chrome of the on-demand handlers: ``ai:deep/bid/chk/drf`` (
 
 The method (as in 2a/2b): under en/sr there are NO Russian letters ``U+044B U+044D U+0449 U+044A U+0451 U+0439`` in the chrome (they are absent both in Serbian Latin and in English), under ru the previous Russian canon. The test data are chosen in Latin, so that any Russian letter = untranslated chrome.
 
-Two AXES (CLAUDE.md): ``users.locale`` (the chrome, the axis of this test) ≠
+Two AXES (the project rules): ``users.locale`` (the chrome, the axis of this test) ≠
 ``profiles.target_language`` (the body of the AI analysis). The notice to the inviter is a special case: the recipient is ANOTHER user, the chrome by HIS ``users.locale``.
 """
 

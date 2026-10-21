@@ -6,7 +6,7 @@ failed / canceled / renewed) — the subscriber did not know the status of their
 queue IN THE SAME TRANSACTION as the webhook's dedup-claim, and the standalone worker
 ``src.workers.billing_notifications`` processes it and sends the email.
 
-Scope (STRICTLY per CLAUDE.md — fail-closed, model ``admin_audit_log`` 0030):
+Scope (STRICTLY per the project rules — fail-closed, model ``admin_audit_log`` 0030):
 
 * ``billing_notification_outbox`` — a platform table (NOT tenant-scoped: the idempotency key is
   the webhook's ``(provider, event_id)``, as in ``billing_webhook_events``), so there is no RLS

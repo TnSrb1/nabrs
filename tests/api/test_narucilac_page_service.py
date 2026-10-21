@@ -180,7 +180,7 @@ async def test_frozen_wins_over_tier():
 
 
 def test_gate_predicate_is_literally_the_bot_one():
-    """The gating axis is one: not a “same” predicate, but the SAME object (CLAUDE.md “plan axes”).
+    """The gating axis is one: not a “same” predicate, but the SAME object (the project rules “plan axes”).
     Comparison by identity — a copy of the predicate would make the test fall."""
     assert cas._is_pro_plus is bot_is_pro_plus
 
@@ -384,7 +384,8 @@ async def test_single_day_period_has_no_dash():
 
 def _export_session():
     """The export path: plan → summary → winners. The directory is NOT read —
-    the export does not need it (the profile is keyed by name, the PIB is reference here)."""
+    the export does not need it (the profile is keyed by name, the PIB is reference here).
+    """
     return _Session([_tenant_row(), _summary_row(), _winners_rows()])
 
 
@@ -428,7 +429,7 @@ async def test_export_frozen_wins_over_tier():
 async def test_export_gate_routes_through_shared_predicate(monkeypatch):
     """The export asks the SHARED predicate, not its own list of plans.
 
-    Without this the export could acquire its own gating axis and diverge from the page that offers it (CLAUDE.md “plan axes”).
+    Without this the export could acquire its own gating axis and diverge from the page that offers it (the project rules “plan axes”).
     """
     seen: list[str | None] = []
 

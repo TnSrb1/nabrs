@@ -79,7 +79,8 @@ def _css_block(css: str, selector: str) -> str:
 
 def test_identity_row_spans_window_and_does_not_clip_focus_ring():
     """owner 11.10.2026: the language — to the right edge of the window (1rem), not to the container; the row
-    does not clip the focus outline of .lang-pill (overflow:hidden was cutting it off)."""
+    does not clip the focus outline of .lang-pill (overflow:hidden was cutting it off).
+    """
     css = open(_CSS, encoding="utf-8").read()
     block = _css_block(css, ".site-header__identity")
     assert "overflow: hidden" not in block
@@ -91,7 +92,8 @@ def test_identity_row_spans_window_and_does_not_clip_focus_ring():
 
 def test_identity_container_not_capped_at_max_w_5xl():
     """The identification row must not be squeezed again into max-w-5xl: otherwise the language
-    would move away from the window edge at 1920 (the right edge was 1456 instead of 1904)."""
+    would move away from the window edge at 1920 (the right edge was 1456 instead of 1904).
+    """
     head = _header("ru")
     ident = head[head.index('class="site-header__identity') :]
     ident = ident[: ident.index(">")]

@@ -201,7 +201,9 @@ async def _cache_put(redis: Any, key: str, tr: TenderTranslation) -> None:
             ),
             ex=CACHE_TTL_SECONDS,
         )
-    except Exception as exc:  # noqa: BLE001 — the translation is ready already, we show it
+    except (
+        Exception
+    ) as exc:  # noqa: BLE001 — the translation is ready already, we show it
         logger.warning("translate: Redis SET unavailable (%s)", type(exc).__name__)
 
 
@@ -267,7 +269,10 @@ async def translate_tender(
     cached = await _cache_get(redis, key)
     if cached is not None:
         logger.info("translate: tender=%s part=title cached=1 elapsed_ms=0", tender_id)
-        return cached, _NO_USAGE  # a repeated display is free — we do not touch the limit
+        return (
+            cached,
+            _NO_USAGE,
+        )  # a repeated display is free — we do not touch the limit
 
     ai = client if client is not None else _get_default_ai_client()
     started = time.perf_counter()
@@ -283,7 +288,9 @@ async def translate_tender(
             ),
             timeout=timeout_seconds,
         )
-    except Exception as exc:  # noqa: BLE001 — the translation is not critical: we degrade
+    except (
+        Exception
+    ) as exc:  # noqa: BLE001 — the translation is not critical: we degrade
         logger.warning(
             "translate: model unavailable tender=%s (%s) → original",
             tender_id,
@@ -379,7 +386,9 @@ async def _cache_put_text(redis: Any, key: str, value: str) -> None:
     """Puts a translated chunk into Redis with a TTL. A write error is not critical."""
     try:
         await redis.set(key, value, ex=CACHE_TTL_SECONDS)
-    except Exception as exc:  # noqa: BLE001 — the translation is ready already, we show it
+    except (
+        Exception
+    ) as exc:  # noqa: BLE001 — the translation is ready already, we show it
         logger.warning("translate: Redis SET unavailable (%s)", type(exc).__name__)
 
 

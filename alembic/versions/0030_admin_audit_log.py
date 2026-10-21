@@ -3,7 +3,7 @@
 An immutable journal of privileged operator-admin actions (who by
 email / what / on which tenant-user / details before→after / when).
 
-Scope (STRICTLY per CLAUDE.md — RLS/SECURITY DEFINER):
+Scope (STRICTLY per the project rules — RLS/SECURITY DEFINER):
 
 * ``admin_audit_log`` — a GLOBAL admin journal, NOT tenant-scoped, so RLS
   is not applied. But 0021 granted ``ALTER DEFAULT PRIVILEGES ... GRANT

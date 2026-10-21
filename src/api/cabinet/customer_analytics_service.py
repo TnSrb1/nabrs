@@ -59,12 +59,12 @@ from src.analytics.reprocurement import ReprocurementRow, get_reprocurement_fore
 from src.api import repo
 
 # The Pro+ gate predicate is reused from the bot service (the same gating axis as the
-# bid verdict); we do NOT duplicate the list of plans/thresholds. See CLAUDE.md “plan axes”.
+# bid verdict); we do NOT duplicate the list of plans/thresholds. See the project rules “plan axes”.
 from src.bots.awards_analytics_service import _is_pro_plus
 
 # Pure CSV builders (stdlib csv/io, without network/DB/AI) — reused as
 # they are from the bot layer's export: one point of truth for the CSV format (UTF-8 BOM, ';',
-# CRLF, raw sums). The bot files are not edited — only import/call (CLAUDE.md).
+# CRLF, raw sums). The bot files are not edited — only import/call (the project rules).
 from src.bots.analytics_export import (
     EXPORT_TOP_N,
     build_competitor_csv,
@@ -216,7 +216,9 @@ class IncumbentItemView:
     pib: str  # "" — the PIB is unknown OR the decision is in favour of a consortium
     date_fmt: str  # dd.mm.YYYY; "" if the decision date is unknown
     sum_rsd_fmt: str  # "" if the sum is not published
-    lots: int  # >1 — the decision covers several lots (the sum — for the whole decision)
+    lots: (
+        int  # >1 — the decision covers several lots (the sum — for the whole decision)
+    )
     is_joint: bool  # a decision in favour of several winners (consortium)
 
 

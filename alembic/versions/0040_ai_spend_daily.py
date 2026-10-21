@@ -13,7 +13,7 @@ hence the ``period`` column in the snapshot: without it the first day of the mon
 delta (yesterday's total of the previous month is larger than today's) or an inflated one.
 
 ‼️ Both tables are PLATFORM tables, there is NO ``tenant_id`` column in them — and this is not
-economy but a mandatory condition of working. The CLAUDE.md invariant requires a tenant-scoped table to have the
+economy but a mandatory condition of working. The invariant from the project rules requires a tenant-scoped table to have the
 ``tenant_isolation`` policy + ``ENABLE`` + ``FORCE ROW LEVEL SECURITY``; ``FORCE`` applies also to the OWNER, and the spend
 worker runs privileged and cross-tenant (without
 ``SET app.current_tenant_id``) — it would read 0 rows from its own table.

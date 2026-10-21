@@ -388,7 +388,10 @@ def test_form_renders_in_all_languages(monkeypatch, lang, heading):
     [
         # Output of the CPV widget: rows eu_cpv:CODE; the full code is trimmed to the significant part.
         ("eu_cpv:45210000\neu_cpv:33*", ("4521", "33")),
-        ("eu_cpv:30000000", ("30",)),  # not “3” — otherwise the prefix of all sections 30–39
+        (
+            "eu_cpv:30000000",
+            ("30",),
+        ),  # not “3” — otherwise the prefix of all sections 30–39
         ("45, 45;3019", ("45", "3019")),  # duplicates and separators
         ("45'--", ("45",)),
         ("abc", ()),

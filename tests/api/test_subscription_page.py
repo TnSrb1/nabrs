@@ -303,7 +303,9 @@ def test_feature_ladder_matches_catalog_matrix():
     for cell in feature_matrix(get_plan("free")):
         text = labels[cell["key"]]
         if cell["on"]:
-            assert text in resp.text, f"feature {cell['key']} disappeared from “your plan already gives”"
+            assert (
+                text in resp.text
+            ), f"feature {cell['key']} disappeared from “your plan already gives”"
 
 
 def test_hub_markup_has_no_inline_scripts():

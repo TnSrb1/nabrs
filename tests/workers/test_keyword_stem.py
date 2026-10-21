@@ -43,7 +43,10 @@ def _inc(*words: str) -> list[dict]:
         ("voda", "voda"),  # < 5 characters — we do not touch
         ("auto", "auto"),
         ("radom", "radom"),  # the stem «rad» < 4 — we do not truncate
-        ("pošta", "posta"),  # «post» — the prefix of postupak/postojeci (the measurement 280/12)
+        (
+            "pošta",
+            "posta",
+        ),  # «post» — the prefix of postupak/postojeci (the measurement 280/12)
         ("stana", "stana"),
         ("", ""),
     ],

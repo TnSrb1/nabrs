@@ -65,7 +65,8 @@ def test_signup_missing_consent_links_checkbox_to_error_via_aria():
 
 def test_signup_clean_form_has_no_aria_invalid_on_checkbox():
     """Without an error (a clean GET form) — the attributes aria-invalid/aria-describedby
-    are absent on the checkbox altogether (by the condition `{% if consent_error %}`)."""
+    are absent on the checkbox altogether (by the condition `{% if consent_error %}`).
+    """
     client = TestClient(app, follow_redirects=False)
     resp = client.get("/signup")
     assert resp.status_code == 200

@@ -1298,9 +1298,13 @@ async def test_workflow_tables_isolation_under_app_role(sessionmaker_, tenant_id
             seen_a = await _ids(tid_a, table)
             seen_b = await _ids(tid_b, table)
             assert str(id_a) in seen_a, f"{table}: A sees its own row"
-            assert str(id_b) not in seen_a, f"{table}: A does NOT see the row B (fail-closed)"
+            assert (
+                str(id_b) not in seen_a
+            ), f"{table}: A does NOT see the row B (fail-closed)"
             assert str(id_b) in seen_b, f"{table}: B sees its own row"
-            assert str(id_a) not in seen_b, f"{table}: B does NOT see the row A (fail-closed)"
+            assert (
+                str(id_a) not in seen_b
+            ), f"{table}: B does NOT see the row A (fail-closed)"
     finally:
         sup2 = create_async_engine(superuser_url, future=True)
         try:
@@ -1334,7 +1338,7 @@ async def test_channel_dead_notice_log_isolated_under_app_role(
     The journal of incidents “the channel dropped off” is tenant-scoped with a direct column
     tenant_id. The worker writes privileged (the owner bypasses the RLS), but the policy
     must isolate the tenants — the test under the superuser does NOT prove this
-    (CLAUDE.md), therefore we read under the role tendersrb_app with the GUC.
+    (the project rules), therefore we read under the role tendersrb_app with the GUC.
     """
     tid_a, tid_b = tenant_ids
     superuser_url = os.getenv("TEST_SUPERUSER_DATABASE_URL", TEST_URL)
@@ -1369,7 +1373,9 @@ async def test_channel_dead_notice_log_isolated_under_app_role(
                 }
                 await session.commit()
             assert str(own) in seen, "the tenant sees its own incident"
-            assert str(foreign) not in seen, "a foreign incident is NOT visible (fail-closed)"
+            assert (
+                str(foreign) not in seen
+            ), "a foreign incident is NOT visible (fail-closed)"
     finally:
         sup2 = create_async_engine(superuser_url, future=True)
         try:
@@ -1512,8 +1518,12 @@ async def test_my_tenders_export_isolation_under_app_role(sessionmaker_, tenant_
         # And the same — at the level of the finished file: there is no name of a foreign tender in it.
         body = build_my_tenders_csv(rows, "ru").decode("utf-8-sig")
         assert "Папка A" in body and "Слежу A" in body
-        assert "Папка B" not in body, "a tender of tenant B leaked into the CSV of tenant A"
-        assert "Слежу B" not in body, "a tender of tenant B leaked into the CSV of tenant A"
+        assert (
+            "Папка B" not in body
+        ), "a tender of tenant B leaked into the CSV of tenant A"
+        assert (
+            "Слежу B" not in body
+        ), "a tender of tenant B leaked into the CSV of tenant A"
 
         # Symmetry: under GUC=tid_b exactly the tenders B are visible (not “A is always empty”).
         async with sessionmaker_() as session:
@@ -1677,7 +1687,9 @@ async def test_web_set_status_reaches_reminders_under_app_role(
         )
         assert str(mine[0].tenant_id) == str(tid_a)
         assert mine[0].user_status == "active"
-        assert mine[0].target == "424242", "the reminder would have gone to the wrong channel"
+        assert (
+            mine[0].target == "424242"
+        ), "the reminder would have gone to the wrong channel"
 
         # --- The isolation of the write: B cannot rewrite the stage of a foreign tender. ---
         async with sessionmaker_() as session:

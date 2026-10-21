@@ -242,7 +242,7 @@ def test_dedup_mode_defaults_to_mark_only():
 
 
 def test_dedup_mode_is_passed_to_routing_container():
-    # A flag not passed through into the container is not a flag (CLAUDE.md, REFERRAL_ENABLED).
+    # A flag not passed through into the container is not a flag (the project rules, REFERRAL_ENABLED).
     from pathlib import Path
 
     import yaml

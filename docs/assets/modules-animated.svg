@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" role="img" font-family="system-ui,Segoe UI,Arial,sans-serif" aria-label="Animated module map: 12 packages of src/ with 199 modules and 25 import links (at least 3 importing files), computed from the code. Package groups are highlighted in turn.">
+<defs>
+<marker id="m-34e39b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#34e39b"/></marker>
+<marker id="m-5aa0f2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5aa0f2"/></marker>
+</defs>
+<style>
+@keyframes n-0_4{0%{opacity:1}18.667%{opacity:1}20%{opacity:0.28}78.667%{opacity:0.28}80%{opacity:1}100%{opacity:1}}
+.n-0_4{animation:n-0_4 30s linear infinite}
+@keyframes n-1_4{0%{opacity:0.28}18.667%{opacity:0.28}20%{opacity:1}38.667%{opacity:1}40%{opacity:0.28}78.667%{opacity:0.28}80%{opacity:1}98.667%{opacity:1}100%{opacity:0.28}}
+.n-1_4{animation:n-1_4 30s linear infinite}
+@keyframes n-2_4{0%{opacity:0.28}38.667%{opacity:0.28}40%{opacity:1}58.667%{opacity:1}60%{opacity:0.28}78.667%{opacity:0.28}80%{opacity:1}98.667%{opacity:1}100%{opacity:0.28}}
+.n-2_4{animation:n-2_4 30s linear infinite}
+@keyframes n-3_4{0%{opacity:0.28}58.667%{opacity:0.28}60%{opacity:1}98.667%{opacity:1}100%{opacity:0.28}}
+.n-3_4{animation:n-3_4 30s linear infinite}
+@keyframes e-0_4{0%{opacity:1}18.667%{opacity:1}20%{opacity:0.12}78.667%{opacity:0.12}80%{opacity:1}100%{opacity:1}}
+.e-0_4{animation:e-0_4 30s linear infinite}
+@keyframes e-1_4{0%{opacity:0.12}18.667%{opacity:0.12}20%{opacity:1}38.667%{opacity:1}40%{opacity:0.12}78.667%{opacity:0.12}80%{opacity:1}98.667%{opacity:1}100%{opacity:0.12}}
+.e-1_4{animation:e-1_4 30s linear infinite}
+@keyframes c-0{0%{opacity:1}18.667%{opacity:1}20%{opacity:0}98.667%{opacity:0}100%{opacity:1}}
+.c-0{animation:c-0 30s linear infinite}
+@keyframes c-1{0%{opacity:0}18.667%{opacity:0}20%{opacity:1}38.667%{opacity:1}40%{opacity:0}100%{opacity:0}}
+.c-1{animation:c-1 30s linear infinite}
+@keyframes c-2{0%{opacity:0}38.667%{opacity:0}40%{opacity:1}58.667%{opacity:1}60%{opacity:0}100%{opacity:0}}
+.c-2{animation:c-2 30s linear infinite}
+@keyframes c-3{0%{opacity:0}58.667%{opacity:0}60%{opacity:1}78.667%{opacity:1}80%{opacity:0}100%{opacity:0}}
+.c-3{animation:c-3 30s linear infinite}
+@keyframes c-4{0%{opacity:0}78.667%{opacity:0}80%{opacity:1}98.667%{opacity:1}100%{opacity:0}}
+.c-4{animation:c-4 30s linear infinite}
+.cap{opacity:0}
+@media (prefers-reduced-motion:reduce){.nd,.ed,.dot{animation:none}.cap{display:none}}
+</style>
+<rect width="1200" height="640" fill="#0b1830"/>
+<text x="40" y="34" font-size="14" font-weight="700" fill="#74d3c4" letter-spacing="1.5">MODULE MAP · 12 PACKAGES · 199 MODULES · 25 LINKS OF 3+ FILES</text>
+<path id="l_api_ai" class="ed e-0_4" d="M580.3 144.0 L580.3 148.8 L359.0 148.8 L359.0 267.0" fill="none" stroke="#5aa0f2" stroke-width="1.9" marker-end="url(#m-5aa0f2)"/>
+<path id="l_api_analytics" class="ed e-0_4" d="M590.2 144.0 L590.2 153.7 L559.0 153.7 L559.0 267.0" fill="none" stroke="#5aa0f2" stroke-width="1.83" marker-end="url(#m-5aa0f2)"/>
+<path id="l_api_billing" class="ed e-0_4" d="M609.8 144.0 L609.8 158.5 L700.0 158.5 L700.0 267.0" fill="none" stroke="#5aa0f2" stroke-width="1.7" marker-end="url(#m-5aa0f2)"/>
+<path id="l_api_bots" class="ed e-0_4" d="M550.8 144.0 L550.8 163.4 L200.0 163.4 L200.0 147.0" fill="none" stroke="#5aa0f2" stroke-width="1.83" marker-end="url(#m-5aa0f2)"/>
+<path id="l_api_db" class="ed e-0_4" d="M600.0 144.0 L600.0 168.2 L596.0 168.2 L596.0 344.6 L600.0 344.6 L600.0 437.0" fill="none" stroke="#5aa0f2" stroke-width="2.43" marker-end="url(#m-5aa0f2)"/>
+<path id="l_api_dedup" class="ed e-0_4" d="M619.7 144.0 L619.7 173.1 L841.0 173.1 L841.0 267.0" fill="none" stroke="#5aa0f2" stroke-width="1.77" marker-end="url(#m-5aa0f2)"/>
+<path id="l_api_domain" class="ed e-0_4" d="M560.7 144.0 L560.7 177.9 L398.0 177.9 L398.0 355.2 L200.0 355.2 L200.0 437.0" fill="none" stroke="#5aa0f2" stroke-width="4.5" marker-end="url(#m-5aa0f2)"/>
+<path id="l_api_parsers" class="ed e-0_4" d="M659.0 144.0 L659.0 182.8 L1041.0 182.8 L1041.0 267.0" fill="none" stroke="#5aa0f2" stroke-width="2.03" marker-end="url(#m-5aa0f2)"/>
+<path id="l_api_plans" class="ed e-0_4" d="M541.0 144.0 L541.0 187.6 L159.0 187.6 L159.0 267.0" fill="none" stroke="#5aa0f2" stroke-width="2.5" marker-end="url(#m-5aa0f2)"/>
+<path id="l_api_shared" class="ed e-0_4" d="M629.5 144.0 L629.5 192.5 L798.0 192.5 L798.0 365.8 L1000.0 365.8 L1000.0 437.0" fill="none" stroke="#5aa0f2" stroke-width="2.1" marker-end="url(#m-5aa0f2)"/>
+<path id="l_api_workers" class="ed e-0_4" d="M639.3 144.0 L639.3 197.3 L974.7 197.3 L974.7 147.0" fill="none" stroke="#5aa0f2" stroke-width="1.9" marker-end="url(#m-5aa0f2)"/>
+<path id="l_bots_ai" class="ed e-0_4" d="M170.5 144.0 L170.5 202.2 L241.0 202.2 L241.0 267.0" fill="none" stroke="#5aa0f2" stroke-width="2.03" marker-end="url(#m-5aa0f2)"/>
+<path id="l_bots_analytics" class="ed e-0_4" d="M185.2 144.0 L185.2 207.0 L441.0 207.0 L441.0 267.0" fill="none" stroke="#5aa0f2" stroke-width="1.7" marker-end="url(#m-5aa0f2)"/>
+<path id="l_bots_api" class="ed e-0_4" d="M214.8 144.0 L214.8 211.8 L570.5 211.8 L570.5 147.0" fill="none" stroke="#5aa0f2" stroke-width="1.77" marker-end="url(#m-5aa0f2)"/>
+<path id="l_bots_db" class="ed e-0_4" d="M229.5 144.0 L229.5 216.7 L402.0 216.7 L402.0 376.4 L541.0 376.4 L541.0 437.0" fill="none" stroke="#5aa0f2" stroke-width="1.83" marker-end="url(#m-5aa0f2)"/>
+<path id="l_bots_domain" class="ed e-0_4" d="M155.8 144.0 L155.8 221.5 L200.0 221.5 L200.0 387.0 L141.0 387.0 L141.0 437.0" fill="none" stroke="#5aa0f2" stroke-width="2.37" marker-end="url(#m-5aa0f2)"/>
+<path id="l_bots_plans" class="ed e-0_4" d="M141.0 144.0 L141.0 226.4 L41.0 226.4 L41.0 267.0" fill="none" stroke="#5aa0f2" stroke-width="1.7" marker-end="url(#m-5aa0f2)"/>
+<path id="l_bots_shared" class="ed e-0_4" d="M244.2 144.0 L244.2 231.2 L600.0 231.2 L600.0 397.6 L941.0 397.6 L941.0 437.0" fill="none" stroke="#5aa0f2" stroke-width="1.7" marker-end="url(#m-5aa0f2)"/>
+<path id="l_workers_api" class="ed e-1_4" d="M991.6 144.0 L991.6 236.1 L649.2 236.1 L649.2 147.0" fill="none" stroke="#34e39b" stroke-width="2.1" marker-end="url(#m-34e39b)"/>
+<path id="l_workers_bots" class="ed e-1_4" d="M941.0 144.0 L941.0 240.9 L259.0 240.9 L259.0 147.0" fill="none" stroke="#34e39b" stroke-width="1.97" marker-end="url(#m-34e39b)"/>
+<path id="l_workers_db" class="ed e-1_4" d="M1008.4 144.0 L1008.4 245.8 L802.0 245.8 L802.0 408.2 L659.0 408.2 L659.0 437.0" fill="none" stroke="#34e39b" stroke-width="2.43" marker-end="url(#m-34e39b)"/>
+<path id="l_workers_dedup" class="ed e-1_4" d="M1025.3 144.0 L1025.3 250.6 L959.0 250.6 L959.0 267.0" fill="none" stroke="#34e39b" stroke-width="1.9" marker-end="url(#m-34e39b)"/>
+<path id="l_workers_domain" class="ed e-1_4" d="M957.9 144.0 L957.9 255.5 L604.0 255.5 L604.0 418.8 L259.0 418.8 L259.0 437.0" fill="none" stroke="#34e39b" stroke-width="2.43" marker-end="url(#m-34e39b)"/>
+<path id="l_workers_parsers" class="ed e-1_4" d="M1059.0 144.0 L1059.0 260.3 L1159.0 260.3 L1159.0 267.0" fill="none" stroke="#34e39b" stroke-width="1.7" marker-end="url(#m-34e39b)"/>
+<path id="l_workers_shared" class="ed e-1_4" d="M1042.1 144.0 L1042.1 265.2 L1000.0 265.2 L1000.0 429.4 L1059.0 429.4 L1059.0 437.0" fill="none" stroke="#34e39b" stroke-width="2.57" marker-end="url(#m-34e39b)"/>
+<g class="nd n-0_4"><rect x="525" y="80" width="150" height="64" rx="12" fill="#161e30" stroke="#5aa0f2" stroke-width="2"/><text x="600" y="104" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">src/api</text><text x="600" y="124" font-size="12" fill="#c4d0e8" text-anchor="middle">80 modules</text></g>
+<g class="nd n-0_4"><rect x="125" y="80" width="150" height="64" rx="12" fill="#161e30" stroke="#5aa0f2" stroke-width="2"/><text x="200" y="104" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">src/bots</text><text x="200" y="124" font-size="12" fill="#c4d0e8" text-anchor="middle">21 modules</text></g>
+<g class="nd n-1_4"><rect x="425" y="270" width="150" height="64" rx="12" fill="#161e30" stroke="#34e39b" stroke-width="2"/><text x="500" y="294" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">src/analytics</text><text x="500" y="314" font-size="12" fill="#c4d0e8" text-anchor="middle">3 modules</text></g>
+<g class="nd n-1_4"><rect x="825" y="270" width="150" height="64" rx="12" fill="#161e30" stroke="#34e39b" stroke-width="2"/><text x="900" y="294" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">src/dedup</text><text x="900" y="314" font-size="12" fill="#c4d0e8" text-anchor="middle">4 modules</text></g>
+<g class="nd n-1_4"><rect x="1025" y="270" width="150" height="64" rx="12" fill="#161e30" stroke="#34e39b" stroke-width="2"/><text x="1100" y="294" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">src/parsers</text><text x="1100" y="314" font-size="12" fill="#c4d0e8" text-anchor="middle">5 modules</text></g>
+<g class="nd n-1_4"><rect x="925" y="80" width="150" height="64" rx="12" fill="#161e30" stroke="#34e39b" stroke-width="2"/><text x="1000" y="104" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">src/workers</text><text x="1000" y="124" font-size="12" fill="#c4d0e8" text-anchor="middle">25 modules</text></g>
+<g class="nd n-2_4"><rect x="225" y="270" width="150" height="64" rx="12" fill="#161e30" stroke="#b18cff" stroke-width="2"/><text x="300" y="294" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">src/ai</text><text x="300" y="314" font-size="12" fill="#c4d0e8" text-anchor="middle">9 modules</text></g>
+<g class="nd n-2_4"><rect x="625" y="270" width="150" height="64" rx="12" fill="#161e30" stroke="#b18cff" stroke-width="2"/><text x="700" y="294" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">src/billing</text><text x="700" y="314" font-size="12" fill="#c4d0e8" text-anchor="middle">7 modules</text></g>
+<g class="nd n-2_4"><rect x="25" y="270" width="150" height="64" rx="12" fill="#161e30" stroke="#b18cff" stroke-width="2"/><text x="100" y="294" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">src/plans</text><text x="100" y="314" font-size="12" fill="#c4d0e8" text-anchor="middle">1 module</text></g>
+<g class="nd n-3_4"><rect x="525" y="440" width="150" height="64" rx="12" fill="#161e30" stroke="#ffd166" stroke-width="2"/><text x="600" y="464" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">src/db</text><text x="600" y="484" font-size="12" fill="#c4d0e8" text-anchor="middle">19 modules</text></g>
+<g class="nd n-3_4"><rect x="125" y="440" width="150" height="64" rx="12" fill="#161e30" stroke="#ffd166" stroke-width="2"/><text x="200" y="464" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">src/domain</text><text x="200" y="484" font-size="12" fill="#c4d0e8" text-anchor="middle">22 modules</text></g>
+<g class="nd n-3_4"><rect x="925" y="440" width="150" height="64" rx="12" fill="#161e30" stroke="#ffd166" stroke-width="2"/><text x="1000" y="464" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">shared modules</text><text x="1000" y="484" font-size="12" fill="#c4d0e8" text-anchor="middle">3 modules</text></g>
+<g id="dots">
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="3.83s" begin="-0.00s" repeatCount="indefinite"><mpath href="#l_api_ai"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="3.83s" begin="-1.91s" repeatCount="indefinite"><mpath href="#l_api_ai"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="1.71s" begin="-0.25s" repeatCount="indefinite"><mpath href="#l_api_analytics"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="1.71s" begin="-1.11s" repeatCount="indefinite"><mpath href="#l_api_analytics"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="2.37s" begin="-0.50s" repeatCount="indefinite"><mpath href="#l_api_billing"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="2.37s" begin="-1.68s" repeatCount="indefinite"><mpath href="#l_api_billing"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="4.30s" begin="-0.75s" repeatCount="indefinite"><mpath href="#l_api_bots"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="4.30s" begin="-2.90s" repeatCount="indefinite"><mpath href="#l_api_bots"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="3.34s" begin="-0.00s" repeatCount="indefinite"><mpath href="#l_api_db"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="3.34s" begin="-1.67s" repeatCount="indefinite"><mpath href="#l_api_db"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="3.83s" begin="-0.25s" repeatCount="indefinite"><mpath href="#l_api_dedup"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="3.83s" begin="-2.16s" repeatCount="indefinite"><mpath href="#l_api_dedup"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="7.26s" begin="-0.50s" repeatCount="indefinite"><mpath href="#l_api_domain"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="7.26s" begin="-4.13s" repeatCount="indefinite"><mpath href="#l_api_domain"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="5.61s" begin="-0.75s" repeatCount="indefinite"><mpath href="#l_api_parsers"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="5.61s" begin="-3.56s" repeatCount="indefinite"><mpath href="#l_api_parsers"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="5.61s" begin="-0.00s" repeatCount="indefinite"><mpath href="#l_api_plans"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="5.61s" begin="-2.81s" repeatCount="indefinite"><mpath href="#l_api_plans"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="7.37s" begin="-0.25s" repeatCount="indefinite"><mpath href="#l_api_shared"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="7.37s" begin="-3.94s" repeatCount="indefinite"><mpath href="#l_api_shared"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="4.88s" begin="-0.50s" repeatCount="indefinite"><mpath href="#l_api_workers"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="4.88s" begin="-2.94s" repeatCount="indefinite"><mpath href="#l_api_workers"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="2.15s" begin="-0.75s" repeatCount="indefinite"><mpath href="#l_bots_ai"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="2.15s" begin="-1.82s" repeatCount="indefinite"><mpath href="#l_bots_ai"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="4.21s" begin="-0.00s" repeatCount="indefinite"><mpath href="#l_bots_analytics"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="4.21s" begin="-2.10s" repeatCount="indefinite"><mpath href="#l_bots_analytics"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="5.43s" begin="-0.25s" repeatCount="indefinite"><mpath href="#l_bots_api"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="5.43s" begin="-2.96s" repeatCount="indefinite"><mpath href="#l_bots_api"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="6.72s" begin="-0.50s" repeatCount="indefinite"><mpath href="#l_bots_db"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="6.72s" begin="-3.86s" repeatCount="indefinite"><mpath href="#l_bots_db"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="4.40s" begin="-0.75s" repeatCount="indefinite"><mpath href="#l_bots_domain"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="4.40s" begin="-2.95s" repeatCount="indefinite"><mpath href="#l_bots_domain"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="2.48s" begin="-0.00s" repeatCount="indefinite"><mpath href="#l_bots_plans"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="2.48s" begin="-1.24s" repeatCount="indefinite"><mpath href="#l_bots_plans"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="11.00s" begin="-0.25s" repeatCount="indefinite"><mpath href="#l_bots_shared"/></animateMotion></circle>
+<circle class="dot e-0_4" r="5" fill="#5aa0f2"><animateMotion dur="11.00s" begin="-5.75s" repeatCount="indefinite"><mpath href="#l_bots_shared"/></animateMotion></circle>
+<circle class="dot e-1_4" r="5" fill="#34e39b"><animateMotion dur="5.82s" begin="-0.50s" repeatCount="indefinite"><mpath href="#l_workers_api"/></animateMotion></circle>
+<circle class="dot e-1_4" r="5" fill="#34e39b"><animateMotion dur="5.82s" begin="-3.41s" repeatCount="indefinite"><mpath href="#l_workers_api"/></animateMotion></circle>
+<circle class="dot e-1_4" r="5" fill="#34e39b"><animateMotion dur="9.70s" begin="-0.75s" repeatCount="indefinite"><mpath href="#l_workers_bots"/></animateMotion></circle>
+<circle class="dot e-1_4" r="5" fill="#34e39b"><animateMotion dur="9.70s" begin="-5.60s" repeatCount="indefinite"><mpath href="#l_workers_bots"/></animateMotion></circle>
+<circle class="dot e-1_4" r="5" fill="#34e39b"><animateMotion dur="7.14s" begin="-0.00s" repeatCount="indefinite"><mpath href="#l_workers_db"/></animateMotion></circle>
+<circle class="dot e-1_4" r="5" fill="#34e39b"><animateMotion dur="7.14s" begin="-3.57s" repeatCount="indefinite"><mpath href="#l_workers_db"/></animateMotion></circle>
+<circle class="dot e-1_4" r="5" fill="#34e39b"><animateMotion dur="2.10s" begin="-0.25s" repeatCount="indefinite"><mpath href="#l_workers_dedup"/></animateMotion></circle>
+<circle class="dot e-1_4" r="5" fill="#34e39b"><animateMotion dur="2.10s" begin="-1.30s" repeatCount="indefinite"><mpath href="#l_workers_dedup"/></animateMotion></circle>
+<circle class="dot e-1_4" r="5" fill="#34e39b"><animateMotion dur="11.02s" begin="-0.50s" repeatCount="indefinite"><mpath href="#l_workers_domain"/></animateMotion></circle>
+<circle class="dot e-1_4" r="5" fill="#34e39b"><animateMotion dur="11.02s" begin="-6.01s" repeatCount="indefinite"><mpath href="#l_workers_domain"/></animateMotion></circle>
+<circle class="dot e-1_4" r="5" fill="#34e39b"><animateMotion dur="2.48s" begin="-0.75s" repeatCount="indefinite"><mpath href="#l_workers_parsers"/></animateMotion></circle>
+<circle class="dot e-1_4" r="5" fill="#34e39b"><animateMotion dur="2.48s" begin="-1.99s" repeatCount="indefinite"><mpath href="#l_workers_parsers"/></animateMotion></circle>
+<circle class="dot e-1_4" r="5" fill="#34e39b"><animateMotion dur="4.38s" begin="-0.00s" repeatCount="indefinite"><mpath href="#l_workers_shared"/></animateMotion></circle>
+<circle class="dot e-1_4" r="5" fill="#34e39b"><animateMotion dur="4.38s" begin="-2.19s" repeatCount="indefinite"><mpath href="#l_workers_shared"/></animateMotion></circle>
+</g>
+<g font-size="13" fill="#c4d0e8"><circle cx="46" cy="588" r="6" fill="#5aa0f2"/><text x="60" y="593">Entry points</text><circle cx="326" cy="588" r="6" fill="#34e39b"/><text x="340" y="593">Pipeline</text><circle cx="606" cy="588" r="6" fill="#b18cff"/><text x="620" y="593">AI and money</text><circle cx="886" cy="588" r="6" fill="#ffd166"/><text x="900" y="593">Core</text></g>
+<text class="cap c-0" x="600" y="620" font-size="14" fill="#eef2fb" text-anchor="middle">Entry points: api (80 modules) imports domain 45, plans 15, db 14; bots (21 modules) imports domain 13, ai 8, db 5.</text>
+<text class="cap c-1" x="600" y="620" font-size="14" fill="#eef2fb" text-anchor="middle">Pipeline: workers (25 modules) imports shared 16, domain 14.</text>
+<text class="cap c-2" x="600" y="620" font-size="14" fill="#eef2fb" text-anchor="middle">AI and money: ai (9 modules) imports domain 2, db 2; plans (1 module) imports ai 1; billing (7 modules) imports plans 2, domain 1.</text>
+<text class="cap c-3" x="600" y="620" font-size="14" fill="#eef2fb" text-anchor="middle">Core: domain (22 modules) imports db 1; db (19 modules); shared (3 modules).</text>
+<text class="cap c-4" x="600" y="620" font-size="14" fill="#eef2fb" text-anchor="middle">All stages together.</text>
+</svg>

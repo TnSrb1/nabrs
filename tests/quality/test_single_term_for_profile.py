@@ -2,7 +2,7 @@
 
 One and the same entity lived in the catalogs under three words — «template», “profile” and (nearby, in the neighbouring sentences) “subscription”. The client reads the three words as three different things: creates a «template» in the wizard, looks for it in the section “Profiles”, and sees a “search profile” in the letter. The word «template» / «šablon» / «template» was chosen — the same as in the creation wizard and in the library of ready sets.
 
-This invariant breaks silently: it is enough to add one line with the old word. Therefore the guard does not enumerate the keys, but SCANS all the catalogs entirely — and it fails by itself if a new catalog that it does not know is set up next to them (see “A guard that scans a PART of the sources creates a blind zone”, CLAUDE.md).
+This invariant breaks silently: it is enough to add one line with the old word. Therefore the guard does not enumerate the keys, but SCANS all the catalogs entirely — and it fails by itself if a new catalog that it does not know is set up next to them (see “A guard that scans a PART of the sources creates a blind zone”, the project rules).
 
 The tests work without a DB and without a network: they read the constants of the modules, therefore they go in the ordinary CI.
 """

@@ -132,7 +132,8 @@ def test_market_empty_is_honest_not_silent(monkeypatch):
 def test_news_tab_is_default_and_does_not_touch_market(monkeypatch):
     """The TenderSRB tab is the default; market queries are not executed on it.
 
-    Mutation: count the market unconditionally in routes_profiles.dashboard — calls is not empty."""
+    Mutation: count the market unconditionally in routes_profiles.dashboard — calls is not empty.
+    """
     calls: list[str] = []
     html = _market_page(
         monkeypatch, SHARED, {"new": 1, "expiring": 1}, calls, path="/app"
@@ -261,7 +262,9 @@ def test_build_view_formats_numbers_and_flags_empty():
 
 
 def _top_level_media_only(css: str) -> bool:
-    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)  # in comments there is sometimes “@media”
+    css = re.sub(
+        r"/\*.*?\*/", "", css, flags=re.S
+    )  # in comments there is sometimes “@media”
     depth = 0
     i = 0
     while i < len(css):

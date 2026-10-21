@@ -37,7 +37,10 @@ from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from src.domain.text_norm import fold
-OPSTINA_NAME_TO_OKRUG: dict[str, str] = {}  # snapshot: the municipality reference of the connector is not published
+
+OPSTINA_NAME_TO_OKRUG: dict[str, str] = (
+    {}
+)  # snapshot: the municipality reference of the connector is not published
 
 __all__ = [
     "DedupSide",

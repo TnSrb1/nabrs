@@ -181,7 +181,9 @@ class PublicStats:
     awards_known: int
     awards_sum_eur: Decimal | None
     top_customers: tuple[CustomerRow, ...]
-    current_month: str = ""  # “MM.YYYY” of the current month (Belgrade): the series is not complete yet
+    current_month: str = (
+        ""  # “MM.YYYY” of the current month (Belgrade): the series is not complete yet
+    )
 
 
 def clear_cache() -> None:
@@ -299,7 +301,9 @@ async def get_public_stats(session_factory: Any) -> PublicStats | None:
         try:
             async with session_factory() as db:
                 stats = await compute_stats(db)
-        except Exception as exc:  # noqa: BLE001 — the showcase lives without the figures
+        except (
+            Exception
+        ) as exc:  # noqa: BLE001 — the showcase lives without the figures
             logger.warning("statistika unavailable: %s", type(exc).__name__)
             _cache = (now + FAIL_TTL_SECONDS, None)
             return None
@@ -308,8 +312,7 @@ async def get_public_stats(session_factory: Any) -> PublicStats | None:
 
 
 def fmt_eur(value: Decimal | int | float | None) -> str:
-    """“€1 234 567” — without cents. The digit groups are separated by a non-breaking space U+00A0: the number in a table cell does not break across lines (at 320px “€276 507 123” would otherwise fall apart into three lines).
-    """
+    """“€1 234 567” — without cents. The digit groups are separated by a non-breaking space U+00A0: the number in a table cell does not break across lines (at 320px “€276 507 123” would otherwise fall apart into three lines)."""
     if value is None:
         return "—"
     return "€" + f"{float(value):,.0f}".replace(",", "\u00a0")

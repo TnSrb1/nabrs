@@ -58,7 +58,7 @@ EMAIL_ADDR = "subscriber@example.com"
 # datetime.now(timezone.utc) at the frozen gate. The fixtures build
 # access_until = NOW ± days, therefore WITHOUT freezing the clocks the tests “expire” by the
 # calendar: as soon as the real date overtakes NOW+30d, any gate returns
-# 'frozen' and breaks the assertions (the class “the test depends on the launch time”, CLAUDE.md).
+# 'frozen' and breaks the assertions (the class “the test depends on the launch time”, the project rules).
 # We freeze the MODULE clocks of both modules at the fixture NOW — the comparison is again
 # deterministic relative to NOW and does not depend on the date of the run. The production path does not
 # change: only the source of the time under the test is frozen.

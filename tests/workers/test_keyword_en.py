@@ -188,7 +188,9 @@ def test_delivery_reason_matches_routing_predicate():
                 text,
             )
             checked += routed
-    assert checked >= 6  # the set is not degenerate: there are both matches and non-matches
+    assert (
+        checked >= 6
+    )  # the set is not degenerate: there are both matches and non-matches
 
 
 def test_delivery_uses_job_language_not_only_source():

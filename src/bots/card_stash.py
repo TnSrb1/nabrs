@@ -54,7 +54,9 @@ async def stash_card(chat_id: int, message_id: int, payload: dict) -> bool:
             ex=STASH_TTL_SEC,
         )
         return True
-    except Exception as exc:  # noqa: BLE001 — Redis is not a condition of the bot’s work
+    except (
+        Exception
+    ) as exc:  # noqa: BLE001 — Redis is not a condition of the bot’s work
         logger.warning("card stash failed: %s", type(exc).__name__)
         return False
 

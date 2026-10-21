@@ -172,8 +172,7 @@ def test_enterprise_tier_shows_unlimited(monkeypatch):
 
 
 def test_active_profile_row_has_delete_action(monkeypatch):
-    """Fix 23.09: “Deactivate”→/delete was a mismatch of caption and action — the client switched off, and the template disappeared irrevocably. Now three separate actions: “Disable” (reversible, /deactivate) and “Delete” (irrevocable, /delete) — and the captions do NOT mix with them.
-    """
+    """Fix 23.09: “Deactivate”→/delete was a mismatch of caption and action — the client switched off, and the template disappeared irrevocably. Now three separate actions: “Disable” (reversible, /deactivate) and “Delete” (irrevocable, /delete) — and the captions do NOT mix with them."""
     _setup(monkeypatch, tier="pro", profiles=[_profile()])
     resp = _client(sess=SESS).get("/cabinet/account")
     assert resp.status_code == 200
@@ -276,7 +275,9 @@ def test_subscription_section_shows_plan_and_expiry(monkeypatch):
     assert 'id="pretplata"' in resp.text
     assert "Pro" in resp.text
     assert "01.01.2027" in resp.text
-    assert 'action="/cabinet/trial/request"' not in resp.text  # active — there is no request
+    assert (
+        'action="/cabinet/trial/request"' not in resp.text
+    )  # active — there is no request
 
 
 def test_subscription_section_expired_access_is_marked(monkeypatch):
@@ -355,7 +356,9 @@ def test_account_owns_template_creation_and_drops_status(monkeypatch):
     assert (
         'href="/profiles/new" class="btn-primary shrink-0">Новый шаблон<' in resp.text
     )
-    assert "1 из 3" in resp.text  # the remainder BEFORE the refusal — next to the create button
+    assert (
+        "1 из 3" in resp.text
+    )  # the remainder BEFORE the refusal — next to the create button
     assert ">активен<" not in resp.text
     assert "доставлено:" not in resp.text
     assert "пока нет доставок" not in resp.text

@@ -715,4 +715,6 @@ def test_all_ai_callbacks_within_64_bytes():
     """All AI callbacks ≤ 64 bytes."""
     for prefix in ("ai:deep:", "ai:bid:", "ai:chk:", "ai:drf:"):
         cb = f"{prefix}{_TENDER_ID}"
-        assert len(cb.encode()) <= 64, f"callback '{cb}' = {len(cb.encode())} bytes > 64"
+        assert (
+            len(cb.encode()) <= 64
+        ), f"callback '{cb}' = {len(cb.encode())} bytes > 64"

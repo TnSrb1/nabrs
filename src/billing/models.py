@@ -51,6 +51,8 @@ class BillingEvent:
     type: BillingEventType
     provider_customer_id: str | None
     provider_subscription_id: str | None
-    plan_key: str | None  # the public slug of the plan (catalog): free|pro|business|enterprise
+    plan_key: (
+        str | None
+    )  # the public slug of the plan (catalog): free|pro|business|enterprise
     current_period_end: datetime | None
     tenant_id: str | None = None

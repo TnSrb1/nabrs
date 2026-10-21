@@ -422,14 +422,16 @@ def build_docs_lost_alert(source_key: str, count: int) -> str | None:
 # --------------------------------------------------------------------------- #
 #  The daily accumulator (Redis) — for src.workers.flow_report
 # --------------------------------------------------------------------------- #
-_FLOW_TTL_SEC = 3 * 24 * 3600  # 3 days — survives a restart, does not accumulate forever
+_FLOW_TTL_SEC = (
+    3 * 24 * 3600
+)  # 3 days — survives a restart, does not accumulate forever
 
 
 class FlowMetricsStore:
     """The daily counters of the flow/enrichment — Redis, the same client as
     ``PendingEnrichStore``/``SilenceAlertGate`` (do not create a new one).
 
-    A flat scheme (CLAUDE.md — “no nested structures”): one HASH per
+    A flat scheme (the project rules — “no nested structures”): one HASH per
     day with numeric fields + two HASHes for the breakdown by endpoint. ``redis=
     None``/a client failure → all methods are no-op (a WARNING on write) — the daily
     summary will undercount the figures, but the pass and the threshold alerts within it do not depend on

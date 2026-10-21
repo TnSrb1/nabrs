@@ -52,7 +52,8 @@ def test_plan_grid_is_single_col_then_row_at_768():
 def test_ck_hero_grid_is_three_tiles_in_a_row_at_every_width():
     """v2 (owner 13.10): THREE tiles in the hero, always in one row.
 
-    The former contract “2 columns from 640, 4 — from 1024” was about four tiles; there are three now (the subscription term is removed), and 2×2 with one orphan would look like a hole."""
+    The former contract “2 columns from 640, 4 — from 1024” was about four tiles; there are three now (the subscription term is removed), and 2×2 with one orphan would look like a hole.
+    """
     assert re.search(r"grid-template-columns:\s*repeat\(3", _rule(".ck-hero__grid"))
     for width in ("min-width: 640px", "min-width: 1024px"):
         block = "\n".join(_media_blocks(width))
@@ -326,7 +327,9 @@ def test_folder_name_field_has_label_and_field_control():
     assert 'for="folder-name"' in tpl
     assert 'id="folder-name"' in tpl
     assert 'class="field-control"' in tpl
-    assert "border rounded px-3 py-2 text-sm" not in tpl  # the old bare utilities are removed
+    assert (
+        "border rounded px-3 py-2 text-sm" not in tpl
+    )  # the old bare utilities are removed
 
 
 def test_tender_note_textarea_has_aria_label_and_field_control():
@@ -340,7 +343,9 @@ def test_folder_name_label_key_in_all_langs():
     from src.api.cabinet.i18n import CABINET, SUPPORTED
 
     for lang in SUPPORTED:
-        assert CABINET[lang].get("folder_name_label"), f"folder_name_label is empty: {lang}"
+        assert CABINET[lang].get(
+            "folder_name_label"
+        ), f"folder_name_label is empty: {lang}"
 
 
 # --------------------------------------------------------------------------- #

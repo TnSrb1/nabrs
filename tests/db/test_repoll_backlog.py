@@ -41,7 +41,9 @@ BROKEN = datetime(2026, 8, 1, 10, 0, tzinfo=timezone.utc)  # before the publicat
 _ROWS = {
     "ext": datetime(2026, 10, 5, 10, 0, tzinfo=timezone.utc),  # card: extended
     "same": datetime(2026, 10, 1, 10, 0, tzinfo=timezone.utc),  # card: the same
-    "broken": datetime(2026, 9, 25, 10, 0, tzinfo=timezone.utc),  # card: a broken deadline
+    "broken": datetime(
+        2026, 9, 25, 10, 0, tzinfo=timezone.utc
+    ),  # card: a broken deadline
     "open": datetime(2026, 10, 20, 10, 0, tzinfo=timezone.utc),  # not overdue
 }
 # what the portal gives
@@ -147,7 +149,9 @@ async def test_dry_run_changes_nothing_and_counts_classes(world):
     assert adapter.asked == ["ext", "same", "broken"]
     assert (report.selected, report.checked) == (3, 3)
     assert report.extended_future == 1
-    assert report.unchanged == 2  # same + broken (the broken deadline dropped by the guard)
+    assert (
+        report.unchanged == 2
+    )  # same + broken (the broken deadline dropped by the guard)
     assert report.status_changed == 0
     assert report.errors == 0
     # the delivery estimate ran on the real SQL (there are no profiles in the throwaway DB → 0)

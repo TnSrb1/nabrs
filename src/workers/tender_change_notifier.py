@@ -397,7 +397,9 @@ class TenderChangeNotifier:
                 html_body=message.html_body,
                 locale=norm_locale(locale),
             )
-        except Exception as exc:  # noqa: BLE001 — a channel failure does not break the pass
+        except (
+            Exception
+        ) as exc:  # noqa: BLE001 — a channel failure does not break the pass
             logger.error(
                 "tender_change_notifier: email failure tender=%s error=%s",
                 tender_id,

@@ -40,7 +40,9 @@ def test_enrich_sr_without_ru_leaves_ru_absent():
     out = enrich(_records(), sr, ru_map={})
     rec = out[1]
     assert rec["l_sr"] == "Краставци"
-    assert "l_ru" not in rec  # there is no translation → the widget falls back to the English l
+    assert (
+        "l_ru" not in rec
+    )  # there is no translation → the widget falls back to the English l
 
 
 def test_enrich_is_idempotent():

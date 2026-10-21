@@ -1050,7 +1050,7 @@ async def stage_c_soft_match(
 # of the user_channels row (`DISTINCT ON` + `ORDER BY (status='active') DESC,
 # linked_at DESC NULLS LAST`), the same criterion of sending (`not job.target or
 # channel_status not in (None, 'active')` → fail). `external_id` is NOT unique
-# (CLAUDE.md), there may be many rows per channel — we take the SAME one that delivery
+# (the project rules), there may be many rows per channel — we take the SAME one that delivery
 # will take, otherwise the predicate would diverge from reality: the channel is recognized as live by
 # one row, while the delivery goes by another (and vice versa).
 #

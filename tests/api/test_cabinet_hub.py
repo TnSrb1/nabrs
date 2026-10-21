@@ -197,7 +197,9 @@ def test_revoked_user_destination_is_not_the_gated_hub():
     c = TestClient(app, follow_redirects=False)
     r = c.get("/cabinet/account")
     assert r.status_code == 303 and r.headers["location"] == "/plans"
-    assert c.get("/plans").status_code == 200  # the destination is not closed by the gate
+    assert (
+        c.get("/plans").status_code == 200
+    )  # the destination is not closed by the gate
 
 
 def test_internal_links_use_hub_anchors_not_old_pages():
@@ -241,7 +243,8 @@ def _pretplata_block(html):
 def test_manual_pro_without_subscription_shows_pro_not_free():
     """tier=pro without a row in billing_subscriptions (access granted manually):
     Status writes “Pro”, the subscription block must too — without “Besplatno”/“Na besplatnom”
-    (mutation: return ``plan_name=“Free”`` in the branch without a subscription → red)."""
+    (mutation: return ``plan_name=“Free”`` in the branch without a subscription → red).
+    """
     block = _pretplata_block(
         _client(tier="pro", status="active").get("/cabinet/account").text
     )

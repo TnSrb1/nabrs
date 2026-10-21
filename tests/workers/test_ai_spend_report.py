@@ -374,7 +374,9 @@ async def test_db_failure_logs_only_exception_class(caplog):
         await _worker(db, now=_at("2026-08-15T06:00:00")).poll_once()
     record = next(r for r in caplog.records if "ai_spend_report" in r.message)
     assert "RuntimeError" in record.getMessage()
-    assert record.exc_info is None, "the traceback drags the arguments of the exception into the log"
+    assert (
+        record.exc_info is None
+    ), "the traceback drags the arguments of the exception into the log"
 
 
 async def test_alert_sender_absent_is_noop():

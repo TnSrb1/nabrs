@@ -1,5 +1,4 @@
-"""The label of the source in the alerts (SRC-0d, the owner’s decision 30.09 item 6): the client sees the human-readable name of the source (``sources.display_name``), not the key ``jnportal``. The expectations — literals.
-"""
+"""The label of the source in the alerts (SRC-0d, the owner’s decision 30.09 item 6): the client sees the human-readable name of the source (``sources.display_name``), not the key ``jnportal``. The expectations — literals."""
 
 from __future__ import annotations
 

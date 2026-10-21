@@ -61,7 +61,8 @@ def test_portal_user_token_masked_in_query():
     text = record.getMessage()
     assert "SYNTH_TEST_VALUE" not in text
     assert (
-        text == "HTTP Request: GET https://jnportal.src-ujn.example.invalid/GetDocument.ashx"
+        text
+        == "HTTP Request: GET https://jnportal.src-ujn.example.invalid/GetDocument.ashx"
         '?id=42&accessToken=*** "HTTP/1.1 200 OK"'
     )
 
@@ -80,7 +81,8 @@ def test_generic_token_named_param_masked_by_pattern():
 def test_request_without_secret_passes_through_unchanged():
     """Counter-fact: an ordinary request to the portal (without a token in the URL) — the line does NOT change (the brief’s requirement: do not spoil the diagnostics on 429/the count of requests)."""
     record = _httpx_style_record(
-        "GET", "https://jnportal.src-ujn.example.invalid/api/PublicProcurement/Search?page=1"
+        "GET",
+        "https://jnportal.src-ujn.example.invalid/api/PublicProcurement/Search?page=1",
     )
     original = record.getMessage()
     SecretMaskingFilter().filter(record)

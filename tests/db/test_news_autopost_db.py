@@ -60,7 +60,7 @@ class FakeSender:
 
 @pytest.fixture(autouse=True)
 def _pin_today(monkeypatch: pytest.MonkeyPatch) -> None:
-    """"Today" in Belgrade is fixed: tests do not depend on the clock."""
+    """ "Today" in Belgrade is fixed: tests do not depend on the clock."""
     monkeypatch.setattr(na, "belgrade_today", lambda: date(2026, 10, 18))
 
 

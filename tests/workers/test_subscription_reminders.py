@@ -565,7 +565,9 @@ async def test_expired_1h_ago_sends_and_claims_threshold_zero():
     session = _FakeSession(
         [
             _FakeResult([]),  # the threshold selection (7/1) — empty
-            _FakeResult([_expired_tenant(hours_ago=1)]),  # the selection “already expired”
+            _FakeResult(
+                [_expired_tenant(hours_ago=1)]
+            ),  # the selection “already expired”
             _FakeResult([SimpleNamespace(id="r-1")]),  # the claim passed
         ]
     )
@@ -587,7 +589,8 @@ async def test_expired_1h_ago_sends_and_claims_threshold_zero():
 async def test_expired_empty_selection_sends_nothing():
     """An empty selection of the expired → the worker sends nothing and does not make a claim.
 
-    ‼️ This test does NOT check the 48-hour window itself: the mock does not execute the SQL, the rows are set by hand. The window is proved by two other facts: test_expired_tenants_sql_has_grace_window_guard (the condition is present in the query, checked by a mutation) and the measurement of the predicate on a live DB on 06.09.2026 — at 48 h 0 tenants are selected, at 1000 h — 3."""
+    ‼️ This test does NOT check the 48-hour window itself: the mock does not execute the SQL, the rows are set by hand. The window is proved by two other facts: test_expired_tenants_sql_has_grace_window_guard (the condition is present in the query, checked by a mutation) and the measurement of the predicate on a live DB on 06.09.2026 — at 48 h 0 tenants are selected, at 1000 h — 3.
+    """
     email_sender = MockEmailSender()
     session = _FakeSession([_FakeResult([]), _FakeResult([])])
     adapter = _FakeTgAdapter()

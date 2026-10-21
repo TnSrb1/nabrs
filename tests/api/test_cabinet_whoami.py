@@ -2,12 +2,12 @@
 
 The client logs in under several accounts and cannot see which one exactly
 they are in the cabinet right now (on 04.08.2026 this already cost an hour in vain — the diagnosis
-was analyzed under the wrong account, see CLAUDE.md). The header (base.html, the common
+was analyzed under the wrong account, see the project rules). The header (base.html, the common
 ancestor, and admin_base.html) must show the email, and the tenant name too,
 if there is one (``tenants.display_name``).
 
 The expectations are literals from the fact (the real string from the `/app` response), not via the
-catalog/template helper that the code itself uses (CLAUDE.md: a tautology
+catalog/template helper that the code itself uses (the project rules: a tautology
 is always green).
 """
 

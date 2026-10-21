@@ -144,8 +144,7 @@ async def test_template_without_dictionary_matches_nothing():
 
 @pytest.mark.asyncio
 async def test_delivery_channels_does_not_change_preview_count():
-    """profile_channels / step 1: inheriting the live channels in the prefill adds the key ``delivery_channels`` to the same payload that the ``/library`` showcase and the form preview count. The task's invariant — the figure “≈ N in 30 days” must stay the same: ``preview_service`` does not read the channels at all (``PREVIEW_WHERE_A`` / ``keywords_match`` know nothing about them — fact: 0 mentions of ``delivery_channels`` in ``src/api/cabinet/preview_service.py``).
-    """
+    """profile_channels / step 1: inheriting the live channels in the prefill adds the key ``delivery_channels`` to the same payload that the ``/library`` showcase and the form preview count. The task's invariant — the figure “≈ N in 30 days” must stay the same: ``preview_service`` does not read the channels at all (``PREVIEW_WHERE_A`` / ``keywords_match`` know nothing about them — fact: 0 mentions of ``delivery_channels`` in ``src/api/cabinet/preview_service.py``)."""
     payload = template_prefill.from_template(TEMPLATES[1], source_keys=SRC)
     before_session = FakeSession(results=[FakeResult(items=_rows())])
     before = (await preview_service.preview_count(before_session, payload)).count
@@ -327,4 +326,6 @@ def test_batch_window_selects_every_predicate_column():
     selected = set(re.findall(r"\btn\.(\w+)", window))
     used = set(re.findall(r"\btn\.(\w+)", PREVIEW_WHERE_A))
     assert used, "the predicate without tn.* columns — the regexp is broken"
-    assert used <= selected, f"the window win does not select: {sorted(used - selected)}"
+    assert (
+        used <= selected
+    ), f"the window win does not select: {sorted(used - selected)}"

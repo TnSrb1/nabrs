@@ -26,7 +26,7 @@
    which the calling template (my_tenders.html) already sets for the folders column.
    Without a profile_id (the tender does not resolve to any profile of the tenant) —
    we leave the external link without the toggle: a 404 is worse than an honest link to the portal
-   (CLAUDE.md). #}
+   (the project rules). #}
 <li class="fn-row">
   {% if row.profile_id %}
   {% with tender_id=row.tender_id, profile_id=row.profile_id,

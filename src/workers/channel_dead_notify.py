@@ -250,12 +250,12 @@ class ChannelDeadNotifyWorker:
                 sent = await self.poll_once()
                 sent += await self.poll_nudges_once()
                 if sent:
-                    logger.info(
-                        "channel_dead_notify: e-mails sent per cycle: %d", sent
-                    )
+                    logger.info("channel_dead_notify: e-mails sent per cycle: %d", sent)
             except asyncio.CancelledError:
                 raise
-            except Exception:  # noqa: BLE001 — a cycle failure does not break the worker
+            except (
+                Exception
+            ):  # noqa: BLE001 — a cycle failure does not break the worker
                 logger.exception("channel_dead_notify: polling cycle error")
             await self._sleep(self._poll_interval)
 
@@ -402,7 +402,9 @@ class ChannelDeadNotifyWorker:
                     locale=getattr(row, "locale", None),
                 ),
             )
-        except Exception as exc:  # noqa: BLE001 — a channel failure does not roll the log back
+        except (
+            Exception
+        ) as exc:  # noqa: BLE001 — a channel failure does not roll the log back
             # ‼️ NOT logger.exception and NOT %s of exc: the subscriber’s address is PII, and the
             # the text of the SMTP error contains it (`SMTPRecipientsRefused` puts the
             # recipient right into the arguments, the traceback prints them in full).

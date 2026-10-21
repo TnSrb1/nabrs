@@ -37,7 +37,8 @@ class _Result:
 
 class _Session:
     """The AsyncSession mock: set_config (RLS) does NOT touch the results queue, but
-    the fact of the call is recorded in ``executed`` to check the set_tenant invariant."""
+    the fact of the call is recorded in ``executed`` to check the set_tenant invariant.
+    """
 
     def __init__(self, results):
         self._results = list(results)

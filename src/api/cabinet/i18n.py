@@ -11,7 +11,7 @@ The priority of the language choice (``resolve_authed_lang``):
 ‼️ ``users.locale`` is ABOVE the cookie: the explicit choice in the cabinet header must not be overridden by
 a random cookie that came from the public showcase.
 
-The two axes of language are not to be mixed (CLAUDE.md): the INTERFACE language (``users.locale``, this
+The two axes of language are not to be mixed (the project rules): the INTERFACE language (``users.locale``, this
 module) ≠ the language of the AI CONTENT (``profiles.target_language``). Only the chrome here.
 
 Catalogs:
@@ -35,11 +35,13 @@ from starlette.requests import Request
 
 # The common vocabulary bot↔cabinet (funnel statuses, plan names) lives in a NEUTRAL
 # module: the bot imports it too, and the bot cannot pull starlette through
-# src.api.cabinet. We keep one catalog, so that the bot and the cabinet do not diverge (CLAUDE.md).
+# src.api.cabinet. We keep one catalog, so that the bot and the cabinet do not diverge (the project rules).
 from src.i18n_common import COMMON
 
 SUPPORTED: tuple[str, ...] = ("sr", "ru", "en")
-DEFAULT = "sr"  # the cabinet default = the market language (owner’s decision 30.09.2026)
+DEFAULT = (
+    "sr"  # the cabinet default = the market language (owner’s decision 30.09.2026)
+)
 LANG_COOKIE = "lang"
 
 # Language switcher labels (display codes) — the same as on the showcase.
@@ -58,7 +60,7 @@ def resolve_authed_lang(
     ‼️ ``include_query=False`` — do NOT read ``?lang=`` from the request. It is needed where the
     query parameter ``lang`` is taken by ANOTHER axis (the translation of the tender’s CONTENT:
     ``sr``=original / ``ru``=machine translation, htmx fragments ``/title`` and
-    ``/description``). The two axes must not be mixed (CLAUDE.md): the chrome of a fragment
+    ``/description``). The two axes must not be mixed (the project rules): the chrome of a fragment
     must follow the user’s INTERFACE language, not the translation toggle.
     """
     if include_query:
@@ -4390,7 +4392,7 @@ CABINET: dict[str, dict[str, str]] = {
 # --------------------------------------------------------------------------- #
 # Common vocabulary bot↔cabinet (funnel statuses, plan names) — the ``COMMON`` catalog
 # is imported from the NEUTRAL module :mod:`src.i18n_common` (see the import above):
-# one source for the cabinet and the bot, so that the chrome does not diverge (CLAUDE.md).
+# one source for the cabinet and the bot, so that the chrome does not diverge (the project rules).
 # --------------------------------------------------------------------------- #
 
 

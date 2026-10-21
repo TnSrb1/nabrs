@@ -102,7 +102,9 @@ def test_plans_json_ld_software_application_with_offers_from_catalog():
     prices = {o["name"]: o["price"] for o in app_ld["offers"]}
     assert prices == {"pro": "29", "business": "79"}  # Offer free removed (owner 30.09)
     assert app_ld["description"] == "Svaki novi nalog dobija 30 dana Pro besplatno."
-    assert "enterprise" not in prices  # the price “on request” — we do not invent a number
+    assert (
+        "enterprise" not in prices
+    )  # the price “on request” — we do not invent a number
 
 
 def test_help_json_ld_faqpage_from_real_faq_section():

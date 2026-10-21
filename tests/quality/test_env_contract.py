@@ -101,7 +101,9 @@ def _dockerfile_entrypoint_module() -> str:
     Now it is ``uvicorn src.api.main:app`` (the service api). We parse rather than hard-code: if the CMD changes, the guard will follow it, rather than check a corpse.
     """
     match = _CMD_RE.search(DOCKERFILE_PATH.read_text())
-    assert match, "no CMD [...] was found in the Dockerfile — the guard does not know the entrypoint of api"
+    assert (
+        match
+    ), "no CMD [...] was found in the Dockerfile — the guard does not know the entrypoint of api"
     argv = [part.strip().strip('"') for part in match.group(1).split(",")]
     for arg in argv:
         # uvicorn: "src.api.main:app" → src.api.main

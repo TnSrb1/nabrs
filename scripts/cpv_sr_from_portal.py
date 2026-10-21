@@ -13,7 +13,7 @@ in the source we do NOT translate — the EN fallback ``l`` remains.
 
 We write only ``l_sr`` (Cyrillic; we do not touch ``l`` and ``c``). Idempotent.
 
-Run on production (read-only, RUNBOOK §4), from the root of the clone:
+Run on production (read-only, the operations runbook §4), from the root of the clone:
 
     python3 scripts/cpv_sr_from_portal.py --fetch
 

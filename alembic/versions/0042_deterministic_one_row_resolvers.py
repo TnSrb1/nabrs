@@ -17,7 +17,7 @@ The order is chosen so as NOT to change today's actual behavior (otherwise fixin
 * user by email → ``created_at``, tie-break ``id``: the earliest account.
   For the duplicate above that is ``f2cc3032`` (13.06) — the same the function returns now.
 * user of the tenant → first ``role = 'admin'`` (the account owner), then ``created_at``, tie-break ``id``.
-* channel → ``linked_at DESC NULLS LAST``, tie-break ``id DESC``: the ``CLAUDE.md`` canon —
+* channel → ``linked_at DESC NULLS LAST``, tie-break ``id DESC``: the canon of the project rules —
   “take the freshest active” (one chat_id may have several active channels).
 
 ‼️ WHICH of two accounts of one email is “correct” at login is a product question and remains

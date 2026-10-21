@@ -1,5 +1,4 @@
-"""SRC-0d (owner 30.09 R7): the showcase does not promise “one portal” — the names of the sources are rendered from the ``sources`` table. Expectations — literals.
-"""
+"""SRC-0d (owner 30.09 R7): the showcase does not promise “one portal” — the names of the sources are rendered from the ``sources`` table. Expectations — literals."""
 
 from __future__ import annotations
 

@@ -538,7 +538,9 @@ async def test_preview_count_cls_exclude_sent_in_params():
     }
     await preview_count(db, payload)
     parsed = json.loads(db.last_params["cls_exclude"])
-    assert len(parsed) == 1, "bug 3: the exclude pattern must be present in the parameters"
+    assert (
+        len(parsed) == 1
+    ), "bug 3: the exclude pattern must be present in the parameters"
     assert parsed[0]["code"] == "99*"
 
 

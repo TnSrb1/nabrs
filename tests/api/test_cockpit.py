@@ -290,7 +290,8 @@ def test_dashboard_renders_calendar_widget():
 def test_dashboard_subscription_is_not_an_agenda_event_but_a_call_strip(monkeypatch):
     """v2 (owner 13.10): subscription expiry is NOT an agenda/calendar event (it was the 5th repetition
     of the fact). Within ≤7 days — a call-to-action strip `data-dash-sub-strip`; for “distant” — silence.
-    The previous test required “Subscription expires” + 🔔 in the agenda — the contract changed."""
+    The previous test required “Subscription expires” + 🔔 in the agenda — the contract changed.
+    """
     monkeypatch.setattr(
         routes_profiles.stats_service,
         "get_days_left",
@@ -348,7 +349,8 @@ def test_dashboard_has_no_platform_stats_block(monkeypatch):
 @pytest.mark.parametrize("count", [1, 2, 11])
 def test_dashboard_hero_work_tile_shows_count(monkeypatch, count):
     """The “In progress” tile — funnel count (no plural caption “N tenders in progress” in v2:
-    the number and the short caption are separate). Expectation — literal from the ru catalog."""
+    the number and the short caption are separate). Expectation — literal from the ru catalog.
+    """
     rows = [_my_row(1, status="active", tender_id=f"t-{i}") for i in range(count)]
     monkeypatch.setattr(
         routes_profiles.workflow_service,
@@ -645,8 +647,12 @@ def test_calendar_cells_are_not_fake_buttons_without_js():
     """
     html = (_TEMPLATES / "_calendar.html").read_text(encoding="utf-8")
     assert 'role="button"' not in html
-    assert 'tabindex="' not in html  # the attribute, not the word “tabindex” in a comment
-    assert "data-cal-label=" in html  # text for the future aria-label — already in the markup
+    assert (
+        'tabindex="' not in html
+    )  # the attribute, not the word “tabindex” in a comment
+    assert (
+        "data-cal-label=" in html
+    )  # text for the future aria-label — already in the markup
 
     js = (_STATIC / "js" / "cockpit_calendar.js").read_text(encoding="utf-8")
     assert 'setAttribute("role", "button")' in js

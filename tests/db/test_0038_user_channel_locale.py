@@ -63,7 +63,9 @@ def _latest_revision_in_catalog() -> str:
         path.name.split("_", 1)[0]
         for path in (REPO_ROOT / "alembic" / "versions").glob("[0-9]*_*.py")
     )
-    assert revisions, "the alembic/versions directory is empty — the test checks nothing"
+    assert (
+        revisions
+    ), "the alembic/versions directory is empty — the test checks nothing"
     return revisions[-1]
 
 

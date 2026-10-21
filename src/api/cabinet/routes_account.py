@@ -235,7 +235,9 @@ async def account_export(
             data = await export_svc.build_account_export(
                 db, tenant_id=session["tid"], user_id=uid
             )
-    except Exception as exc:  # noqa: BLE001 — a flash to the client, only the type to the log
+    except (
+        Exception
+    ) as exc:  # noqa: BLE001 — a flash to the client, only the type to the log
         logger.warning("account-export failed user=%s: %s", uid, type(exc).__name__)
         return RedirectResponse(
             url="/cabinet/account?exp_err=fail#acct-export", status_code=303
@@ -302,7 +304,9 @@ async def account_delete(
                 text_body=email_t(result.locale, "account_deleted_body"),
                 locale=result.locale,
             )
-        except Exception as exc:  # noqa: BLE001 — the account is already deleted, the email is secondary
+        except (
+            Exception
+        ) as exc:  # noqa: BLE001 — the account is already deleted, the email is secondary
             # We do not write PII to the log — only the exception type.
             logger.warning(
                 "account-delete confirmation mail failed: %s", type(exc).__name__

@@ -109,8 +109,7 @@ def names_duplicate(a: str | None, b: str | None) -> bool:
 
 
 def duplicates_of_packages(tpl: TemplateLibrary, packages) -> bool:
-    """A template duplicates the package ``vertical_packages``: the names matched in at least one language (sr / ru / en) — the decision does not depend on the interface language, just like the layout.
-    """
+    """A template duplicates the package ``vertical_packages``: the names matched in at least one language (sr / ru / en) — the decision does not depend on the interface language, just like the layout."""
     names: list[str | None] = [tpl.name]
     names += [
         (v or {}).get("name") for v in (getattr(tpl, "i18n", None) or {}).values()

@@ -95,7 +95,9 @@ def _db(resolves_to="tenant-a", **over):
     }
     channels = [
         _channel("u-a", days=0, **over),
-        _channel("u-b", days=5),  # the fresher — the “foreign” channel of the same chat_id
+        _channel(
+            "u-b", days=5
+        ),  # the fresher — the “foreign” channel of the same chat_id
     ]
     return _FakeDb(channels, users, resolves_to)
 
@@ -190,7 +192,9 @@ async def test_choice_writes_channel_locale_and_leaves_user_locale():
 
     own = db.channels[0]
     assert own.locale == "sr", "the language is not written to the command’s channel"
-    assert db.users["u-a"].locale == "ru", "users.locale must not be touched — another axis"
+    assert (
+        db.users["u-a"].locale == "ru"
+    ), "users.locale must not be touched — another axis"
     assert db.commits >= 1
 
 
@@ -203,7 +207,9 @@ async def test_other_tenant_channel_of_same_chat_untouched():
         await tg.on_language_set(_callback("lang:set:en"))
 
     assert db.channels[0].locale == "en"
-    assert db.channels[1].locale is None, "the foreign channel of the same chat is changed"
+    assert (
+        db.channels[1].locale is None
+    ), "the foreign channel of the same chat is changed"
     assert db.users["u-b"].locale == "ru"
 
 
@@ -269,7 +275,9 @@ async def test_resolve_prefers_channel_locale_over_cabinet():
     _, p_tenant = _patched(db)
     with p_tenant:
         assert await tg.resolve_bot_locale(db, _CHAT_ID) == "en"
-    assert "get_user" not in db.trace, "with the channel’s language there is no reason to read the cabinet"
+    assert (
+        "get_user" not in db.trace
+    ), "with the channel’s language there is no reason to read the cabinet"
 
 
 @pytest.mark.asyncio

@@ -195,7 +195,9 @@ def test_sitemap_has_directory_and_only_groups_over_threshold():
     assert "<loc>https://nab.rs/cpv-kodovi?lang=ru</loc>" in resp.text
     assert "<loc>https://nab.rs/tenderi/cpv/031</loc>" in resp.text
     assert "/tenderi/cpv/032" not in resp.text
-    assert "/tenderi/cpv/999" not in resp.text  # not in the directory → 404 → not in sitemap
+    assert (
+        "/tenderi/cpv/999" not in resp.text
+    )  # not in the directory → 404 → not in sitemap
 
 
 # --- SQL: prefix length (group ≠ section) ------------------------------------

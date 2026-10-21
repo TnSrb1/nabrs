@@ -6,7 +6,7 @@ renewed) — the subscriber did not know the status of their money (LAUNCH_AUDIT
 ``billing_notification_outbox`` (migration 0033) IN THE SAME TRANSACTION as the
 dedup-claim of the webhook; this polling worker picks it up and sends the e-mail.
 
-E-mails by ``kind`` (= ``BillingEvent.type``), locale **ru** (the invariant of CLAUDE.md:
+E-mails by ``kind`` (= ``BillingEvent.type``), locale **ru** (the invariant of the project rules:
 the bot and the cabinet are ru only), a service tone:
 
 * ``activated`` — “Payment received, subscription is active”.
@@ -222,7 +222,9 @@ class BillingNotificationsWorker:
                     )
             except asyncio.CancelledError:
                 raise
-            except Exception:  # noqa: BLE001 — a cycle failure does not break the worker
+            except (
+                Exception
+            ):  # noqa: BLE001 — a cycle failure does not break the worker
                 logger.exception("billing_notifications: polling cycle error")
             await self._sleep(self._poll_interval)
 
@@ -288,7 +290,9 @@ class BillingNotificationsWorker:
                     _LOCALE_SQL, {"tid": str(row.tenant_id), "email": row.email}
                 )
                 found = result.first()
-        except Exception as exc:  # noqa: BLE001 — the e-mail language must not break send
+        except (
+            Exception
+        ) as exc:  # noqa: BLE001 — the e-mail language must not break send
             logger.warning(
                 "billing_notifications: locale lookup: %s", type(exc).__name__
             )
@@ -316,7 +320,9 @@ class BillingNotificationsWorker:
                     locale=locale,
                 ),
             )
-        except Exception as exc:  # noqa: BLE001 — a channel failure does not roll the mark back
+        except (
+            Exception
+        ) as exc:  # noqa: BLE001 — a channel failure does not roll the mark back
             # ‼️ NOT logger.exception and NOT %s of exc: the subscriber’s address is PII, and the
             # text of the SMTP error contains it. We log only the CLASS of the error.
             logger.error(

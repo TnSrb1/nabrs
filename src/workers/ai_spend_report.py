@@ -36,7 +36,7 @@ whether the shout is on).
 
 PII. Only the tenant’s id and the sums go into the message and the log — no e-mails, no addresses,
 no names. ``logger.exception`` is deliberately not used: the traceback prints the
-arguments of the exception in full (see ``SMTPRecipientsRefused`` in CLAUDE.md), so we log
+arguments of the exception in full (see ``SMTPRecipientsRefused`` in the project rules), so we log
 the CLASS of the error.
 
 The worker goes to the DB PRIVILEGED, without ``SET app.current_tenant_id``:
@@ -151,7 +151,10 @@ def _env_decimal(name: str) -> Decimal | None:
     try:
         return Decimal(raw)
     except (InvalidOperation, ValueError):
-        logger.warning("ai_spend_report: %s is set but is not a number — the threshold is off", name)
+        logger.warning(
+            "ai_spend_report: %s is set but is not a number — the threshold is off",
+            name,
+        )
         return None
 
 
@@ -254,11 +257,14 @@ class AiSpendReportWorker:
                 await self.poll_once()
             except asyncio.CancelledError:
                 raise
-            except Exception as exc:  # noqa: BLE001 — observation does not break the contour
+            except (
+                Exception
+            ) as exc:  # noqa: BLE001 — observation does not break the contour
                 # Not logger.exception: the traceback drags the arguments of the exception
                 # (incl. the request strings) into the log. The class of the error is enough.
                 logger.error(
-                    "ai_spend_report: the cycle did not complete (%s)", type(exc).__name__
+                    "ai_spend_report: the cycle did not complete (%s)",
+                    type(exc).__name__,
                 )
             await self._sleep(self._poll_interval)
 
@@ -276,7 +282,9 @@ class AiSpendReportWorker:
             totals = await self._load_totals(period)
             prev = await self._load_prev_snapshot(day - timedelta(days=1), period)
             await self._save_snapshot(day, period, totals)
-        except Exception as exc:  # noqa: BLE001 — observation does not break the contour
+        except (
+            Exception
+        ) as exc:  # noqa: BLE001 — observation does not break the contour
             logger.error(
                 "ai_spend_report: the snapshot for %s is not saved (%s)",
                 day.isoformat(),
@@ -373,9 +381,7 @@ class AiSpendReportWorker:
         try:
             await self._alert(message)
         except Exception as exc:  # noqa: BLE001 — the channel does not break the worker
-            logger.warning(
-                "ai_spend_report: alert not sent (%s)", type(exc).__name__
-            )
+            logger.warning("ai_spend_report: alert not sent (%s)", type(exc).__name__)
 
     # ------------------------------------------------------------------ #
     #  DB (privileged, without set_tenant — the platform tables of 0040)

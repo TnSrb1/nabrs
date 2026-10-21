@@ -512,7 +512,9 @@ async def run_stepwise(
                 steps_cost += spend.cost_usd
                 await record_spend(spend.tokens, spend.cost_usd)
             failed += 1
-            logger.warning("stepwise: step %d/%d not analysed (%s)", n, len(chunks), exc)
+            logger.warning(
+                "stepwise: step %d/%d not analysed (%s)", n, len(chunks), exc
+            )
             continue
         await record_spend(res.tokens_input + res.tokens_output, res.cost_usd)
         steps_cost += res.cost_usd
@@ -528,7 +530,9 @@ async def run_stepwise(
     if not journal:
         # Steps ran, but there are no requirements with a verifiable quote: the premium merge
         # would be analysing emptiness. The regular path (≤ 50k) is more honest.
-        logger.info("stepwise: journal is empty → regular analysis level=%s", request.level)
+        logger.info(
+            "stepwise: journal is empty → regular analysis level=%s", request.level
+        )
         return await client.analyze(request)
 
     overflow = max(len(journal) - MAX_REQUIREMENTS, 0)

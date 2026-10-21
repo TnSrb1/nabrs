@@ -92,7 +92,8 @@ def _form(**extra):
 # --------------------------------------------------------------------------- #
 def test_create_with_only_unknown_source_is_rejected_visibly():
     """A forged key is discarded; if no platforms remain after that —
-    a 400 refusal with a VISIBLE error at the field, and the profile is NOT created (previously a dead profile with an empty list was saved — ``forms.py`` 0a)."""
+    a 400 refusal with a VISIBLE error at the field, and the profile is NOT created (previously a dead profile with an empty list was saved — ``forms.py`` 0a).
+    """
     session = FakeSession(
         results=[FakeResult(scalar=0)],
         get_map={"Tenant": make_tenant(status="trial")},

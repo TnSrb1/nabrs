@@ -22,7 +22,7 @@ existing :mod:`src.api.emailer` (``EmailSender``), as in
 
 A live channel = the freshest ``active`` row of ``user_channels`` with a non-empty
 ``external_id`` — the predicate is taken from routing (:func:`src.workers.matching.
-channel_states`) and is not written a second time: if the selections diverge, the verdict “the channel is live” diverges too from where the delivery will actually go (CLAUDE.md). The addressee
+channel_states`) and is not written a second time: if the selections diverge, the verdict “the channel is live” diverges too from where the delivery will actually go (the project rules). The addressee
 is taken from there too: ``external_id`` — the chat_id for telegram and the address for email.
 
 Fail-closed for mail (model — :mod:`src.workers.adapters.email`, #349):
@@ -384,7 +384,8 @@ class AwardWatchNotifier:
 
     async def run(self) -> None:
         logger.info(
-            "award_watch_notifier: polling started (interval=%.0fs)", self._poll_interval
+            "award_watch_notifier: polling started (interval=%.0fs)",
+            self._poll_interval,
         )
         while not self._stopped.is_set():
             try:
@@ -564,7 +565,9 @@ class AwardWatchNotifier:
                 html_body=message.html_body,
                 locale=norm_locale(locale),
             )
-        except Exception as exc:  # noqa: BLE001 — a channel failure does not break the pass
+        except (
+            Exception
+        ) as exc:  # noqa: BLE001 — a channel failure does not break the pass
             logger.error(
                 "award_watch_notifier: e-mail failure sub=%s award=%s error=%s",
                 row.sub_id,

@@ -373,7 +373,7 @@ async def tender_description(
         return _not_found(request)
     # ‼️ ``lang`` here is the axis of the CONTENT translation (sr = original / ru = translation), NOT the
     # interface language. So that the chrome of the fragment (buttons / labels) does not “move” to ru on
-    # pressing “Translate”, we ask the processor to ignore ?lang= (two axes, CLAUDE.md).
+    # pressing “Translate”, we ask the processor to ignore ?lang= (two axes, the project rules).
     request.state.cabinet_ignore_query_lang = True
     # The target language — only sr / ru / en. An unknown value → the original (without
     # a model call): not a 500 and not “a translation into something”.
@@ -406,7 +406,7 @@ async def tender_description(
     # ‼️ The model call — WITHOUT an open DB session (up to 60 s for a description translation):
     # the connection pool is small, and a dozen parallel presses of “Translate”
     # each holding the session for the duration of the call exhaust the pool and bring the whole cabinet down
-    # (CLAUDE.md, analysis of 26.07).
+    # (the project rules, analysis of 26.07).
     if allowed:
         translated, usage = await translation.translate_description(
             tender_id=data.tender_id,
@@ -487,7 +487,7 @@ async def card_title(
         return _not_found(request)
     # ‼️ ``lang`` here is the axis of the CONTENT translation (sr = original / ru = translation), NOT the
     # interface. The chrome of the fragment follows the user’s interface language, so the
-    # processor ignores ?lang= (do not mix the two axes — CLAUDE.md).
+    # processor ignores ?lang= (do not mix the two axes — the project rules).
     request.state.cabinet_ignore_query_lang = True
     # The target language — only sr / ru / en. An unknown value → the original (without
     # a model call): not a 500 and not “a translation into something”.
@@ -520,7 +520,7 @@ async def card_title(
     # ‼️ The model call — WITHOUT an open DB session (up to 20 s for a title translation):
     # the connection pool is small, and a dozen parallel presses of “Translate”
     # each holding the session for the duration of the call exhaust the pool and bring the whole cabinet down
-    # (CLAUDE.md, analysis of 26.07).
+    # (the project rules, analysis of 26.07).
     if allowed:
         tr, usage = await translation.translate_tender(
             tender_id=data.tender_id,

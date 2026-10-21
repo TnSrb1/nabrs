@@ -283,7 +283,9 @@ def test_render_no_amount_hides_money_line():
         months=None,
     )
     html = render_customer_analytics("X", "1", stats)
-    assert "Сумма" not in html  # there are no rows with a known price → the amount block is hidden
+    assert (
+        "Сумма" not in html
+    )  # there are no rows with a known price → the amount block is hidden
 
 
 def test_render_escapes_html():

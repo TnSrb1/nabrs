@@ -6,7 +6,7 @@ Owner requirement of 15.08.2026: when an attempt to use AI is refused for the li
 2. on other refusals (model failure, freeze) there is no flash: it means “hit the money”, not “something went wrong”;
 3. the state outlives the flash — an exhausted level changes the button itself, and a level close to exhaustion shows the remainder BEFORE the refusal.
 
-Expectations are taken from the RENDER of the routes (call the route, read the HTML), not from the model of the code: a test that pinned a wrong contract already let a 404 through to production (CLAUDE.md).
+Expectations are taken from the RENDER of the routes (call the route, read the HTML), not from the model of the code: a test that pinned a wrong contract already let a 404 through to production (the project rules).
 """
 
 from __future__ import annotations

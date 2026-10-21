@@ -128,8 +128,7 @@ def test_primary_classification_takes_first():
 
 
 def test_primary_classification_reads_live_ingest_shape():
-    """‼️ The fixtures above wrote the classification with the PROFILE key — as nobody writes it in the DB. The jnportal adapter puts ``{"scheme": "CPV"}``, and stage A got (None, None) → a profile with a CPV filter matched nothing.
-    """
+    """‼️ The fixtures above wrote the classification with the PROFILE key — as nobody writes it in the DB. The jnportal adapter puts ``{"scheme": "CPV"}``, and stage A got (None, None) → a profile with a CPV filter matched nothing."""
     live = [
         {"code": "32200000", "label": "Опрема за емитовање", "scheme": "CPV"},
         {"year": 2026, "scheme": "PLAN", "quarter": "2. квартал"},
@@ -321,8 +320,7 @@ def test_stage_a_sql_casts_all_bind_params_no_bare_param():
 
 
 def test_stage_a_sql_coalesces_null_array_columns():
-    """The NULL arrays of the profile (enabled_source_keys/regions/procedure_types/languages) must NOT falsely cut the profile (the onboarding fix): on a NULL array ``cardinality(NULL)`` gives NULL (not 0), ``:p = ANY(NULL)`` gives NULL — neither branch is TRUE → the profile was cut by three-valued logic. COALESCE(<col>, '{}') brings NULL to an empty array (deterministically), the semantics of the non-empty values does not change. source_key — WITHOUT the indulgence “no filter” (the source is mandatory), but protected from NULL the same way (NULL sources → the profile does not match).
-    """
+    """The NULL arrays of the profile (enabled_source_keys/regions/procedure_types/languages) must NOT falsely cut the profile (the onboarding fix): on a NULL array ``cardinality(NULL)`` gives NULL (not 0), ``:p = ANY(NULL)`` gives NULL — neither branch is TRUE → the profile was cut by three-valued logic. COALESCE(<col>, '{}') brings NULL to an empty array (deterministically), the semantics of the non-empty values does not change. source_key — WITHOUT the indulgence “no filter” (the source is mandatory), but protected from NULL the same way (NULL sources → the profile does not match)."""
     sql = _sql_norm()
     # the source is mandatory, but protected from NULL via coalesce(..., '{}')
     assert "= any(coalesce(p.enabled_source_keys, '{}'))" in sql
@@ -498,7 +496,8 @@ async def test_write_outbox_skips_when_no_channels():
 @pytest.mark.asyncio
 async def test_write_outbox_logs_web_only_when_no_channels(caplog):
     """Empty delivery_channels — not a "skip" (#820): a web_only row for the cabinet.
-    The log about it is INFO with the fact of the write, without a WARNING "skipped" (that one was wrong)."""
+    The log about it is INFO with the fact of the write, without a WARNING "skipped" (that one was wrong).
+    """
     session = _FakeSession([])
     with caplog.at_level("INFO", logger="src.workers.matching"):
         await matching.write_outbox(
@@ -646,14 +645,16 @@ async def test_write_outbox_repeated_run_stays_idempotent():
         await matching.write_outbox(session, candidate=_cand(), tender=_tender())
         calls.append(_insert_call(session))
 
-    assert calls[0] == calls[1]  # the dedup — on the UNIQUE index, not on the state of Python
+    assert (
+        calls[0] == calls[1]
+    )  # the dedup — on the UNIQUE index, not on the state of Python
     assert "ON CONFLICT" in calls[0][0] and "DO NOTHING" in calls[0][0]
 
 
 def test_live_channels_sql_mirrors_delivery_row_choice():
     """The SQL takes THE SAME row as the delivery: the freshest active one per channel.
 
-    external_id is not unique (CLAUDE.md) — if the selection diverged, the predicate would diverge from the reality of the delivery. The CAST on the parameter — asyncpg.
+    external_id is not unique (the project rules) — if the selection diverged, the predicate would diverge from the reality of the delivery. The CAST on the parameter — asyncpg.
     """
     sql = re.sub(r"\s+", " ", str(matching.LIVE_CHANNELS_SQL))
     assert "DISTINCT ON (uc.channel)" in sql

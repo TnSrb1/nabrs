@@ -11,7 +11,7 @@ from src.api import tiers
 from src.api.cabinet.i18n import CABINET
 
 # gate_profile gives the KEYS of the cabinet chrome catalog (gate_sup_*), not a ready text:
-# the language is substituted by the template via ``t`` (the two i18n axes are not mixed — CLAUDE.md).
+# the language is substituted by the template via ``t`` (the two i18n axes are not mixed — the project rules).
 # The tests check BOTH the contract of the keys, AND that each key is covered by all languages, AND
 # that the final (ru) text has kept the semantics (names the plan / the level).
 _RU = CABINET["ru"]
@@ -207,7 +207,9 @@ def test_gate_lite_suppresses_quiet_hours_end():
     clean, suppressed = tiers.gate_profile("lite", {"quiet_hours_end": "08:00"})
     assert clean["quiet_hours_end"] is None
     assert "gate_sup_quiet_end" in suppressed
-    assert "конец" in _RU["gate_sup_quiet_end"]  # the key is covered and the semantics are intact
+    assert (
+        "конец" in _RU["gate_sup_quiet_end"]
+    )  # the key is covered and the semantics are intact
 
 
 def test_gate_none_tier_defaults_to_lite():

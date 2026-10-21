@@ -20,7 +20,9 @@ def test_common_key_parity():
     assert set(ic.COMMON) == set(ic.SUPPORTED)
     ref = set(ic.COMMON[ic.DEFAULT])
     for lang in ic.SUPPORTED:
-        assert set(ic.COMMON[lang]) == ref, f"the keys of {lang} diverge from {ic.DEFAULT}"
+        assert (
+            set(ic.COMMON[lang]) == ref
+        ), f"the keys of {lang} diverge from {ic.DEFAULT}"
         for key, val in ic.COMMON[lang].items():
             assert isinstance(val, str) and val.strip(), f"{lang}.{key} is empty"
 
@@ -77,7 +79,9 @@ def test_notification_keys_carry_no_emoji_prefix():
         for k in ic.COMMON[ic.DEFAULT]
         if k.startswith(("sum_", "rem_", "sub_", "aw_"))
     ]
-    assert keys, "the keys of the background notices are not found — the test checks nothing"
+    assert (
+        keys
+    ), "the keys of the background notices are not found — the test checks nothing"
     for key in keys:
         for lang in ic.SUPPORTED:
             text = ic.COMMON[lang][key]

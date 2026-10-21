@@ -66,10 +66,14 @@ async def test_record_usage_writes_level_counter_and_commits():
     assert params["calls"] == 1
     assert params["tokens"] == 900
     assert params["cost"] == 0.0025
-    assert re.fullmatch(r"\d{4}-\d{2}", params["period"])  # the accounting period YYYY-MM
+    assert re.fullmatch(
+        r"\d{4}-\d{2}", params["period"]
+    )  # the accounting period YYYY-MM
     # The counter grows BY the passed value, not by the constant 1.
     assert "COALESCE(ai_usage.count, 0) + EXCLUDED.count" in sql
-    assert s.committed == 1, "without a commit the spend will not survive the closing of the session"
+    assert (
+        s.committed == 1
+    ), "without a commit the spend will not survive the closing of the session"
 
 
 def test_record_usage_accumulates_cost_and_tokens_not_overwrites():

@@ -77,7 +77,9 @@ def test_cabinet_i18n_key_parity(catalog):
     assert set(catalog) == set(i18n.SUPPORTED)
     ref = set(catalog[i18n.DEFAULT])
     for lang in i18n.SUPPORTED:
-        assert set(catalog[lang]) == ref, f"the keys of {lang} diverge from {i18n.DEFAULT}"
+        assert (
+            set(catalog[lang]) == ref
+        ), f"the keys of {lang} diverge from {i18n.DEFAULT}"
         # The values are non-empty in all languages (we did not leave “TODO”/an empty string).
         for key, val in catalog[lang].items():
             assert isinstance(val, str) and val.strip(), f"{lang}.{key} is empty"
@@ -121,7 +123,9 @@ def test_plurals_key_parity_and_shape():
     assert set(i18n.PLURALS) == set(i18n.SUPPORTED)
     ref = set(i18n.PLURALS[i18n.DEFAULT])
     for lang in i18n.SUPPORTED:
-        assert set(i18n.PLURALS[lang]) == ref, f"the pluralization keys of {lang} diverged"
+        assert (
+            set(i18n.PLURALS[lang]) == ref
+        ), f"the pluralization keys of {lang} diverged"
         expected_forms = 2 if lang == "en" else 3
         for key, forms in i18n.PLURALS[lang].items():
             assert (
@@ -438,7 +442,9 @@ def test_library_page_renders_in_locale(
     assert resp.status_code == 200
     html = resp.text
     assert title in html  # CABINET.nav_library
-    assert packages_title in html  # CABINET.lib_sector_badge (a package = the whole sector)
+    assert (
+        packages_title in html
+    )  # CABINET.lib_sector_badge (a package = the whole sector)
     assert use_tpl in html  # CABINET.lib_use_template
     assert tpl_count in html  # plural(lang, "templates_count", 1 template + 7 packages)
     if locale != "ru":
@@ -456,7 +462,7 @@ def test_library_vertical_packages_render_has_no_russian(monkeypatch, locale):
 
     Scope — only name/description (what really switches
     display_packages(lang)). The keyword tags (``p.keywords``) are stored
-    only in Russian and are deliberately NOT touched in this task (see CLAUDE.md /
+    only in Russian and are deliberately NOT touched in this task (see the project rules /
     BOUNDARIES — keyword normalization is a separate PR), so they are excluded
     from the audit.
 
@@ -662,7 +668,9 @@ def test_public_pages_keep_own_catalog():
     # The public default stays sr (not the cabinet’s ru), the showcase catalog is in place.
     landing = client.get("/")
     assert 'lang="sr"' in landing.text
-    assert "samo one koje su za vas" in landing.text  # LANDING[sr], not the cabinet chrome
+    assert (
+        "samo one koje su za vas" in landing.text
+    )  # LANDING[sr], not the cabinet chrome
 
 
 # --------------------------------------------------------------------------- #
@@ -736,7 +744,9 @@ def test_cyrillic_allowlist_has_no_stale_entries():
         for name in _RAW_CYRILLIC_ALLOWLIST
         if not _has_raw_cyrillic(_TPL_DIR / name)
     ]
-    assert not stale, f"files already without Cyrillic — remove from the allowlist: {stale}"
+    assert (
+        not stale
+    ), f"files already without Cyrillic — remove from the allowlist: {stale}"
 
 
 # --------------------------------------------------------------------------- #
@@ -1013,7 +1023,9 @@ def test_description_fragment_chrome_follows_ui_locale_not_content_lang(
     resp = _client(sess={"uid": _UID, "tid": _TID}, locale=locale).get(url)
     assert resp.status_code == 200
     assert translate_label in resp.text  # the chrome = the user’s interface language
-    assert foreign not in resp.text  # NOT the language of another locale, does not follow ?lang=
+    assert (
+        foreign not in resp.text
+    )  # NOT the language of another locale, does not follow ?lang=
 
 
 # --------------------------------------------------------------------------- #
@@ -1070,7 +1082,8 @@ def _stub_hub(
 @pytest.mark.parametrize("locale", ["en", "sr"])
 def test_hub_subscription_section_render_has_no_russian(monkeypatch, locale):
     """The “Subscription” section of the hub (formerly /cabinet/subscription) in en/sr: statuses,
-    details, the request decision, the value ladder, the upsell — without Russian chrome."""
+    details, the request decision, the value ladder, the upsell — without Russian chrome.
+    """
     sub = SimpleNamespace(
         status="active",
         provider="paddle",
@@ -1124,7 +1137,8 @@ def test_hub_email_channel_render_has_no_russian(monkeypatch, locale, state):
 def test_profile_form_render_has_no_russian(monkeypatch, locale):
     """GET /profiles/new in en/sr: sections, hints, gate notes and the choice of the
     AI/schedule level (captions from the catalog, not a Russian literal) — clean. The names of the
-    districts (Serbian Cyrillic) are data, and the Russian-specific letters are not in them."""
+    districts (Serbian Cyrillic) are data, and the Russian-specific letters are not in them.
+    """
     monkeypatch.setattr(routes_profiles.svc, "get_tenant_tier", _async("lite"))
     monkeypatch.setattr(routes_profiles.svc, "count_active_profiles", _async(0))
     resp = _client(sess={"uid": _UID, "tid": _TID}, locale=locale).get(
@@ -1163,7 +1177,8 @@ def test_profile_detail_render_has_no_russian(monkeypatch, locale):
 @pytest.mark.parametrize("path", ["/login", "/signup"])
 def test_auth_pages_anon_render_has_no_russian(locale, path):
     """‼️ Login/registration are rendered WITHOUT a session (anonymous): the locale is taken from
-    ?lang= (the resolver: query → cookie → Accept-Language). Both languages are clean."""
+    ?lang= (the resolver: query → cookie → Accept-Language). Both languages are clean.
+    """
     resp = _client(sess=None, locale=None).get(f"{path}?lang={locale}")
     assert resp.status_code == 200
     assert f'lang="{locale}"' in resp.text  # ?lang= worked for an anonymous user
@@ -1172,7 +1187,8 @@ def test_auth_pages_anon_render_has_no_russian(locale, path):
 
 def test_account_mutation_reintroduced_russian_is_caught(monkeypatch):
     """Mutation anchor of the guard: put one Russian literal back into the catalog with a letter from
-    U+044B U+044D U+0449 U+044A U+0451 U+0439 — the en render contains it again. Green without the mutation = the guard is blind."""
+    U+044B U+044D U+0449 U+044A U+0451 U+0439 — the en render contains it again. Green without the mutation = the guard is blind.
+    """
     _stub_hub(monkeypatch)
     monkeypatch.setitem(
         i18n.CABINET["en"],
@@ -1181,7 +1197,9 @@ def test_account_mutation_reintroduced_russian_is_caught(monkeypatch):
     )
     resp = _client(sess={"uid": _UID, "tid": _TID}, locale="en").get("/cabinet/account")
     assert resp.status_code == 200
-    assert _RU_SPECIFIC.search(resp.text), "the mutation did not show — the guard does not work"
+    assert _RU_SPECIFIC.search(
+        resp.text
+    ), "the mutation did not show — the guard does not work"
 
 
 def test_login_locale_does_not_rebound_after_login():
@@ -1371,7 +1389,9 @@ def test_dashboard_render_has_no_cyrillic_outside_data(monkeypatch, locale):
     leaked = sorted(
         set(re.findall(r"[а-яёА-ЯЁ][а-яёА-ЯЁ .,«»„“”()/@→↗:-]*", resp.text))
     )
-    assert not leaked, f"Russian chrome in the {locale} render of the dashboard: {leaked}"
+    assert (
+        not leaked
+    ), f"Russian chrome in the {locale} render of the dashboard: {leaked}"
 
 
 @pytest.mark.parametrize(
@@ -1416,10 +1436,13 @@ def test_dashboard_no_channel_shows_one_warning_not_two(monkeypatch):
     """No live channel → the amber “template without a channel” is there, the blue nudge does NOT duplicate it.
 
     Both say “channel not connected” (unconfirmed email / never) — the second
-    banner is noise. The expectation is literals from the sr catalog (dgap_title, nochan_title)."""
+    banner is noise. The expectation is literals from the sr catalog (dgap_title, nochan_title).
+    """
     _stub_dashboard(monkeypatch)
     ch = routes_profiles.channel_svc
-    monkeypatch.setattr(ch, "dead_channels", _async([]))  # v2: otherwise it will displace
+    monkeypatch.setattr(
+        ch, "dead_channels", _async([])
+    )  # v2: otherwise it will displace
     monkeypatch.setattr(
         ch,
         "delivery_channel_status",
@@ -1443,7 +1466,8 @@ def test_dashboard_shows_exactly_one_alert_by_priority(monkeypatch):
     """v2 (owner 13.10): one alert banner, priority "dead > no channel > limit >
     template without a channel > gap". The fixture includes ALL states at once — on the screen
     only the dead channel; we remove them one by one — the next one wins.
-    The expectations are literals of the same keys as in the template, via data-dash-alert."""
+    The expectations are literals of the same keys as in the template, via data-dash-alert.
+    """
     _stub_dashboard(monkeypatch)
     ch = routes_profiles.channel_svc
 
@@ -1502,7 +1526,8 @@ def test_dashboard_shows_exactly_one_alert_by_priority(monkeypatch):
 )
 def test_dashboard_mutation_reintroduced_russian_is_caught(monkeypatch, key, ru):
     """Mutation anchor of the guard: put one Russian literal back into the catalog — the render
-    of /app in en contains Cyrillic again. Green without the mutation = the guard is blind."""
+    of /app in en contains Cyrillic again. Green without the mutation = the guard is blind.
+    """
     _stub_dashboard(monkeypatch)
     if key == "dgap_title":
         # v2: the “gap” banner is shown only if there are no higher-priority ones.

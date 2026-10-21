@@ -901,7 +901,7 @@ async def get_subscriber(session, telegram_id: int) -> dict | None:
 async def _resolve_bot_locale(session, telegram_id: int) -> str:
     """The language of the bot’s chrome: ``user_channels.locale`` → ``users.locale`` → ru.
 
-    Two AXES (CLAUDE.md): it returns ONLY the interface language of the bot’s chrome, NOT the language of the
+    Two AXES (the project rules): it returns ONLY the interface language of the bot’s chrome, NOT the language of the
     AI content (``profiles.target_language``). The channel language (0038) is a refinement of
     the same first axis for a SPECIFIC chat: ``NULL`` in the channel means
     "inherit ``users.locale``", therefore it is a fallback, not a third axis.
@@ -1302,7 +1302,7 @@ async def _start_onboarding(
     ``locale`` — the interface language (``users.locale``, the axis of the chrome) — goes into the FSM
     (``ui_locale``), so that the subsequent steps take the chrome from there without a repeated
     DB read. NOT to be confused with the language the user chooses in the wizard: that one
-    is the axis of the AI content (``profiles.target_language``), see CLAUDE.md.
+    is the axis of the AI content (``profiles.target_language``), see the project rules.
     """
     await state.set_state(OnboardingFSM.waiting_language)
     await state.update_data(ui_locale=locale)
@@ -1392,7 +1392,9 @@ async def on_language(callback: CallbackQuery, state: FSMContext) -> None:
     code = callback.data.split(":")[-1]
     data = await state.get_data()
     locale = data.get("ui_locale")
-    bot_locale.set(locale)  # The FSM steps do not resolve the language via the DB: sr → Latin
+    bot_locale.set(
+        locale
+    )  # The FSM steps do not resolve the language via the DB: sr → Latin
     await state.update_data(language=code)
     await state.set_state(OnboardingFSM.waiting_keywords)
     await callback.message.edit_text(
@@ -1406,7 +1408,9 @@ async def on_keywords(message: Message, state: FSMContext) -> None:
     """Step 2 → 3: the keywords are accepted, we show the choice of the region."""
     data = await state.get_data()
     locale = data.get("ui_locale")
-    bot_locale.set(locale)  # The FSM steps do not resolve the language via the DB: sr → Latin
+    bot_locale.set(
+        locale
+    )  # The FSM steps do not resolve the language via the DB: sr → Latin
     raw = message.text or ""
     keywords = [w.strip() for w in raw.split(",") if w.strip()]
     if not keywords:
@@ -1427,7 +1431,9 @@ async def on_region(callback: CallbackQuery, state: FSMContext) -> None:
     await state.update_data(region=code)
     data = await state.get_data()
     locale = data.get("ui_locale")
-    bot_locale.set(locale)  # The FSM steps do not resolve the language via the DB: sr → Latin
+    bot_locale.set(
+        locale
+    )  # The FSM steps do not resolve the language via the DB: sr → Latin
     await state.set_state(OnboardingFSM.waiting_confirmation)
     await callback.message.edit_text(
         _build_summary(data, locale), reply_markup=_confirm_keyboard(locale)
@@ -1440,7 +1446,9 @@ async def on_confirm(callback: CallbackQuery, state: FSMContext) -> None:
     """Step 4: confirmation → upsert of the subscriber into the DB (create or update)."""
     data = await state.get_data()
     locale = data.get("ui_locale")
-    bot_locale.set(locale)  # The FSM steps do not resolve the language via the DB: sr → Latin
+    bot_locale.set(
+        locale
+    )  # The FSM steps do not resolve the language via the DB: sr → Latin
     language = data.get("language", "ru")
     keywords = data.get("keywords", [])
     region = data.get("region", _ALL_REGIONS)
@@ -1531,7 +1539,7 @@ async def on_tender_status(callback: CallbackQuery) -> None:
             session, tenant_id=tenant_id, tender_id=tender_id, status=new_status
         )
 
-    # The status label — the common vocabulary of the funnel (COMMON), unified with the cabinet (CLAUDE.md).
+    # The status label — the common vocabulary of the funnel (COMMON), unified with the cabinet (the project rules).
     label = common_t(locale, f"status_{new_status}")
     logger.info("tender status: chat=%s tender=%s → %s", chat_id, tender_id, new_status)
     await callback.answer(label)
@@ -1563,7 +1571,9 @@ async def on_tender_status(callback: CallbackQuery) -> None:
     updated_text = _apply_status_line(base_text, label, locale)
     try:
         await callback.message.edit_text(updated_text, reply_markup=new_markup)
-    except Exception:  # noqa: BLE001 — an old/unchanged message: the toast has already been shown
+    except (
+        Exception
+    ):  # noqa: BLE001 — an old/unchanged message: the toast has already been shown
         with contextlib.suppress(Exception):
             await callback.message.edit_reply_markup(reply_markup=new_markup)
 
@@ -1783,7 +1793,7 @@ async def on_ai_back(callback: CallbackQuery) -> None:
 
 
 # The target page of the upsell (#513) — the same cabinet block “AI limits” that
-# CLAUDE.md names as the place of visibility of the remainder/CTA. The domain — REGISTRY §2
+# the project rules name as the place of visibility of the remainder/CTA. The domain — REGISTRY §2
 # (app.nab.rs), already used as a text hint in the gate_* lines above
 # of this module. No new ENV: a constant, not a config.
 _UPSELL_URL = f"{CABINET_BASE_URL}/cabinet/subscription"
@@ -1897,7 +1907,9 @@ async def on_deep_analysis(callback: CallbackQuery) -> None:
         try:
             for chunk in result.html_chunks:
                 await callback.message.answer(chunk)
-        except Exception:  # noqa: BLE001 — the message was deleted / the chat is unavailable
+        except (
+            Exception
+        ):  # noqa: BLE001 — the message was deleted / the chat is unavailable
             logger.warning(
                 "deep: could not send L3 chat=%s tender=%s", chat_id, tender_id
             )

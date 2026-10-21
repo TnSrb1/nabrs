@@ -372,7 +372,7 @@ async def test_personal_without_cpv_is_none(world, app_session):
 
 
 async def test_expiring_window_is_calendar_days_in_belgrade(world, app_session):
-    """"Expires ≤7 days" — calendar days in Belgrade time (#824), not 7×24 h.
+    """ "Expires ≤7 days" — calendar days in Belgrade time (#824), not 7×24 h.
 
     The deadline is set to noon of the Belgrade calendar day "today + N", so the difference of calendar dates is exactly N regardless of the launch hour. N=7 — included,
     N=8 — not (the margin of the index ``< now() + 9 days`` must not cut the 7-day one).

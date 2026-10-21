@@ -12,7 +12,7 @@ enriches the static reference ``src/api/static/cpv_codes.json`` with the field
 The script is **one-off**, NOT in the image (``scripts/`` is not copied into the container). The language
 axis: CPV labels are always the original of the reference (sr); this is not the interface language.
 
-Run on production (the data is there only), read-only (RUNBOOK §4):
+Run on production (the data is there only), read-only (the operations runbook §4):
 
     docker exec deploy-postgres-1 psql -U tendersrb -d tendersrb -t -A -F$'\\t' -c "
       WITH c AS (

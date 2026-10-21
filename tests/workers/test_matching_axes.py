@@ -4,7 +4,7 @@ It complements ``test_matching.py`` / ``test_matching_engine_extra.py``. Everyth
 
 Two groups of tests — by the nature of the axes themselves:
 
-1. **The mirror of the predicates of stage A** (the price / the region / the categories / the status live in the SQL and are not checked behaviorally without PG). We check what can be checked and what really breaks: ``STAGE_A_SQL`` (the routing: which profiles will get the tender) and ``PREVIEW_WHERE_A`` (the preview in the cabinet: how many tenders are promised to the profile) — two selections of one meaning in one module. A divergence of the boundaries = the preview lies to the subscriber about what he will receive (the invariant of CLAUDE.md “a predicate duplicating the selection of another module — mirror it”). We compare not the whole text (it is different: profile-centric against tender-centric), but the extracted **defaults and constants** — what diverges when one side is edited.
+1. **The mirror of the predicates of stage A** (the price / the region / the categories / the status live in the SQL and are not checked behaviorally without PG). We check what can be checked and what really breaks: ``STAGE_A_SQL`` (the routing: which profiles will get the tender) and ``PREVIEW_WHERE_A`` (the preview in the cabinet: how many tenders are promised to the profile) — two selections of one meaning in one module. A divergence of the boundaries = the preview lies to the subscriber about what he will receive (the invariant of the project rules “a predicate duplicating the selection of another module — mirror it”). We compare not the whole text (it is different: profile-centric against tender-centric), but the extracted **defaults and constants** — what diverges when one side is edited.
 2. **The pure functions of stage B** — the branches of the normalization of the categories and the morphology (``keyword_dict``), not covered by the existing tests, plus the degradation of the dictionary of word forms when ``keyword_dict.json`` is unavailable.
 """
 
@@ -49,7 +49,9 @@ def test_amount_range_defaults_mirror_between_routing_and_preview():
     preview = _amount_bounds(PREVIEW_WHERE_A)
 
     assert routing, "the BETWEEN predicate of the price was not found in STAGE_A_SQL"
-    assert preview, "the BETWEEN predicate of the price was not found in PREVIEW_WHERE_A"
+    assert (
+        preview
+    ), "the BETWEEN predicate of the price was not found in PREVIEW_WHERE_A"
     assert routing == preview
 
 
@@ -68,7 +70,9 @@ def test_tender_without_amount_passes_only_via_include_no_amount_on_both_sides()
         amount_null_branch = re.search(
             r"include_no_amount.+?IS NULL AND.+?IS NULL", sql, re.S
         )
-        assert amount_null_branch, "the branch “no bounds → a tender without an amount is OK” is lost"
+        assert (
+            amount_null_branch
+        ), "the branch “no bounds → a tender without an amount is OK” is lost"
 
 
 # --------------------------------------------------------------------------- #
@@ -103,7 +107,9 @@ def test_empty_region_filter_means_no_filter_on_both_sides():
     Both sides must treat the emptiness in the same way, otherwise a profile without regions catches either everything or nothing — depending on where one looks.
     """
     for sql, branch in _REGION_NO_FILTER.items():
-        assert branch in sql, "the branch “regions are not set → there is no filter” is lost"
+        assert (
+            branch in sql
+        ), "the branch “regions are not set → there is no filter” is lost"
     for sql, overlap in _REGION_OVERLAP.items():
         assert overlap in sql, "the overlap match of the regions is lost"
 
@@ -111,7 +117,9 @@ def test_empty_region_filter_means_no_filter_on_both_sides():
 def test_empty_classification_include_means_no_filter_on_both_sides():
     """An empty include-list of categories — “any category”."""
     for sql, branch in _CLS_INCLUDE_NO_FILTER.items():
-        assert branch in sql, "the branch “categories are not set → there is no filter” is lost"
+        assert (
+            branch in sql
+        ), "the branch “categories are not set → there is no filter” is lost"
 
 
 def test_classification_wildcard_is_translated_to_like_on_both_sides():

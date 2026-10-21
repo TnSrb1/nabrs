@@ -338,7 +338,8 @@ def _flag_dependency_paths() -> set[str]:
 )
 def test_cabinet_routers_resolve_admin_flag(path):
     """The templates of these routes inherit base.html → the header needs the operator flag.
-    If the dependency is forgotten on a new router, the “Admin” link will silently disappear there."""
+    If the dependency is forgotten on a new router, the “Admin” link will silently disappear there.
+    """
     assert path in _flag_dependency_paths()
 
 

@@ -248,4 +248,6 @@ def perform_setup_intent_step_up(*args, **kwargs) -> NoReturn:
     medium/high-risk registrations require a card binding with an immediate
     refund (ADR-018 §4). Implementation — Sprint-21 (Paddle), after a future ADR.
     """
-    raise NotImplementedError("step-up €1 SetupIntent — Sprint-21 (Paddle, a future ADR)")
+    raise NotImplementedError(
+        "step-up €1 SetupIntent — Sprint-21 (Paddle, a future ADR)"
+    )

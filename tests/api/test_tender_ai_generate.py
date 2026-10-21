@@ -526,5 +526,7 @@ async def test_stepwise_stops_when_lock_lost_after_step(monkeypatch):
         s, tid=_TID, tender_id=_TENDER, profile_id=_PROFILE, level="deep", ai_client=ai
     )
     assert status == gen.STATUS_IN_PROGRESS
-    assert ai.calls == 1  # after the first step — stop, the other chunks were not called
+    assert (
+        ai.calls == 1
+    )  # after the first step — stop, the other chunks were not called
     assert s.lock_calls == 2  # taken at the start + an attempt after the step's commit

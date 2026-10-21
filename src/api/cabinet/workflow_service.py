@@ -41,7 +41,7 @@ REMINDER_STATUSES: tuple[str, ...] = ("watching", "active")
 # The funnel board /app/my (portal, Stage 2) splits the stages into “in work” and “outcomes”.
 # “In work” — a MIRROR of :data:`src.api.cabinet.feed_service.WORK_STATUSES`, by which
 # the cockpit counts “N tenders in work”: if the lists diverge, the dashboard
-# would count one thing and the board would show another. One predicate per meaning (CLAUDE.md), rather than
+# would count one thing and the board would show another. One predicate per meaning (the project rules), rather than
 # a second copy of the literal. The outcomes are derived by subtraction, so a new stage in
 # ``STATUSES`` lands on the board by itself (in the archive), rather than vanishing silently.
 BOARD_WORK_STATUSES: tuple[str, ...] = WORK_STATUSES
@@ -50,7 +50,7 @@ BOARD_OUTCOME_STATUSES: tuple[str, ...] = tuple(
 )
 
 # “Mine” tender of the funnel = any stage except the default new (= “the subscriber has marked something”).
-# ONE predicate per meaning: the page /app/my and the CSV export must show one set (CLAUDE.md),
+# ONE predicate per meaning: the page /app/my and the CSV export must show one set (the project rules),
 # so the list is derived from STATUSES and not written as a literal;
 # a stage that is added will be picked up by both places themselves.
 _MY_STATUS_IN = "(" + ", ".join(f"'{s}'" for s in STATUSES if s != "new") + ")"
@@ -206,7 +206,7 @@ _ALL_FOLDER_ITEMS_SQL = text("""
 # “my tenders” do not carry it themselves (tender_user_status / folder_items
 # are tender-centric, without a profile). We resolve it via delivery_outbox: the freshest
 # delivery of THIS tender whose profiles.tenant_id is the request’s tenant (delivery_
-# outbox does not carry its own tenant_id — CLAUDE.md). A correlated subquery degrades itself to NULL
+# outbox does not carry its own tenant_id — the project rules). A correlated subquery degrades itself to NULL
 # both when there are no matching rows and when RLS has hidden them (protection in
 # two layers, as in feed_service._FEED_SELECT_BODY) — there is nothing to break.
 _PROFILE_RESOLVE_SQL = """(
@@ -387,7 +387,7 @@ class MyTenderRow:
     # Resolved via delivery_outbox (see _PROFILE_RESOLVE_SQL) — the title-translation toggle
     # (_card_title.html) needs a profile_id, which the row of "my
     # tenders" does not have of its own. None → the row draws an external link without the toggle
-    # (an honest link to the portal is better than a 404 — CLAUDE.md).
+    # (an honest link to the portal is better than a 404 — the project rules).
     profile_id: str | None = None
     # The name of the source (sources.display_name); None — the name is not filled in.
     source_label: str | None = None

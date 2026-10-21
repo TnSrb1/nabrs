@@ -71,10 +71,14 @@ def test_statistika_sr_default_renders_aggregates(monkeypatch):
     # The dates — from the data (Belgrade), not a literal in the template.
     assert "Podaci od 02.06.2026 · stanje na 09.10.2026" in html
     assert "Tendera u periodu: 1500" in html
-    assert "45 · Građevinski radovi" in html  # sr — Latin, not the Cyrillic of the directory
+    assert (
+        "45 · Građevinski radovi" in html
+    )  # sr — Latin, not the Cyrillic of the directory
     assert "Otvoreni postupak" in html
     assert "Nije navedeno" in html
-    assert "€1\u00a0234\u00a0567" in html  # the digit groups are non-breaking (the number does not break)
+    assert (
+        "€1\u00a0234\u00a0567" in html
+    )  # the digit groups are non-breaking (the number does not break)
     assert "iznos poznat za 7 od 14" in html
     assert "iznos poznat za 0 od 4" in html
     assert "Grad Beograd" in html

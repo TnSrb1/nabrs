@@ -67,9 +67,18 @@ def _httpx_record(method: str, url: str, status: int) -> logging.LogRecord:
             "https://jnportal.src-ujn.example.invalid/api/TenderPlanItemsAssociated/42",
             "TenderPlanItemsAssociated",
         ),
-        ("https://jnportal.src-ujn.example.invalid/api/LotsTenderSpaceEO/42", "LotsTenderSpaceEO"),
-        ("https://jnportal.src-ujn.example.invalid/api/TenderNotices?filter=1", "TenderNotices"),
-        ("https://jnportal.src-ujn.example.invalid/api/documentControl/42", "documentControl"),
+        (
+            "https://jnportal.src-ujn.example.invalid/api/LotsTenderSpaceEO/42",
+            "LotsTenderSpaceEO",
+        ),
+        (
+            "https://jnportal.src-ujn.example.invalid/api/TenderNotices?filter=1",
+            "TenderNotices",
+        ),
+        (
+            "https://jnportal.src-ujn.example.invalid/api/documentControl/42",
+            "documentControl",
+        ),
         ("https://jnportal.src-ujn.example.invalid/tender-eo/12345", "/tender-eo/<id>"),
         ("https://jnportal.src-ujn.example.invalid/api/oglasi", "other"),
     ],
@@ -152,7 +161,8 @@ def test_build_rate_pass_log_contains_numbers_and_endpoint() -> None:
 def test_request_budget_literals_are_four_plus_twelve() -> None:
     """‼️ The literals — NOT from another constant: if someone raises the budget, this test must notice and force a justification by figures, as it is justified now (a measurement of 168 cards on 22.09.2026, see the docstring of the constants).
 
-    4 — the fixed part of the card (the lots + the HTML + the plan + the list of files), 12 — the ceiling of the downloadable files; 16 — the absolute ceiling of the price of the card, exactly the maximum that was observed in production."""
+    4 — the fixed part of the card (the lots + the HTML + the plan + the list of files), 12 — the ceiling of the downloadable files; 16 — the absolute ceiling of the price of the card, exactly the maximum that was observed in production.
+    """
     assert TENDER_FIXED_REQUEST_BUDGET == 4
     assert DOCUMENTS_MAX_FILES == 12
     assert TENDER_REQUEST_CEILING == 16
@@ -177,7 +187,9 @@ def test_check_tender_budget_silent_on_every_observed_shape() -> None:
     """‼️ The MAIN expectation of step 2: on EVERY form of the price observed in production (168 cards in 1.5 days, the distribution of the files from the docstring of the constants), the budget must stay silent. It is because of 151 false warnings that the price of the card stopped being visible."""
     observed_files = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12]
     for files in observed_files:
-        total = 4 + files  # the fixed part by the fact of the log — exactly 4 for 168 of 168
+        total = (
+            4 + files
+        )  # the fixed part by the fact of the log — exactly 4 for 168 of 168
         assert check_tender_budget("950123", total, files) is None, files
 
 

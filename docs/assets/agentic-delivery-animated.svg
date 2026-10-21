@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" role="img" font-family="system-ui,Segoe UI,Arial,sans-serif" aria-label="Animated agentic delivery: a coordinator agent checks a task against real data and writes a brief, a worker agent builds it in an isolated worktree with a mutation-checked test and a draft pull request, an independent gate and a second agent verify it, the human owner merges high-risk paths, main is rolled out automatically and checked live, and verified lessons move up knowledge layers.">
+<defs>
+<marker id="m-34e39b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#34e39b"/></marker>
+<marker id="m-38e1ff" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#38e1ff"/></marker>
+<marker id="m-b18cff" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b18cff"/></marker>
+<marker id="m-ff8fa3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ff8fa3"/></marker>
+<marker id="m-ffd166" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ffd166"/></marker>
+</defs>
+<style>
+@keyframes n-0_5{0%{opacity:1}15.556%{opacity:1}16.667%{opacity:0.28}82.222%{opacity:0.28}83.333%{opacity:1}100%{opacity:1}}
+.n-0_5{animation:n-0_5 36s linear infinite}
+@keyframes n-1_5{0%{opacity:0.28}15.556%{opacity:0.28}16.667%{opacity:1}32.222%{opacity:1}33.333%{opacity:0.28}82.222%{opacity:0.28}83.333%{opacity:1}98.889%{opacity:1}100%{opacity:0.28}}
+.n-1_5{animation:n-1_5 36s linear infinite}
+@keyframes n-2_5{0%{opacity:0.28}32.222%{opacity:0.28}33.333%{opacity:1}48.889%{opacity:1}50%{opacity:0.28}82.222%{opacity:0.28}83.333%{opacity:1}98.889%{opacity:1}100%{opacity:0.28}}
+.n-2_5{animation:n-2_5 36s linear infinite}
+@keyframes n-3_5{0%{opacity:0.28}48.889%{opacity:0.28}50%{opacity:1}65.556%{opacity:1}66.667%{opacity:0.28}82.222%{opacity:0.28}83.333%{opacity:1}98.889%{opacity:1}100%{opacity:0.28}}
+.n-3_5{animation:n-3_5 36s linear infinite}
+@keyframes n-4_5{0%{opacity:0.28}65.556%{opacity:0.28}66.667%{opacity:1}98.889%{opacity:1}100%{opacity:0.28}}
+.n-4_5{animation:n-4_5 36s linear infinite}
+@keyframes e-0_5{0%{opacity:1}15.556%{opacity:1}16.667%{opacity:0.12}82.222%{opacity:0.12}83.333%{opacity:1}100%{opacity:1}}
+.e-0_5{animation:e-0_5 36s linear infinite}
+@keyframes e-1_5{0%{opacity:0.12}15.556%{opacity:0.12}16.667%{opacity:1}32.222%{opacity:1}33.333%{opacity:0.12}82.222%{opacity:0.12}83.333%{opacity:1}98.889%{opacity:1}100%{opacity:0.12}}
+.e-1_5{animation:e-1_5 36s linear infinite}
+@keyframes e-2_5{0%{opacity:0.12}32.222%{opacity:0.12}33.333%{opacity:1}48.889%{opacity:1}50%{opacity:0.12}82.222%{opacity:0.12}83.333%{opacity:1}98.889%{opacity:1}100%{opacity:0.12}}
+.e-2_5{animation:e-2_5 36s linear infinite}
+@keyframes e-3_5{0%{opacity:0.12}48.889%{opacity:0.12}50%{opacity:1}65.556%{opacity:1}66.667%{opacity:0.12}82.222%{opacity:0.12}83.333%{opacity:1}98.889%{opacity:1}100%{opacity:0.12}}
+.e-3_5{animation:e-3_5 36s linear infinite}
+@keyframes e-4_5{0%{opacity:0.12}65.556%{opacity:0.12}66.667%{opacity:1}98.889%{opacity:1}100%{opacity:0.12}}
+.e-4_5{animation:e-4_5 36s linear infinite}
+@keyframes c-0{0%{opacity:1}15.556%{opacity:1}16.667%{opacity:0}98.889%{opacity:0}100%{opacity:1}}
+.c-0{animation:c-0 36s linear infinite}
+@keyframes c-1{0%{opacity:0}15.556%{opacity:0}16.667%{opacity:1}32.222%{opacity:1}33.333%{opacity:0}100%{opacity:0}}
+.c-1{animation:c-1 36s linear infinite}
+@keyframes c-2{0%{opacity:0}32.222%{opacity:0}33.333%{opacity:1}48.889%{opacity:1}50%{opacity:0}100%{opacity:0}}
+.c-2{animation:c-2 36s linear infinite}
+@keyframes c-3{0%{opacity:0}48.889%{opacity:0}50%{opacity:1}65.556%{opacity:1}66.667%{opacity:0}100%{opacity:0}}
+.c-3{animation:c-3 36s linear infinite}
+@keyframes c-4{0%{opacity:0}65.556%{opacity:0}66.667%{opacity:1}82.222%{opacity:1}83.333%{opacity:0}100%{opacity:0}}
+.c-4{animation:c-4 36s linear infinite}
+@keyframes c-5{0%{opacity:0}82.222%{opacity:0}83.333%{opacity:1}98.889%{opacity:1}100%{opacity:0}}
+.c-5{animation:c-5 36s linear infinite}
+.cap{opacity:0}
+@media (prefers-reduced-motion:reduce){.nd,.ed,.dot{animation:none}.cap{display:none}}
+</style>
+<rect width="1200" height="640" fill="#0b1830"/>
+<text x="40" y="34" font-size="14" font-weight="700" fill="#74d3c4" letter-spacing="1.5">AGENTIC DELIVERY · COORDINATOR, WORKER, HUMAN OWNER</text>
+<path id="a1" class="ed e-0_5" d="M270 120 H330" fill="none" stroke="#ffd166" stroke-width="2" marker-end="url(#m-ffd166)"/>
+<path id="a2" class="ed e-1_5" d="M570 120 H630" fill="none" stroke="#34e39b" stroke-width="2" marker-end="url(#m-34e39b)"/>
+<path id="a3" class="ed e-1_5" d="M870 120 H930" fill="none" stroke="#34e39b" stroke-width="2" marker-end="url(#m-34e39b)"/>
+<path id="b1" class="ed e-1_5" d="M1050 170 V210 H150 V250" fill="none" stroke="#34e39b" stroke-width="2" marker-end="url(#m-34e39b)"/>
+<path id="b2" class="ed e-2_5" d="M270 310 H330" fill="none" stroke="#38e1ff" stroke-width="2" marker-end="url(#m-38e1ff)"/>
+<path id="b3" class="ed e-2_5" d="M570 310 H630" fill="none" stroke="#38e1ff" stroke-width="2" marker-end="url(#m-38e1ff)"/>
+<path id="b4" class="ed e-3_5" d="M870 310 H930" fill="none" stroke="#b18cff" stroke-width="2" marker-end="url(#m-b18cff)"/>
+<path id="c1" class="ed e-3_5" d="M1050 370 V450" fill="none" stroke="#b18cff" stroke-width="2" marker-end="url(#m-b18cff)"/>
+<path id="c2" class="ed e-3_5" d="M930 500 H870" fill="none" stroke="#b18cff" stroke-width="2" marker-end="url(#m-b18cff)"/>
+<path id="c3" class="ed e-4_5" d="M630 500 H570" fill="none" stroke="#ff8fa3" stroke-width="2" marker-end="url(#m-ff8fa3)"/>
+<g class="nd n-0_5"><rect x="30" y="70" width="240" height="100" rx="12" fill="#161e30" stroke="#ffd166" stroke-width="2"/><text x="150" y="94" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Value check</text><text x="150" y="114" font-size="12" fill="#c4d0e8" text-anchor="middle">coordinator agent</text><text x="150" y="131" font-size="12" fill="#c4d0e8" text-anchor="middle">idea checked against real data</text><text x="150" y="148" font-size="12" fill="#c4d0e8" text-anchor="middle">no problem found: task closed</text></g>
+<g class="nd n-0_5"><rect x="330" y="70" width="240" height="100" rx="12" fill="#161e30" stroke="#ffd166" stroke-width="2"/><text x="450" y="94" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Brief</text><text x="450" y="114" font-size="12" fill="#c4d0e8" text-anchor="middle">coordinator agent</text><text x="450" y="131" font-size="12" fill="#c4d0e8" text-anchor="middle">scope, forbidden paths,</text><text x="450" y="148" font-size="12" fill="#c4d0e8" text-anchor="middle">how to verify, report format</text></g>
+<g class="nd n-1_5"><rect x="630" y="70" width="240" height="100" rx="12" fill="#161e30" stroke="#34e39b" stroke-width="2"/><text x="750" y="94" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Isolated worktree</text><text x="750" y="114" font-size="12" fill="#c4d0e8" text-anchor="middle">worker agent</text><text x="750" y="131" font-size="12" fill="#c4d0e8" text-anchor="middle">own branch and worktree,</text><text x="750" y="148" font-size="12" fill="#c4d0e8" text-anchor="middle">main checkout untouched</text></g>
+<g class="nd n-1_5"><rect x="930" y="70" width="240" height="100" rx="12" fill="#161e30" stroke="#34e39b" stroke-width="2"/><text x="1050" y="94" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Mutation check</text><text x="1050" y="114" font-size="12" fill="#c4d0e8" text-anchor="middle">worker agent</text><text x="1050" y="131" font-size="12" fill="#c4d0e8" text-anchor="middle">remove the fix: the new test</text><text x="1050" y="148" font-size="12" fill="#c4d0e8" text-anchor="middle">must go red; then restore</text></g>
+<g class="nd n-1_5"><rect x="30" y="250" width="240" height="120" rx="12" fill="#161e30" stroke="#34e39b" stroke-width="2"/><text x="150" y="274" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Draft pull request</text><text x="150" y="294" font-size="12" fill="#c4d0e8" text-anchor="middle">worker agent</text><text x="150" y="311" font-size="12" fill="#c4d0e8" text-anchor="middle">pushed after every step</text><text x="150" y="328" font-size="12" fill="#c4d0e8" text-anchor="middle">written report with commands</text><text x="150" y="345" font-size="12" fill="#c4d0e8" text-anchor="middle">that can be repeated</text></g>
+<g class="nd n-2_5"><rect x="330" y="250" width="240" height="120" rx="12" fill="#161e30" stroke="#38e1ff" stroke-width="2"/><text x="450" y="274" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Independent gate</text><text x="450" y="294" font-size="12" fill="#c4d0e8" text-anchor="middle">automation</text><text x="450" y="311" font-size="12" fill="#c4d0e8" text-anchor="middle">ruff, black, pytest on a</text><text x="450" y="328" font-size="12" fill="#c4d0e8" text-anchor="middle">throwaway PostgreSQL,</text><text x="450" y="345" font-size="12" fill="#c4d0e8" text-anchor="middle">coverage floor 70%</text></g>
+<g class="nd n-2_5"><rect x="630" y="250" width="240" height="120" rx="12" fill="#161e30" stroke="#38e1ff" stroke-width="2"/><text x="750" y="274" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Second-agent review</text><text x="750" y="294" font-size="12" fill="#c4d0e8" text-anchor="middle">coordinator agent</text><text x="750" y="311" font-size="12" fill="#c4d0e8" text-anchor="middle">runs the gate itself, reads</text><text x="750" y="328" font-size="12" fill="#c4d0e8" text-anchor="middle">the diff, repeats the</text><text x="750" y="345" font-size="12" fill="#c4d0e8" text-anchor="middle">report's commands</text></g>
+<g class="nd n-3_5"><rect x="930" y="250" width="240" height="120" rx="12" fill="#161e30" stroke="#b18cff" stroke-width="2"/><text x="1050" y="274" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Merge</text><text x="1050" y="294" font-size="12" fill="#c4d0e8" text-anchor="middle">human owner or coordinator</text><text x="1050" y="311" font-size="12" fill="#c4d0e8" text-anchor="middle">high-risk paths: owner only</text><text x="1050" y="328" font-size="12" fill="#c4d0e8" text-anchor="middle">migrations, deployment,</text><text x="1050" y="345" font-size="12" fill="#c4d0e8" text-anchor="middle">auth, billing</text></g>
+<g class="nd n-3_5"><rect x="930" y="450" width="240" height="100" rx="12" fill="#161e30" stroke="#b18cff" stroke-width="2"/><text x="1050" y="474" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Automatic rollout</text><text x="1050" y="494" font-size="12" fill="#c4d0e8" text-anchor="middle">automation</text><text x="1050" y="511" font-size="12" fill="#c4d0e8" text-anchor="middle">main is rolled out by a</text><text x="1050" y="528" font-size="12" fill="#c4d0e8" text-anchor="middle">timer, no manual step</text></g>
+<g class="nd n-3_5"><rect x="630" y="450" width="240" height="100" rx="12" fill="#161e30" stroke="#b18cff" stroke-width="2"/><text x="750" y="474" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Production check</text><text x="750" y="494" font-size="12" fill="#c4d0e8" text-anchor="middle">coordinator agent</text><text x="750" y="511" font-size="12" fill="#c4d0e8" text-anchor="middle">live render and data check,</text><text x="750" y="528" font-size="12" fill="#c4d0e8" text-anchor="middle">not the test report</text></g>
+<g class="nd n-4_5"><rect x="30" y="450" width="540" height="100" rx="12" fill="#161e30" stroke="#ff8fa3" stroke-width="2"/><text x="300" y="474" font-size="14" font-weight="700" fill="#eef2fb" text-anchor="middle">Knowledge layers</text><text x="300" y="494" font-size="12" fill="#c4d0e8" text-anchor="middle">L0 raw  &gt;  L1 fact  &gt;  L2 procedure  &gt;  L3 invariant</text><text x="300" y="511" font-size="12" fill="#c4d0e8" text-anchor="middle">moves up only on proof, never on frequency</text><text x="300" y="528" font-size="12" fill="#c4d0e8" text-anchor="middle">an invariant states: ban, reason, how to check</text></g>
+<g id="dots">
+<circle class="dot e-0_5" r="5" fill="#ffd166"><animateMotion dur="1.20s" begin="-0.00s" repeatCount="indefinite"><mpath href="#a1"/></animateMotion></circle>
+<circle class="dot e-0_5" r="5" fill="#ffd166"><animateMotion dur="1.20s" begin="-0.60s" repeatCount="indefinite"><mpath href="#a1"/></animateMotion></circle>
+<circle class="dot e-1_5" r="5" fill="#34e39b"><animateMotion dur="1.20s" begin="-0.25s" repeatCount="indefinite"><mpath href="#a2"/></animateMotion></circle>
+<circle class="dot e-1_5" r="5" fill="#34e39b"><animateMotion dur="1.20s" begin="-0.85s" repeatCount="indefinite"><mpath href="#a2"/></animateMotion></circle>
+<circle class="dot e-1_5" r="5" fill="#34e39b"><animateMotion dur="1.20s" begin="-0.50s" repeatCount="indefinite"><mpath href="#a3"/></animateMotion></circle>
+<circle class="dot e-1_5" r="5" fill="#34e39b"><animateMotion dur="1.20s" begin="-1.10s" repeatCount="indefinite"><mpath href="#a3"/></animateMotion></circle>
+<circle class="dot e-1_5" r="5" fill="#34e39b"><animateMotion dur="10.89s" begin="-0.75s" repeatCount="indefinite"><mpath href="#b1"/></animateMotion></circle>
+<circle class="dot e-1_5" r="5" fill="#34e39b"><animateMotion dur="10.89s" begin="-6.19s" repeatCount="indefinite"><mpath href="#b1"/></animateMotion></circle>
+<circle class="dot e-2_5" r="5" fill="#38e1ff"><animateMotion dur="1.20s" begin="-0.00s" repeatCount="indefinite"><mpath href="#b2"/></animateMotion></circle>
+<circle class="dot e-2_5" r="5" fill="#38e1ff"><animateMotion dur="1.20s" begin="-0.60s" repeatCount="indefinite"><mpath href="#b2"/></animateMotion></circle>
+<circle class="dot e-2_5" r="5" fill="#38e1ff"><animateMotion dur="1.20s" begin="-0.25s" repeatCount="indefinite"><mpath href="#b3"/></animateMotion></circle>
+<circle class="dot e-2_5" r="5" fill="#38e1ff"><animateMotion dur="1.20s" begin="-0.85s" repeatCount="indefinite"><mpath href="#b3"/></animateMotion></circle>
+<circle class="dot e-3_5" r="5" fill="#b18cff"><animateMotion dur="1.20s" begin="-0.50s" repeatCount="indefinite"><mpath href="#b4"/></animateMotion></circle>
+<circle class="dot e-3_5" r="5" fill="#b18cff"><animateMotion dur="1.20s" begin="-1.10s" repeatCount="indefinite"><mpath href="#b4"/></animateMotion></circle>
+<circle class="dot e-3_5" r="5" fill="#b18cff"><animateMotion dur="1.20s" begin="-0.75s" repeatCount="indefinite"><mpath href="#c1"/></animateMotion></circle>
+<circle class="dot e-3_5" r="5" fill="#b18cff"><animateMotion dur="1.20s" begin="-1.35s" repeatCount="indefinite"><mpath href="#c1"/></animateMotion></circle>
+<circle class="dot e-3_5" r="5" fill="#b18cff"><animateMotion dur="1.20s" begin="-0.00s" repeatCount="indefinite"><mpath href="#c2"/></animateMotion></circle>
+<circle class="dot e-3_5" r="5" fill="#b18cff"><animateMotion dur="1.20s" begin="-0.60s" repeatCount="indefinite"><mpath href="#c2"/></animateMotion></circle>
+<circle class="dot e-4_5" r="5" fill="#ff8fa3"><animateMotion dur="1.20s" begin="-0.25s" repeatCount="indefinite"><mpath href="#c3"/></animateMotion></circle>
+<circle class="dot e-4_5" r="5" fill="#ff8fa3"><animateMotion dur="1.20s" begin="-0.85s" repeatCount="indefinite"><mpath href="#c3"/></animateMotion></circle>
+</g>
+<g font-size="13" fill="#c4d0e8"><circle cx="46" cy="588" r="6" fill="#ffd166"/><text x="60" y="593">Decide</text><circle cx="270" cy="588" r="6" fill="#34e39b"/><text x="284" y="593">Build</text><circle cx="494" cy="588" r="6" fill="#38e1ff"/><text x="508" y="593">Verify</text><circle cx="718" cy="588" r="6" fill="#b18cff"/><text x="732" y="593">Ship</text><circle cx="942" cy="588" r="6" fill="#ff8fa3"/><text x="956" y="593">Learn</text></g>
+<text class="cap c-0" x="600" y="620" font-size="14" fill="#eef2fb" text-anchor="middle">Decide: a task is checked against real data before it is written; a task for a problem that does not exist is closed.</text>
+<text class="cap c-1" x="600" y="620" font-size="14" fill="#eef2fb" text-anchor="middle">Build: the worker agent works alone in its own worktree and pushes a draft pull request after every step.</text>
+<text class="cap c-2" x="600" y="620" font-size="14" fill="#eef2fb" text-anchor="middle">Verify: an independent gate, then a second agent that re-runs the commands of the test report.</text>
+<text class="cap c-3" x="600" y="620" font-size="14" fill="#eef2fb" text-anchor="middle">Ship: high-risk paths are merged only by the human owner; main is rolled out automatically and checked live.</text>
+<text class="cap c-4" x="600" y="620" font-size="14" fill="#eef2fb" text-anchor="middle">Learn: an observation becomes a rule only with proof, and moves up one layer at a time.</text>
+<text class="cap c-5" x="600" y="620" font-size="14" fill="#eef2fb" text-anchor="middle">All stages together.</text>
+</svg>

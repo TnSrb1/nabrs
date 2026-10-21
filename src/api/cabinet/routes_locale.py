@@ -29,7 +29,7 @@ router = APIRouter(tags=["cabinet"])
 # 1 year — the same as the language cookie on the public site (routes_public._LANG_COOKIE_MAX_AGE).
 _LANG_COOKIE_MAX_AGE = 60 * 60 * 24 * 365
 
-# CAST per the asyncpg invariant (CLAUDE.md): only explicit CAST in text().
+# CAST per the asyncpg invariant (the project rules): only explicit CAST in text().
 _UPDATE_LOCALE_SQL = text(
     "UPDATE users SET locale = CAST(:locale AS text), updated_at = now() "
     "WHERE id = CAST(:uid AS uuid)"

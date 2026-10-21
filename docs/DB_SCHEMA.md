@@ -1,10 +1,12 @@
 # DB_SCHEMA.md — The database schema of Tender Bot Serbia
 
+> **Note:** schema details cover migrations up to 0044; later migrations: see `alembic/versions/`.
+
 **Version:** 1.9
 **Date:** 2026-09-26 (docs-sync — **covered up to head 0044**. Added migrations 0034–0044: §2.34 `ai_spend_daily` (0040), §2.35 `ai_spend_alert_log` (0040), §2.36 `template_library.i18n` (0036, only the column — the table itself is not described, the 0016 gap is outside the scope of this edit); new columns in existing tables — `user_channels.locale`+`status='disabled'` (§2.5, 0037/0038), `profiles.match_all`+`ai_analysis_level` auto-analysis off (§2.6, 0043/0044), `trial_requests.decision_comment` (§2.26, 0035); a new §4.3 — SECURITY DEFINER functions 0034–0044 (subscription requests, disabling/enabling a subscriber, access extension, deterministic resolvers replacing `LIMIT 1` without `ORDER BY`). Earlier v1.8 2026-07-18 (docs-schema-hygiene — covered up to head 0033. Added tables/objects of migrations 0019–0033 (v1.7 stopped at 0018) + a retroactive addition of the missed `trial_requests` §2.26 (0012): §2.26 `trial_requests` (0012), §2.27 `award_watch_*` (0019), §2.28 `referrals` (0020), §2.29 billing schema `billing_subscriptions`/`billing_webhook_events` (0028), §2.30 `tender_folders`/`folder_items`/`tender_notes` (0029), §2.31 `admin_audit_log` (0030, global, REVOKE ALL from the app role), §2.32 `channel_dead_notice_log` (0031), §2.33 `billing_notification_outbox` (0033). A new §4.2 — **the perimeter of the app role `tendersrb_app` (VG-01, 0021)** + FORCE RLS + a catalog of SECURITY DEFINER functions `app_resolve_*`/`app_admin_*`/`app_billing_*`/`app_referral_*` (0021–0033). Changes to existing tables: `tenants.access_until` (0012), `tenants.tier` → CHECK `ck_tenants_tier`/DEFAULT `lite`/NOT NULL (0027). Earlier v1.7 Chat 68 VG-05 STAGE 2 — added `tender_awards` §2.25 (migration 0018): award decisions of F03 eNabavke, DocumentTypeId 11+204, 5 indexes, no RLS. DB head → 0018. Earlier v1.6 Chat 58 Track C — added `subscription_reminder_log` §2.24 (migration 0017): a log of subscription-expiry reminders, UNIQUE `(tenant_id, threshold_days, access_until_snapshot)` — one threshold per expiry date, on renewal a new snapshot gives a new UNIQUE key, a direct RLS policy `tenant_isolation`. Earlier v1.5 — added `summary_log` §2.23 (migration 0010): a log of sent daily summaries for the idempotency of the daily-summary worker (a port of v6 `daily_summary`), UNIQUE `(tenant_id, summary_date)` — “one summary per day per tenant”, a direct RLS policy `tenant_isolation`. Earlier v1.4 Chat 40 — `reminder_log` §2.22 (migration 0009): a log of sent deadline reminders for the idempotency of the reminder worker (a port of v6 `reminders_loop`), UNIQUE `(tenant_id, tender_id, threshold_days)` — “one threshold once”, a direct RLS policy `tenant_isolation`. v1.3 Chat 38 — `tender_user_status` §2.21 (migration 0008): the user's tender status funnel at tenant level, 7 values `new/watching/active/submitted/won/lost/skipped` (a port of v6), default `new`, a direct RLS policy `tenant_isolation`. v1.2 Chat 27 — T-fix: on-the-fly archiving, `auth_tokens` §2.20, a global UNIQUE anti-abuse, `user_channels` in the RLS list without `tenant_id`)
-**Purpose:** a detailed operational reference for the PostgreSQL schema — DDL, indexes, RLS policies, triggers, template queries. It does not duplicate the conceptual data model from `ARCHITECTURE.md` but unfolds it at the implementation level.
+**Purpose:** a detailed operational reference for the PostgreSQL schema — DDL, indexes, RLS policies, triggers, template queries. It does not duplicate the conceptual data model from the architecture notes (not published) but unfolds it at the implementation level.
 
-For the conceptual model and the rationale of decisions, see `docs/ARCHITECTURE.md` v3.0 §1.5 (multi-country foundations), §5 (data model), §6 (subscriber profile), §7 (routing engine), §19 (country pack roadmap), and also `docs/DECISIONS.md` ADR-002 (RLS), ADR-012 (archive), ADR-018 (universal anti_abuse_identifier, revised in Chat 14), ADR-022 (two-tier model + canonical), ADR-023 (profile + routing), ADR-024 (AI pipeline), ADR-025 (outbox), **ADR-033** (multi-country foundations).
+For the conceptual model and the rationale of decisions, see the architecture notes (not published) v3.0 §1.5 (multi-country foundations), §5 (data model), §6 (subscriber profile), §7 (routing engine), §19 (country pack roadmap), and also `docs/DECISIONS.md` ADR-002 (RLS), ADR-012 (archive), ADR-018 (universal anti_abuse_identifier, revised in Chat 14), ADR-022 (two-tier model + canonical), ADR-023 (profile + routing), ADR-024 (AI pipeline), ADR-025 (outbox), **ADR-033** (multi-country foundations).
 
 Abbreviations — `docs/GLOSSARY.md`.
 
@@ -83,7 +85,7 @@ The subscriber’s legal entity (a company/DOO or an individual/preduzetnik for 
 - `tz TEXT` — Europe/Belgrade by default; taken from `countries.default_tz`, but may be overridden
 - `created_at`, `updated_at`
 
-> **`tier` canonicalised by migration 0027 (audit R8):** `tier` got `DEFAULT 'lite'`, `NOT NULL` and the CHECK `ck_tenants_tier CHECK (tier IN ('lite','starter','pro','business','enterprise'))` — the internal tier canon (SSOT `src/domain/tiers.py` `TIER_ORDER`). Backfill BEFORE the constraint: `'free'`/`NULL`/any non-canon → `'lite'`. ‼️ `'free'` is a storefront alias, NOT an internal tier (it cannot be in the DB after 0027). The axis divergence storefront/gating/model choice — see CLAUDE.md “Do NOT mix the plan axes”.
+> **`tier` canonicalised by migration 0027 (audit R8):** `tier` got `DEFAULT 'lite'`, `NOT NULL` and the CHECK `ck_tenants_tier CHECK (tier IN ('lite','starter','pro','business','enterprise'))` — the internal tier canon (SSOT `src/domain/tiers.py` `TIER_ORDER`). Backfill BEFORE the constraint: `'free'`/`NULL`/any non-canon → `'lite'`. ‼️ `'free'` is a storefront alias, NOT an internal tier (it cannot be in the DB after 0027). The axis divergence storefront/gating/model choice — see the project rules “Do NOT mix the plan axes”.
 
 **UNIQUE (composite):**
 
@@ -883,7 +885,7 @@ CREATE POLICY tenant_isolation ON tender_ai_analyses
 
 ## 4.2. The `tendersrb_app` role perimeter + SECURITY DEFINER functions (VG-01, migrations 0021–0033)
 
-**The RLS perimeter (a code invariant, CLAUDE.md).** Since migration **0021** bot+api run under the restricted role `tendersrb_app` (`LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS`), not under the superuser owner `tendersrb`. The role’s password comes from the ENV `APP_DB_PASSWORD` (fail-hard if empty). The role is granted `CONNECT` on the DB, `USAGE` on `public`, `SELECT/INSERT/UPDATE/DELETE` on all tables + `USAGE,SELECT` on sequences, and also **`ALTER DEFAULT PRIVILEGES`** — the same grants automatically extend to the tables/sequences of future migrations (‼️ consequence: a new platform table automatically gets direct access for the app role — to close it an explicit `REVOKE ALL` is needed, see `admin_audit_log`/`billing_notification_outbox`).
+**The RLS perimeter (a code invariant, the project rules).** Since migration **0021** bot+api run under the restricted role `tendersrb_app` (`LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS`), not under the superuser owner `tendersrb`. The role’s password comes from the ENV `APP_DB_PASSWORD` (fail-hard if empty). The role is granted `CONNECT` on the DB, `USAGE` on `public`, `SELECT/INSERT/UPDATE/DELETE` on all tables + `USAGE,SELECT` on sequences, and also **`ALTER DEFAULT PRIVILEGES`** — the same grants automatically extend to the tables/sequences of future migrations (‼️ consequence: a new platform table automatically gets direct access for the app role — to close it an explicit `REVOKE ALL` is needed, see `admin_audit_log`/`billing_notification_outbox`).
 
 **FORCE ROW LEVEL SECURITY.** 0021 set `FORCE` on 17 tenant tables (15 existing + `award_watch_subscriptions`/`award_watch_sent`). Later FORCE was attached in the migrations of the new tables themselves (0028/0029/0031). ‼️ Two omissions were fixed by **0032**: `trial_requests` (ENABLE + policy since 0012, FORCE forgotten) and `channel_dead_notice_log` (0031 forgot FORCE). `ENABLE` makes everyone comply with the policy EXCEPT the owner; `FORCE` — the owner too. Under the app role (NOBYPASSRLS) the policy works even without FORCE; the hole is on the owner (a script/worker/migration under the owner role would silently read all tenants). A superuser (`BYPASSRLS`) bypasses RLS regardless of FORCE — a PostgreSQL guarantee. The invariant is checked against the catalog `relforcerowsecurity` (`tests/db/test_rls_force_invariant.py`, works WITHOUT a DB — the table list is derived from the migration SQL).
 
@@ -910,7 +912,7 @@ CREATE POLICY tenant_isolation ON tender_ai_analyses
 | `app_billing_pending_notifications(limit)` | 0033 | unsent emails + the resolved addressee (the oldest user with a valid email) |
 | `app_billing_mark_notification_sent(id)` | 0033 | an atomic claim of a row before sending (`UPDATE ... WHERE sent_at IS NULL RETURNING id`) |
 
-> The general rule of the perimeter (CLAUDE.md): any authed read/write per tenant → `await repo.set_tenant(db, tid)` as the FIRST action in the transaction. Cross-tenant — ONLY via the SECURITY DEFINER above, not by direct SQL. Tests under a superuser do NOT prove the perimeter — a regression under the app role (`TEST_RLS_DATABASE_URL`).
+> The general rule of the perimeter (the project rules): any authed read/write per tenant → `await repo.set_tenant(db, tid)` as the FIRST action in the transaction. Cross-tenant — ONLY via the SECURITY DEFINER above, not by direct SQL. Tests under a superuser do NOT prove the perimeter — a regression under the app role (`TEST_RLS_DATABASE_URL`).
 
 ## 4.3. SECURITY DEFINER functions — migrations 0034–0044
 
@@ -974,7 +976,7 @@ On a worker restart — `SELECT id FROM tenders_normalized WHERE first_seen_at >
 
 ## 6. Template routing-engine queries
 
-For the concept of two- (three-) stage matching, see `ARCHITECTURE.md` §13.
+For the concept of two- (three-) stage matching, see the architecture notes (not published) §13.
 
 ### 6.1. Stage A — SQL prefilter (with the country_code filter after ADR-033)
 
@@ -1086,13 +1088,13 @@ A UNIQUE conflict gives idempotency: re-routing the same tender to the same prof
 
 ### 6.5. Re-routing when a tender is updated
 
-For a conceptual description of the behavior on a tender update, see `ARCHITECTURE.md` §13.4. In short: if a significant field of the tender changed (amount, deadline, classifications), routing runs again; for profiles that have already been delivered to, a separate outbox record is created with `match_kind='update'` (the UNIQUE index on `(profile_id, tender_id, channel, match_kind)` allows an “update” as a separate record alongside the original `match_kind='new'`).
+For a conceptual description of the behavior on a tender update, see the architecture notes (not published) §13.4. In short: if a significant field of the tender changed (amount, deadline, classifications), routing runs again; for profiles that have already been delivered to, a separate outbox record is created with `match_kind='update'` (the UNIQUE index on `(profile_id, tender_id, channel, match_kind)` allows an “update” as a separate record alongside the original `match_kind='new'`).
 
 ---
 
 ## 7. Cluster_key for cross-source deduplication (ADR-022 + ADR-033 addendum)
 
-For the concept, see `ARCHITECTURE.md` §11.4 and ADR-022. After ADR-033 the formula was updated: `country_code` becomes the **first** component of the key, to rule out cross-country false clustering (identical tax_id-format strings in different countries).
+For the concept, see the architecture notes (not published) §11.4 and ADR-022. After ADR-033 the formula was updated: `country_code` becomes the **first** component of the key, to rule out cross-country false clustering (identical tax_id-format strings in different countries).
 
 ```
 cluster_key = sha1(

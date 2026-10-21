@@ -177,7 +177,9 @@ async def test_set_watch_off_downgrades_only_watching():
     sql = _executed_sql(s)
     assert "UPDATE tender_user_status" in sql
     assert "status = 'new'" in sql
-    assert "status = 'watching'" in sql  # WHERE condition: we do not touch active/funnel
+    assert (
+        "status = 'watching'" in sql
+    )  # WHERE condition: we do not touch active/funnel
 
 
 # --------------------------------------------------------------------------- #
@@ -407,7 +409,9 @@ async def test_get_my_tenders_groups_folders_and_funnel():
     assert len(prio.tenders) == 1
     assert prio.tenders[0].title == "Тендер 1"
     assert prio.tenders[0].note == "важно"
-    assert prio.tenders[0].status == "active"  # the stage is visible inside the folder as well
+    assert (
+        prio.tenders[0].status == "active"
+    )  # the stage is visible inside the folder as well
     assert data.folders[1].tenders == []  # an empty folder
     assert len(data.funnel) == 1
     assert data.funnel[0].title == "Слежу"
@@ -432,8 +436,7 @@ async def test_get_my_tenders_carries_resolved_profile_id_into_rows():
 
 @pytest.mark.asyncio
 async def test_get_my_tenders_row_without_resolved_profile_stays_none():
-    """A tender without a business profile (the subquery did not find a row) → ``profile_id`` stays ``None`` — the row must stay an external link without the toggle.
-    """
+    """A tender without a business profile (the subquery did not find a row) → ``profile_id`` stays ``None`` — the row must stay an external link without the toggle."""
     s = FakeSession(
         results=[
             FakeResult(items=[_folder_row(profile_id=None)]),
@@ -448,7 +451,7 @@ async def test_get_my_tenders_row_without_resolved_profile_stays_none():
 
 def test_profile_resolve_sql_scopes_by_tenant_and_asyncpg_cast():
     """The profile-resolve subquery — through delivery_outbox↔profiles, with the tenant scope
-    by an explicit ``CAST(:tid AS uuid)`` (defense-in-depth on top of RLS, as in feed_service._FEED_SELECT_BODY), not by a bare bind (asyncpg in ``text()`` requires CAST — CLAUDE.md).
+    by an explicit ``CAST(:tid AS uuid)`` (defense-in-depth on top of RLS, as in feed_service._FEED_SELECT_BODY), not by a bare bind (asyncpg in ``text()`` requires CAST — the project rules).
     """
     sql = svc._PROFILE_RESOLVE_SQL
     assert "delivery_outbox" in sql
@@ -460,8 +463,7 @@ def test_profile_resolve_sql_scopes_by_tenant_and_asyncpg_cast():
 
 
 def test_profile_resolve_subquery_wired_into_both_my_tenders_queries():
-    """The subquery must stand in BOTH sources of the /app/my rows — the folders and the funnel: skip one, and half the page stays without the toggle (the same class of defect as #456 → #464 — the predicate across ALL render points).
-    """
+    """The subquery must stand in BOTH sources of the /app/my rows — the folders and the funnel: skip one, and half the page stays without the toggle (the same class of defect as #456 → #464 — the predicate across ALL render points)."""
     assert "AS profile_id" in str(svc._FOLDER_TENDERS_SQL)
     assert "AS profile_id" in str(svc._MY_TENDERS_SQL)
 
@@ -610,7 +612,7 @@ async def test_get_my_tenders_export_sets_tenant_before_reading():
 async def test_get_my_tenders_export_scopes_every_tenant_table_by_tid():
     """Each tenant-scoped table of the selection — under an explicit WHERE tenant_id.
 
-    A second layer on top of RLS (CLAUDE.md): tenders_normalized of the tenant does not know it, therefore the rows must be picked only through its own tenant-scoped tables.
+    A second layer on top of RLS (the project rules): tenders_normalized of the tenant does not know it, therefore the rows must be picked only through its own tenant-scoped tables.
     """
     s = FakeSession(results=[FakeResult(items=[])])
     await svc.get_my_tenders_export(s, _TID)

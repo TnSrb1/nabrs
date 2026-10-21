@@ -211,7 +211,8 @@ def test_row_to_user_defaults_deleted_at_when_column_absent():
 def test_admin_user_detail_disabled_user_returns_200_not_404():
     """‼️ The core of the task: before 0039 app_admin_get_user filtered deleted_at IS NULL,
     so the card of a disabled user was unreachable (get_user → None → 404 in the route).
-    The expectation is taken from the FACT — the response code, not a substring in the HTML."""
+    The expectation is taken from the FACT — the response code, not a substring in the HTML.
+    """
     user = _user_row(deleted_at=_NOW)
     client, _fs = _admin_client([FakeResult(items=[user]), FakeResult(scalar=0)])
     resp = client.get(f"/admin/users/{_UID}")

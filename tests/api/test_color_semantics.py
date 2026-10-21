@@ -1,6 +1,6 @@
 """One meaning — one color: blue `.badge-new` only for time and fit score.
 
-Canon of color roles (CLAUDE.md, “Frontend”): gray = “expired/off” · orange `--status-urgent` = only time urgency · blue `--status-new` = “time still left” AND fit score · amber `--color-accent-*` = action and upsell · `.badge-muted` = neutral metadata (translation, stage, label).
+Canon of color roles (the project rules, “Frontend”): gray = “expired/off” · orange `--status-urgent` = only time urgency · blue `--status-new` = “time still left” AND fit score · amber `--color-accent-*` = action and upsell · `.badge-muted` = neutral metadata (translation, stage, label).
 
 The defect this guard closes: blue spread to a THIRD meaning — the funnel stage “new”, the “Novo” label on the public card, the “AI” label on the landing page, the plan in the feature table and in the subscription, admin labels (plan, activity type, audit action). All of them are metadata; their place is `.badge-muted`.
 """
@@ -48,7 +48,7 @@ def test_blue_badge_only_for_time_and_match_score():
     assert not unexpected, (
         "blue .badge-new outside the “time”/“fit score” roles: "
         f"{unexpected}. Metadata (stage, label, plan, activity type) — "
-        "it is .badge-muted, see the color-role canon in CLAUDE.md"
+        "it is .badge-muted, see the color-role canon in the project rules"
     )
 
 

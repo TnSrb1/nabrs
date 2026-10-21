@@ -1,6 +1,6 @@
 """Regression: THREE tier axes diverged — we fix the FACT, not the desired.
 
-CLAUDE.md, the invariant “do NOT mix the tier axes”: the showcase
+The project rules, the invariant “do NOT mix the tier axes”: the showcase
 (``src/plans/catalog.py``) ≠ the gating (``src/ai/usage.py`` ``_TIER_LIMITS``) ≠
 the model choice (``src/ai/client.py`` ``LEVEL_TIER``). The axes DIVERGED and live so
 in production: the reconciliation was prescribed by VG-12 before VG-11, VG-11 went without the reconciliation.
@@ -60,8 +60,7 @@ def _render(start: str, end: str) -> str:
         text=True,
     )
     assert proc.returncode == 0, (
-        f"alembic upgrade {start}:{end} --sql (offline) did not render:\n"
-        + proc.stderr
+        f"alembic upgrade {start}:{end} --sql (offline) did not render:\n" + proc.stderr
     )
     return proc.stdout
 
@@ -152,7 +151,7 @@ def test_axis_level_tier_is_a_different_namespace():
     """``LEVEL_TIER`` — the analysis level → the tier of the MODEL, not the plan.
 
     It must not intersect with the plan names by keys or values:
-    a common name = the first step to mixing the axes (the CLAUDE.md invariant).
+    a common name = the first step to mixing the axes (the invariant from the project rules).
     """
     assert set(LEVEL_TIER.values()) == {"cheap", "balanced", "premium"}
     plan_tiers = set(TIER_ORDER) | {"free"}
