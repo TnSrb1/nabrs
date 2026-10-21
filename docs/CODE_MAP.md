@@ -4,7 +4,7 @@
 
 <sub>Animated: package groups are highlighted in turn. Packages and links are computed from the imports of this snapshot.</sub>
 
-**Derived document.** Generated from the code at `ef650fbb`. Regeneration: `python3 scripts/code_map.py`.
+**Derived document.** Generated from the code at `a42a7882`. Regeneration: `python3 scripts/code_map.py`.
 If the map and the code disagree, **the code is right** — do not edit the map by hand, except the section “Where to look” (it lives in `scripts/code_map.py`).
 
 Volume: **218 modules** in `src/`, **68 466 lines** of Python.

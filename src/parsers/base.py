@@ -1,6 +1,6 @@
 """SourceAdapter — the single interface of tender sources (ADR-021).
 
-The conceptual contract — the architecture notes (not published) §10.1 (class attributes,
+The conceptual contract — the earlier architecture notes (not published) §10.1 (class attributes,
 methods fetch_batch / build_source_uid / normalize / fetch_documents),
 §10.2 (the source registry via @register_source / get_source).
 Target normalization schema — docs/DB_SCHEMA.md §2.10 tenders_normalized.

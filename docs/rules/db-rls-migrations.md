@@ -1,0 +1,19 @@
+---
+description: RLS perimeter, tenant-scoped tables, migration numbers, SECURITY DEFINER, deterministic LIMIT 1
+paths:
+  - "alembic/**"
+  - "src/db/**"
+  - "src/bots/**"
+  - "src/workers/**"
+  - "tests/db/**"
+---
+
+## DB / RLS / migrations (invariants)
+
+- **RLS perimeter:** bot+api run under the role `tendersrb_app` (FORCE RLS, NOBYPASSRLS); the GUC `app.current_tenant_id` is transaction-local. Any authed read/write per tenant → `await repo.set_tenant(db, tid)` as the FIRST action in the transaction (otherwise 0 rows fail-closed / `UndefinedObjectError`). Cross-tenant — only SECURITY DEFINER (`app_resolve_*`, `app_admin_*`; `SET search_path = public`; GRANT EXECUTE TO tendersrb_app). Tests under a superuser do NOT prove the perimeter — add a regression under the app role (`TEST_RLS_DATABASE_URL`).
+- **A new tenant-scoped table = THREE things, not two:** the `tenant_isolation` policy + `ENABLE ROW LEVEL SECURITY` + **`FORCE ROW LEVEL SECURITY`**. ‼️ `ENABLE` does not apply to the table OWNER — without `FORCE` a script/worker under the owner role silently reads all tenants. The hole is invisible to an ordinary regression: **under the app role ENABLE vs FORCE makes NO visible difference**, so check the CATALOG (`relforcerowsecurity`), not behavior. The guard is `tests/db/test_rls_force_invariant.py` (works WITHOUT a DB; the table list is derived from the migration SQL). Real holes: 0031 and `trial_requests` since 0012 — both for months, closed by 0032.
+- **Migration numbers:** before pushing, check the number against `origin/main` and the open `claude/*` branches. ‼️ Two branches with the same number and the same `down_revision` — git will NOT show a conflict, the merge goes through "cleanly", and Alembic ends up with TWO HEADS and the rollout fails **in production** (this happened with two branches that both took 0029). After a rebase, `alembic heads` must return EXACTLY one head.
+- asyncpg in `text()`: only `CAST(:p AS type)`. callback_data ≤64 bytes, a single UUID.
+- ‼️ **The bot and the API run as `tendersrb_app`, not as the owner — a docstring claiming otherwise BREAKS the product.** (The `routing`, `ingest` and `delivery` workers run as the `tendersrb` superuser with BYPASSRLS; a worker running as a superuser must scope the tenant with an explicit `WHERE`, as `matching.LIVE_CHANNELS_SQL` does.) `src/bots/trial_service.py` claimed for nine weeks "owner connection, RLS is not enforced, `set_tenant` is not needed"; in fact the container's `DATABASE_URL` = `tendersrb_app`, and `session_scope()` does not set the GUC → the "3/15/30 days / reject" buttons and `/trials` failed ALWAYS (`UndefinedObjectError: unrecognized configuration parameter "app.current_tenant_id"`). It stayed hidden because nobody had ever approved anything through the bot, and the web admin goes through SECURITY DEFINER. The rule: **a cross-tenant operation (an operator deciding another tenant's fate) goes only through SECURITY DEFINER**; `set_tenant` does not apply here (the operation has no tenant of its own); there must be no raw queries to tenant-scoped tables in `src/bots/` (the guard is `tests/db/test_bots_no_raw_rls_sql.py`). Check a claim about the role/circuit by ACTION — run the path itself in the container on data that is safe by construction (a nonexistent id changes 0 rows), not by reading the code.
+- ‼️ **`LIMIT 1` without `ORDER BY` is a nondeterministic choice, even in MOVED code.** `app_resolve_user_for_auth` used to send users into a random tenant at login. Later the same defect slipped into the new `app_admin_tenant_notify_target` (0041) because the body was copied 1:1 from the old raw bot SQL. Any "pick one row" resolution must have an explicit order; "we didn't write it, we only moved it" does not cancel the defect.
+- Large files (`src/bots/telegram.py` and adapters) — edit surgically.

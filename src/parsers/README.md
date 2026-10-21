@@ -1,7 +1,7 @@
 # src/parsers — Source adapters (Python contract)
 
 Interface contract for tender-platform adapters. Concept —
-the architecture notes (not published) §10 (ADR-021). Target schema — `docs/DB_SCHEMA.md`
+the earlier architecture notes (not published) §10 (ADR-021). Target schema — `docs/DB_SCHEMA.md`
 §2.9 (`tenders_raw`) and §2.10 (`tenders_normalized`). ARCHITECTURE §10.1
 states this file lands in Sprint-12 with the concrete signatures — here they
 are.

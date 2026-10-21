@@ -493,7 +493,7 @@ Comparison with Twilio Verify SMS to Serbia (rejected): $460/month per 1 000 sig
 ### Impact on the DB schema and architecture
 
 - **DB_SCHEMA.md v1.1** (PR-3): the table `anti_abuse_identifiers` with the fields `identifier_type`, `value_hash` (SHA-256), `value_last4`, `risk_score_at_signup`, `verification_method`, `verified_at`, `expires_at`, `region` (CHAR(2) FK to `countries.code`). A UNIQUE constraint on `(value_hash)` globally (anti-multi-account across 12 months — via `expires_at`).
-- **the architecture notes (not published) v3.0** (PR-3): the `KYCProvider` interface in §14 (after the AI pipeline) or in §1.5 multi-country foundations; the mapping `tenants.country_code → KYCProvider`.
+- **the earlier architecture notes (not published) v3.0** (PR-3): the `KYCProvider` interface in §14 (after the AI pipeline) or in §1.5 multi-country foundations; the mapping `tenants.country_code → KYCProvider`.
 - **Sprint-19** (web cabinet, signup flow): the implementation of Turnstile + Kickbox + email confirmation.
 - **Sprint-21** (Paddle in full): the SetupIntent step-up flow, an instant refund after confirmation, recording `card_fingerprint` in the identifier.
 - **Sprint-22** (KYC for RS): the implementation of `KYCProvider('apr_rs')` with a lookup in `apr.gov.rs`.
@@ -601,7 +601,7 @@ After a correct installation of the App with the permissions **All repositories 
 
 **Context:** on a 24-month horizon the project must connect 5–10 heterogeneous sources: jnportal (Serbia, JSON/mobile app), obnova (HTML + a multilingual version), tendersinfo (international commercial, API), EBRD (RSS + API), UNDP (static HTML), potentially others. Each has its own format, schedule and quirks. If the parsing/normalization logic is “baked” into shared code, adding a new source requires revising the core and regressions in the existing ones. This violates the requirement “add a source in one sprint”.
 
-**Decision:** each source is implemented as a class inheriting `SourceAdapter` with a fixed interface (see the architecture notes (not published) section 4.1). The adapter encapsulates **everything** source-specific: the HTTP client, pagination, parsing raw → a `RawTender` structure, forming a stable `source_uid`, normalization into the common `NormalizedTender` model, optional document download.
+**Decision:** each source is implemented as a class inheriting `SourceAdapter` with a fixed interface (see the earlier architecture notes (not published) section 4.1). The adapter encapsulates **everything** source-specific: the HTTP client, pagination, parsing raw → a `RawTender` structure, forming a stable `source_uid`, normalization into the common `NormalizedTender` model, optional document download.
 
 **A hybrid “registry in code + config in the DB”:**
 - **In code** (`src/parsers/<source>/`): the adapter class itself. Registered at start-up through the decorator `@register_source`. Changes go through review via a PR.
@@ -666,7 +666,7 @@ Applied in `DB_SCHEMA.md` v1.1.
 
 3. **`canonical_tenders`** — a group of duplicates from different platforms. Several `tenders_normalized` may point to one `canonical_tender_id`. One of them is `primary` (by priority: jnportal > obnova > EBRD > UNDP > tendersinfo).
 
-For the full details of the deduplication algorithm, RLS and embeddings, see the architecture notes (not published) section 5.
+For the full details of the deduplication algorithm, RLS and embeddings, see the earlier architecture notes (not published) section 5.
 
 **Alternatives rejected:**
 - **One tenders table without a raw/normalized split** — we lose the ability to recompute normalization when the logic is updated without re-downloading.
@@ -712,7 +712,7 @@ For the full details of the deduplication algorithm, RLS and embeddings, see the
 
 **Target SLA:** from the INSERT into `tenders_normalized` to the outbox record — p95 < 5 sec at 1000 active profiles.
 
-For the full details of the schema, the SQL query and update handling, see the architecture notes (not published) sections 6 and 7.
+For the full details of the schema, the SQL query and update handling, see the earlier architecture notes (not published) sections 6 and 7.
 
 **Alternatives rejected:**
 - A materialized view refreshed by cron — we lose real time.
@@ -767,7 +767,7 @@ For the full details of the schema, the SQL query and update handling, see the a
 
 **Failover:** retry → at 30 min of downtime we postpone L2, L3 → to the user “try again later”. Long-term unavailability — a fallback to OpenAI/Gemini (phase 2).
 
-Full details — the architecture notes (not published) section 8.
+Full details — the earlier architecture notes (not published) section 8.
 
 **Alternatives rejected:**
 - A single level — always Sonnet — kills the unit economics of Starter.
@@ -808,7 +808,7 @@ Full details — the architecture notes (not published) section 8.
 
 9. **Read confirmation:** `tender_views` is written on a click in Telegram/Email/Viber or on opening the card. The open rate metric per profile is feedback for tuning.
 
-Full details — the architecture notes (not published) section 9.
+Full details — the earlier architecture notes (not published) section 9.
 
 **Alternatives rejected:**
 - A direct channel call from routing — produces all the bugs listed.
@@ -864,11 +864,11 @@ Full details — the architecture notes (not published) section 9.
 **Date:** 2026-05-24
 **Status:** accepted in Chat 10
 
-**Context:** ADR-008 (Chat 1) fixed the AI stack with concrete model slugs: `claude-haiku-4-5-20251001` (level 1), `claude-sonnet-4-6` (level 2), `claude-opus-4-7` (level 3). These slugs change every 3-6 months in Anthropic's catalog — in a year the architecture document is outdated in the AI stack part. In PR #21 (the architecture notes (not published) v2.0) the decision was made to use tier names instead of slugs, which revealed the need for an explicit ADR to separate the levels of abstraction.
+**Context:** ADR-008 (Chat 1) fixed the AI stack with concrete model slugs: `claude-haiku-4-5-20251001` (level 1), `claude-sonnet-4-6` (level 2), `claude-opus-4-7` (level 3). These slugs change every 3-6 months in Anthropic's catalog — in a year the architecture document is outdated in the AI stack part. In PR #21 (the earlier architecture notes (not published) v2.0) the decision was made to use tier names instead of slugs, which revealed the need for an explicit ADR to separate the levels of abstraction.
 
 **Decision:** two-level naming of Claude models in the project:
 
-1. **The architectural level — tier names.** In the architecture notes (not published), in code at the business-logic level, in `BUSINESS_OPS.md`, in marketing materials — abstract names are used:
+1. **The architectural level — tier names.** In the earlier architecture notes (not published), in code at the business-logic level, in `BUSINESS_OPS.md`, in marketing materials — abstract names are used:
    - `cheap` — fast classification (level 1)
    - `balanced` — the standard analysis (level 2)
    - `premium` — the deep analysis (level 3)
@@ -891,7 +891,7 @@ Full details — the architecture notes (not published) section 9.
 **Relation to ADR-008:** ADR-008 is not canceled. It remains as a historical record “AI = Anthropic Claude only, 3 analysis levels”. ADR-029 extends ADR-008 with a naming rule. The concrete slugs from the text of ADR-008 are the historical reality as of Chat 1, the current mapping is in `infra/config.yaml`.
 
 **Alternatives rejected:**
-- **Keep slugs in the architecture** (as in the architecture notes (not published) v1.0) — obsolescence every 3-6 months.
+- **Keep slugs in the architecture** (as in the earlier architecture notes (not published) v1.0) — obsolescence every 3-6 months.
 - **Tier only, without storing the slug in the DB** — loss of the ability to audit (in 6 months we could not say which model wrote “this nonsense”).
 - **Configuration in env variables instead of config.yaml** — env is poorly suited to a structured mapping and will fall apart when growing to 5+ models.
 
@@ -1021,7 +1021,7 @@ The full DDL is in B8 §5. It is applied in `docs/DB_SCHEMA.md` v1.1 by a separa
 ### Consequences
 
 1. PR #29 (`max/universality-research`) — owner merges with Squash and merge.
-2. A separate brief for the research assistant in Chat 15 — apply the DDL in `docs/DB_SCHEMA.md` v1.1 and update the architecture notes (not published) to v3.0.
+2. A separate brief for the research assistant in Chat 15 — apply the DDL in `docs/DB_SCHEMA.md` v1.1 and update the earlier architecture notes (not published) to v3.0.
 3. Sprint-13 relies on the universal schema. The first code is written with `country_code='RS'` by default.
 
 **Closes:** Q-20.

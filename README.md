@@ -6,23 +6,17 @@
 
 **Serbian public tenders, filtered for you — with an AI that tells you whether to bid.**
 
-[![Live](https://img.shields.io/badge/live-app.nab.rs-1f3760?style=flat-square)](https://app.nab.rs)
 [![CI](https://github.com/TnSrb1/nabrs/actions/workflows/ci.yml/badge.svg)](https://github.com/TnSrb1/nabrs/actions/workflows/ci.yml)
-[![Status](https://img.shields.io/badge/status-production-2ea44f?style=flat-square)](#numbers)
+[![Python](https://img.shields.io/badge/python-3.12-1f3760?style=flat-square)](pyproject.toml)
 [![License](https://img.shields.io/badge/license-proprietary-c07f1a?style=flat-square)](LICENSE)
 
-![Python](https://img.shields.io/badge/Python_3.12-3776AB?style=flat-square&logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL_16-4169E1?style=flat-square&logo=postgresql&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis_7-DC382D?style=flat-square&logo=redis&logoColor=white)
-![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy_2.0-D71F00?style=flat-square&logo=sqlalchemy&logoColor=white)
-![htmx](https://img.shields.io/badge/htmx-3366CC?style=flat-square&logo=htmx&logoColor=white)
-![Tailwind](https://img.shields.io/badge/Tailwind-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
-![Telegram](https://img.shields.io/badge/aiogram_3-26A5E4?style=flat-square&logo=telegram&logoColor=white)
-![Claude](https://img.shields.io/badge/Anthropic_Claude-191919?style=flat-square&logo=anthropic&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker_Compose-2496ED?style=flat-square&logo=docker&logoColor=white)
+[Live app](https://app.nab.rs) · [Architecture](docs/ARCHITECTURE.md) · [Diagrams](docs/diagrams/architecture.svg) · [AI pipeline](docs/AI_PIPELINE.md) · [Agentic delivery](docs/AGENTIC_DELIVERY.md) · [Decisions (ADR)](docs/DECISIONS.md) · [Code map](docs/CODE_MAP.md) · [Database schema](docs/DB_SCHEMA.md)
 
-[Live app](https://app.nab.rs) · [Architecture](docs/diagrams/architecture.svg) · [AI pipeline](docs/AI_PIPELINE.md) · [Agentic delivery](docs/AGENTIC_DELIVERY.md) · [Decisions (ADR)](docs/DECISIONS.md) · [Code map](docs/CODE_MAP.md) · [Database schema](docs/DB_SCHEMA.md)
+<br>
+
+<img src="docs/assets/screenshots/ai-deep-requirements.png" alt="AI analysis of a tender specification: match score, reasons, risks, and a list of requirements, each with its source document and the exact quote" width="720">
+
+*The verdict the product delivers: whether to bid, and every requirement with the exact quote it came from.* ([How it works](docs/AI_PIPELINE.md); the screenshot is rendered by the real application on invented data.)
 
 </div>
 
@@ -122,7 +116,7 @@ Every stage is a standalone worker process. Stages communicate through PostgreSQ
 - **Migrations are checked without a database.** Migration invariants are verified by rendering Alembic in offline SQL mode, and a single Alembic head is enforced before every push.
 - **A quality gate before every PR.** `scripts/gate.sh` runs ruff, black, pytest with a 70% coverage floor and the mypy ratchet; run it locally before opening a pull request.
 - **New tests are mutation-checked.** Each new test must turn red when the fix it guards is removed. Without this, a test only shows that the code runs.
-- **Agent-assisted development with human ownership.** Work is split between a coordinator agent and worker agents (Claude Code), each on an isolated git worktree and a draft pull request, with a written verification report. The owner makes product and risk decisions and merges the high-risk paths (migrations, deployment, authentication, billing) personally.
+- **Agent-assisted development with human ownership.** Work is split between a coordinator agent and worker agents (Claude Code), each on an isolated git worktree and a draft pull request, with a written verification report. The owner makes product and risk decisions and merges the high-risk paths (migrations, deployment, authentication, billing) personally. The kit that coordinates the agents is published separately: [TnSrb1/agent-ops](https://github.com/TnSrb1/agent-ops).
 
 ## Numbers
 
@@ -175,6 +169,8 @@ Tests that need the unpublished connectors, deployment files or operational data
 
 | Document | Purpose |
 |---|---|
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Bird's-eye view, code map and the invariants, each tied to the code and the test that hold it |
+| [`docs/rules/`](docs/rules/) | The written rules for the database, money and AI layers that the invariants come from |
 | [`docs/AI_PIPELINE.md`](docs/AI_PIPELINE.md) | The AI path of a tender: documents, gate, verdicts, step-by-step analysis, ledger |
 | [`docs/AGENTIC_DELIVERY.md`](docs/AGENTIC_DELIVERY.md) | How the product is built with coordinator and worker agents under a human owner |
 | [`docs/DECISIONS.md`](docs/DECISIONS.md) | Architecture Decision Records |
@@ -183,6 +179,17 @@ Tests that need the unpublished connectors, deployment files or operational data
 | [`docs/GLOSSARY.md`](docs/GLOSSARY.md) | Domain terms (Serbian and English) |
 | [`docs/UI_SKILLS_ADAPTER.md`](docs/UI_SKILLS_ADAPTER.md) | Boundaries of the interface review skills |
 | [`SECURITY.md`](SECURITY.md) · [`CONTRIBUTING.md`](CONTRIBUTING.md) | Reporting security issues and contribution rules |
+
+## Limitations
+
+- **This is a snapshot, not a project you can run end to end.** The portal connectors, deployment files, server runbooks and operational state are not here; without the connectors there is no live data, and tests that need them are skipped.
+- **Not every figure is reproducible from this repository.** The tender and delivery counts in [Numbers](#numbers) come from the production database.
+- **Billing is implemented but not live**, and the stepwise document analysis is behind a feature flag that is off in production.
+- **The agents got things wrong, and the process exists because of it.** Three kinds of mistake that shaped the rules:
+  - a test run narrowed to the changed files was green while the full gate was red, and a commit went out on top of failing tests;
+  - a docstring claimed the bot connected as the table owner, so the code was written against a database role that was not the real one, and operator buttons failed until the claim was checked against the running system;
+  - a stale line in a status document, and a measuring tool's report that was never confirmed by a click, each produced a task for a defect that did not exist.
+- **No rework rate is claimed.** GitHub holds no review rounds for these pull requests (the 300 most recent, queried with `gh pr list` on 21 October 2026, have none), so the share of work that came back for changes cannot be computed from it, and a number here would be invented.
 
 ## Contact
 
